@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 app = FastAPI(title="Shneyder IA Pro")
 DB_PATH = "loteria_master_ai.db"
 
-# Motor de datos por cada sala de sorteo
+# Base de datos analítica por cada sala de sorteo
 DATOS_LOTERIAS = {
     "todas": {
         "nombre": "Todas las Loterías (Consenso)",
@@ -103,15 +103,6 @@ DATOS_LOTERIAS = {
     }
 }
 
-def formatear_badge(tipo):
-    if tipo == "virado":
-        return "<span style='background:#f59e0b;color:#000;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>🛡️ VIRADO</span>"
-    elif tipo == "caliente":
-        return "<span style='background:#ef4444;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>🔥 RACHA</span>"
-    elif tipo == "atrasado":
-        return "<span style='background:#8b5cf6;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>⏳ ATRASADO</span>"
-    return "<span style='background:#22c55e;color:#000;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>⭐ ÉLITE</span>"
-
 @app.get("/", response_class=HTMLResponse)
 def index():
     datos_json = json.dumps(DATOS_LOTERIAS)
@@ -128,18 +119,20 @@ def index():
         <style>
             * {{ box-sizing: border-box; }}
             body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }}
-            .brand {{ text-align: center; background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid #38bdf8; }}
+            
+            /* Cabecera Personalizada */
+            .brand {{ text-align: center; background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid #38bdf8; box-shadow: 0 4px 10px rgba(56,189,248,0.15); }}
             .brand h1 {{ font-size: 20px; color: #38bdf8; margin: 0; font-weight: 900; letter-spacing: 1px; }}
             .brand p {{ font-size: 11px; color: #94a3b8; margin: 3px 0 0 0; text-transform: uppercase; letter-spacing: 2px; }}
             
             .pill {{ background: #111827; padding: 10px; border-radius: 10px; text-align: center; font-size: 13px; margin-bottom: 12px; border: 1px solid #374151; }}
             
-            /* Tabs horizontales deslizables */
+            /* Selector deslizable horizontal */
             .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
             .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
             .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
 
-            /* Botón de Copiar WhatsApp */
+            /* Botón WhatsApp */
             .btn-wa {{ display: block; width: 100%; background: #22c55e; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 14px; cursor: pointer; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }}
             
             .card {{ background: #131d31; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid #233249; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }}
@@ -149,7 +142,7 @@ def index():
             th {{ background: #1e293b; padding: 6px 2px; color: #94a3b8; font-size: 11px; position: sticky; top: 0; }}
             td {{ padding: 8px 3px; border-bottom: 1px solid #1e293b; }}
             
-            #toast {{ display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #38bdf8; color: #0f172a; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 100; }}
+            #toast {{ display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #38bdf8; color: #0f172a; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }}
         </style>
     </head>
     <body>
@@ -163,7 +156,6 @@ def index():
             🕒 <small>Hora: {hora_actual}</small>
         </div>
 
-        <!-- Selector de Loterías -->
         <div class="tabs-scroll">
             <button class="tab-btn active" onclick="cambiarTab('todas')">🌐 TODAS</button>
             <button class="tab-btn" onclick="cambiarTab('nacional')">🇩🇴 NACIONAL / GANA MÁS</button>
@@ -208,7 +200,7 @@ def index():
             <h2 style="color: #f472b6;">🏆 TRIPLETAS BLINDADAS</h2>
             <div class="table-container">
                 <table>
-                    <thead><tr><th>#</th><th>TRIPLETA</th><th>SALA</th></tr></thead>
+                    <thead><tr><th>#</th><th>TRIPLETA</th><th>FUERZA</th><th>SALA</th></tr></thead>
                     <tbody id="tabla_tripletas"></tbody>
                 </table>
             </div>
@@ -267,7 +259,7 @@ def index():
                 }});
                 document.getElementById('tabla_sueltos').innerHTML = htmlSueltos;
 
-                // Palés Automáticos
+                // Palés
                 let htmlPales = "";
                 let countP = 1;
                 for (let i = 0; i < Math.min(sueltos.length, 6); i++) {{
@@ -276,7 +268,7 @@ def index():
                         htmlPales += `<tr>
                             <td>${{String(countP).padStart(2, '0')}}</td>
                             <td style="color:#facc15;font-weight:bold;font-size:15px;">${{sueltos[i].num}} - ${{sueltos[j].num}}</td>
-                            <td>${{f}}%</td>
+                            <td style="font-weight:bold;color:#e2e8f0;">${{f}}%</td>
                             <td style="font-size:10px;">${{sueltos[i].lot}}</td>
                         </tr>`;
                         countP++;
@@ -285,22 +277,24 @@ def index():
                 }}
                 document.getElementById('tabla_pales').innerHTML = htmlPales;
 
-                // Tripletas
+                // Tripletas con Porcentaje de Fuerza
                 let htmlTrip = "";
                 let countT = 1;
                 for (let i = 0; i < Math.min(sueltos.length, 5); i++) {{
                     for (let j = i + 1; j < Math.min(sueltos.length, 5); j++) {{
                         for (let k = j + 1; k < Math.min(sueltos.length, 5); k++) {{
+                            let fTrip = ((sueltos[i].fuerza + sueltos[j].fuerza + sueltos[k].fuerza) / 3).toFixed(1);
                             htmlTrip += `<tr>
                                 <td>${{String(countT).padStart(2, '0')}}</td>
                                 <td style="color:#f472b6;font-weight:bold;font-size:14px;">${{sueltos[i].num}} - ${{sueltos[j].num}} - ${{sueltos[k].num}}</td>
+                                <td style="font-weight:bold;color:#e2e8f0;">${{fTrip}}%</td>
                                 <td style="font-size:10px;">${{sueltos[i].lot}}</td>
                             </tr>`;
                             countT++;
                         }}
                     }}
                 }}
-                document.getElementById('tabla_tripletas').innerHTML = htmlTrip || "<tr><td colspan='3'>Añadiendo datos...</td></tr>";
+                document.getElementById('tabla_tripletas').innerHTML = htmlTrip || "<tr><td colspan='4'>Añadiendo datos...</td></tr>";
             }}
 
             function copiarWhatsApp() {{
@@ -324,7 +318,6 @@ def index():
                 }});
             }}
 
-            // Cargar inicial
             actualizarVista();
         </script>
     </body>
