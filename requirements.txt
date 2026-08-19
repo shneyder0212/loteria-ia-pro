@@ -1,6 +1,5 @@
 fastapi
 uvicorn
+numpy
 requests
 beautifulsoup4
-numpy
-scipy
