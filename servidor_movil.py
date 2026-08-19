@@ -5,16 +5,16 @@ from datetime import datetime
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan v5.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Ultra v6.0")
 DB_PATH = "loteria_master_ai.db"
 
-# Memoria de control Anti-Saturación
+# Control silencioso anti-saturación
 PETICIONES_IP = {}
 
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 dia_hoy = DIAS_SEMANA[datetime.now().weekday()]
 
-# 1. PIZARRA OFICIAL DE RESULTADOS
+# 1. PIZARRA OFICIAL
 RESULTADOS_OFICIALES = {
     "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
@@ -37,7 +37,7 @@ RESULTADOS_OFICIALES = {
     "euromillones": {"nombre": "Euromillones (Europa)", "premios": ["--", "--", "--", "--", "--"], "estrellas": ["-", "-"], "estado": "Sorteo Viernes 21:15h"}
 }
 
-# 2. RADAR DE TERMICAS Y DECENAS ACTIVAS
+# 2. RADAR TÉRMICO Y TRIANGULACIÓN
 TERMOMETRO_PRESION = {
     "decenas_calientes": [
         {"rango": "40 - 49", "presion": 96.4, "estado": "🚨 CRÍTICA"},
@@ -51,39 +51,12 @@ TERMOMETRO_PRESION = {
     ]
 }
 
-# 3. HISTORIAL DE AUDITORÍA
-HISTORIAL_AUDITORIA = [
-    {
-        "fecha": "20/08/2026",
-        "sala": "Motor Cuántico Titán IA",
-        "tipo": "🧠 AUTOAPRENDIZAJE V5.0",
-        "premio": "Matrices de Markov y Filtros Bayesianos Sincronizados",
-        "detalle": "Monitoreo en vivo activado para Anguila, Real, Nacional, Leidsa, Kino, Primitiva y Euromillones"
-    }
-]
-
-# 4. DICCIONARIO DE SUEÑOS
-DICCIONARIO_SUENOS = {
-    "dinero": {"num": "48", "cabala": "Plata / Riqueza", "fuerza": 89.5, "lot": "Leidsa / Nacional"},
-    "agua": {"num": "06", "cabala": "Río / Lluvia / Mar", "fuerza": 78.2, "lot": "La Primera"},
-    "muerte": {"num": "47", "cabala": "Finado / Entierro", "fuerza": 92.4, "lot": "Gana Mas"},
-    "accidente": {"num": "13", "cabala": "Choque / Caída", "fuerza": 84.1, "lot": "Loteka"},
-    "boda": {"num": "24", "cabala": "Matrimonio / Fiesta", "fuerza": 81.0, "lot": "La Real"},
-    "fuego": {"num": "11", "cabala": "Incendio / Candela", "fuerza": 88.6, "lot": "Nacional Noche"},
-    "serpiente": {"num": "36", "cabala": "Culebra / Traición", "fuerza": 75.3, "lot": "La Suerte"},
-    "embarazo": {"num": "19", "cabala": "Bebé / Nacimiento", "fuerza": 91.2, "lot": "Anguila 6PM"},
-    "perro": {"num": "21", "cabala": "Fidelidad / Amigo", "fuerza": 73.8, "lot": "King Lottery"},
-    "policia": {"num": "56", "cabala": "Ley / Uniforme", "fuerza": 86.4, "lot": "Leidsa"},
-    "viaje": {"num": "02", "cabala": "Vuelo / Maleta", "fuerza": 79.5, "lot": "New York Noche"},
-    "casa": {"num": "04", "cabala": "Propiedad / Techo", "fuerza": 98.9, "lot": "Gana Mas / Nacional"},
-    "carro": {"num": "35", "cabala": "Vehículo / Motor", "fuerza": 82.7, "lot": "Loteka"}
-}
-
-# 5. PRONÓSTICOS CUÁNTICOS POR LOTERÍA
+# 3. PRONÓSTICOS CUÁNTICOS POR SALA
 DATOS_LOTERIAS = {
     "todas": {
         "nombre": "Todas las Loterías (Consenso General)",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "04", "virado": "40", "fuerza": 98.9, "palé_titan": "04 - 54"},
         "dictamen": {
             "flujo": "ALTO (50 al 99)",
             "decena": "Los 70s y 40s (70-79 / 40-49)",
@@ -119,6 +92,7 @@ DATOS_LOTERIAS = {
     "kino_leidsa": {
         "nombre": "VENTA ESPECIAL: KINO LEIDSA TV",
         "tipo_juego": "kino",
+        "tiro_fijo": {"num": "07", "virado": "70", "fuerza": 97.1, "palé_titan": "07 - 23"},
         "kino_data": {
             "estado_tombola": "🔥 TÓMBOLA CALIENTE: Consistencia 92.4% (Filtro Anti-Consecutivos Activo)",
             "paridad_optima": "⚖️ RATIO DE PARIDAD: 10 Pares / 10 Impares (82% de acierto)",
@@ -147,6 +121,7 @@ DATOS_LOTERIAS = {
     "primitiva_esp": {
         "nombre": "🇪🇸 LA PRIMITIVA (ESPAÑA)",
         "tipo_juego": "primitiva",
+        "tiro_fijo": {"num": "05", "virado": "50", "fuerza": 96.8, "palé_titan": "05 - 47"},
         "primitiva_data": {
             "reintegro": "7",
             "reintegro_fuerza": 94.5,
@@ -172,6 +147,7 @@ DATOS_LOTERIAS = {
     "euromillones": {
         "nombre": "🇪🇺 EUROMILLONES (EUROPA)",
         "tipo_juego": "euromillones",
+        "tiro_fijo": {"num": "09", "virado": "--", "fuerza": 98.4, "palé_titan": "⭐ 03 - 08"},
         "euro_data": {
             "estrellas_fijas": ["03", "08"],
             "estrellas_reserva": ["02", "11"],
@@ -197,6 +173,7 @@ DATOS_LOTERIAS = {
     "nacional": {
         "nombre": "Gana Más (2:30 PM) / Nacional Noche (8:50 PM)",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "04", "virado": "40", "fuerza": 98.9, "palé_titan": "04 - 54"},
         "dictamen": {
             "flujo": "MIXTO (Foco en 00-49 y 70-79)",
             "decena": "Los 00s y 40s (01-09 / 40-49)",
@@ -217,6 +194,7 @@ DATOS_LOTERIAS = {
     "leidsa": {
         "nombre": "Leidsa (8:55 PM)",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "29", "virado": "92", "fuerza": 91.2, "palé_titan": "29 - 18"},
         "dictamen": {
             "flujo": "ALTO (Foco 60 al 99)",
             "decena": "Los 20s y 90s (20-29 / 90-99)",
@@ -237,6 +215,7 @@ DATOS_LOTERIAS = {
     "suerte_dia": {
         "nombre": "La Suerte Dominicana (12:30 PM)",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "72", "virado": "27", "fuerza": 90.4, "palé_titan": "72 - 63"},
         "dictamen": {
             "flujo": "BAJO A MEDIO (20 al 60)",
             "decena": "Los 70s y 20s (70-79 / 20-29)",
@@ -257,6 +236,7 @@ DATOS_LOTERIAS = {
     "suerte_tarde": {
         "nombre": "La Suerte Dominicana (6:00 PM)",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "10", "virado": "01", "fuerza": 89.2, "palé_titan": "10 - 53"},
         "dictamen": {
             "flujo": "BAJO (00 al 49)",
             "decena": "Los 10s y 00s (10-19 / 01-09)",
@@ -277,6 +257,7 @@ DATOS_LOTERIAS = {
     "anguila_6pm": {
         "nombre": "Anguila (6:00 PM)",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "31", "virado": "13", "fuerza": 92.1, "palé_titan": "31 - 28"},
         "dictamen": {
             "flujo": "ALTO (70 al 99)",
             "decena": "Los 30s y 80s (30-39 / 80-89)",
@@ -297,6 +278,7 @@ DATOS_LOTERIAS = {
     "anguila_dia_noche": {
         "nombre": "Anguila (10 AM / 1 PM / 9 PM)",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "88", "virado": "51", "fuerza": 88.5, "palé_titan": "88 - 15"},
         "dictamen": {
             "flujo": "ALTO (80 al 99)",
             "decena": "Los 80s y 90s (80-89 / 90-99)",
@@ -317,6 +299,7 @@ DATOS_LOTERIAS = {
     "real": {
         "nombre": "Lotería Real (12:55 PM)",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "85", "virado": "58", "fuerza": 88.4, "palé_titan": "85 - 04"},
         "dictamen": {
             "flujo": "ALTO (50 al 89)",
             "decena": "Los 80s y 50s (80-89 / 50-59)",
@@ -337,6 +320,7 @@ DATOS_LOTERIAS = {
     "loteka": {
         "nombre": "Loteka (7:55 PM)",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "79", "virado": "97", "fuerza": 89.6, "palé_titan": "79 - 50"},
         "dictamen": {
             "flujo": "ALTO (70 al 99)",
             "decena": "Los 70s y 90s (70-79 / 90-99)",
@@ -357,6 +341,7 @@ DATOS_LOTERIAS = {
     "primera": {
         "nombre": "La Primera (12:00 PM / 8:00 PM)",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "17", "virado": "71", "fuerza": 86.7, "palé_titan": "17 - 95"},
         "dictamen": {
             "flujo": "BAJO (10 al 30)",
             "decena": "Los 10s y 70s (10-19 / 70-79)",
@@ -377,6 +362,7 @@ DATOS_LOTERIAS = {
     "lotedom": {
         "nombre": "LoteDom / El Quemaito (12:00 PM)",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "16", "virado": "61", "fuerza": 87.5, "palé_titan": "16 - 37"},
         "dictamen": {
             "flujo": "BAJO (10 al 49)",
             "decena": "Los 10s y 60s (10-19 / 60-69)",
@@ -397,6 +383,7 @@ DATOS_LOTERIAS = {
     "king_lottery": {
         "nombre": "King Lottery (12:30 PM / 7:30 PM)",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "62", "virado": "26", "fuerza": 88.0, "palé_titan": "62 - 35"},
         "dictamen": {
             "flujo": "ALTO (60 al 89)",
             "decena": "Los 60s y 20s (60-69 / 20-29)",
@@ -417,6 +404,7 @@ DATOS_LOTERIAS = {
     "ny_florida": {
         "nombre": "New York & Florida",
         "tipo_juego": "quiniela",
+        "tiro_fijo": {"num": "23", "virado": "32", "fuerza": 87.2, "palé_titan": "23 - 09"},
         "dictamen": {
             "flujo": "BAJO (00 al 39)",
             "decena": "Los 20s y 30s (20-29 / 30-39)",
@@ -434,6 +422,34 @@ DATOS_LOTERIAS = {
             {"num": "67", "fuerza": 61.0, "tipo": "fuerte", "lot": "Florida Noche"}
         ]
     }
+}
+
+# 4. AUDITORÍA AUTOMÁTICA DE APERTURA
+HISTORIAL_AUDITORIA = [
+    {
+        "fecha": "20/08/2026",
+        "sala": "Titan Ultra v6.0",
+        "tipo": "🎯 RADAR FRANCOTIRADOR ACTIVO",
+        "premio": "Sistema de Triangulación 3X Conectado en Tiempo Real",
+        "detalle": "Monitoreando Anguila, Primera, Real, Nacional, Leidsa, Kino y Loterías Europeas"
+    }
+]
+
+# 5. DICCIONARIO DE SUEÑOS
+DICCIONARIO_SUENOS = {
+    "dinero": {"num": "48", "cabala": "Plata / Riqueza", "fuerza": 89.5, "lot": "Leidsa / Nacional"},
+    "agua": {"num": "06", "cabala": "Río / Lluvia / Mar", "fuerza": 78.2, "lot": "La Primera"},
+    "muerte": {"num": "47", "cabala": "Finado / Entierro", "fuerza": 92.4, "lot": "Gana Mas"},
+    "accidente": {"num": "13", "cabala": "Choque / Caída", "fuerza": 84.1, "lot": "Loteka"},
+    "boda": {"num": "24", "cabala": "Matrimonio / Fiesta", "fuerza": 81.0, "lot": "La Real"},
+    "fuego": {"num": "11", "cabala": "Incendio / Candela", "fuerza": 88.6, "lot": "Nacional Noche"},
+    "serpiente": {"num": "36", "cabala": "Culebra / Traición", "fuerza": 75.3, "lot": "La Suerte"},
+    "embarazo": {"num": "19", "cabala": "Bebé / Nacimiento", "fuerza": 91.2, "lot": "Anguila 6PM"},
+    "perro": {"num": "21", "cabala": "Fidelidad / Amigo", "fuerza": 73.8, "lot": "King Lottery"},
+    "policia": {"num": "56", "cabala": "Ley / Uniforme", "fuerza": 86.4, "lot": "Leidsa"},
+    "viaje": {"num": "02", "cabala": "Vuelo / Maleta", "fuerza": 79.5, "lot": "New York Noche"},
+    "casa": {"num": "04", "cabala": "Propiedad / Techo", "fuerza": 98.9, "lot": "Gana Mas / Nacional"},
+    "carro": {"num": "35", "cabala": "Vehículo / Motor", "fuerza": 82.7, "lot": "Loteka"}
 }
 
 def verificar_anti_ddos(client_ip: str) -> bool:
@@ -488,10 +504,27 @@ def index(request: Request):
             .brand-date {{ font-size: 11px; color: #cbd5e1; font-weight: 600; }}
             .brand-clock {{ font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; letter-spacing: 1px; }}
 
-            .search-box {{ background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 10px; margin-bottom: 12px; display: flex; gap: 8px; }}
-            .search-input {{ flex: 1; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none; }}
-            .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
-            #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
+            /* PANEL FRANCOTIRADOR */
+            .sniper-card {{ 
+                background: linear-gradient(135deg, #1e1b4b, #0f172a); 
+                border: 2px solid #818cf8; 
+                border-radius: 12px; 
+                padding: 12px 14px; 
+                margin-bottom: 12px; 
+                display: flex; 
+                justify-content: space-around; 
+                align-items: center; 
+                text-align: center;
+                box-shadow: 0 4px 12px rgba(129,140,248,0.2);
+            }}
+            .sniper-item b {{ font-size: 10px; color: #a5b4fc; text-transform: uppercase; display: block; }}
+            .sniper-num {{ font-size: 24px; font-weight: 900; color: #38bdf8; }}
+            .sniper-badge {{ font-size: 11px; font-weight: bold; color: #4ade80; }}
+
+            /* TERMÓMETRO CUÁNTICO */
+            .termo-card {{ background: #111c30; border: 1px solid #f97316; border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; }}
+            .termo-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; font-size: 11.5px; }}
+            .termo-box {{ background: #18263e; padding: 8px; border-radius: 8px; border: 1px solid #283e60; }}
 
             /* PIZARRA OFICIAL */
             .pizarra-card {{ background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
@@ -504,16 +537,16 @@ def index(request: Request):
             .ball-2da {{ background: #38bdf8; }}
             .ball-3ra {{ background: #facc15; }}
 
-            /* TERMÓMETRO CUÁNTICO DE PRESIÓN */
-            .termo-card {{ background: #111c30; border: 1px solid #f97316; border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; }}
-            .termo-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; font-size: 11.5px; }}
-            .termo-box {{ background: #18263e; padding: 8px; border-radius: 8px; border: 1px solid #283e60; }}
-
-            /* Auditoría */
+            /* AUDITORÍA */
             .auditor-box {{ background: #0f172a; border: 1px solid #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
             .auditor-title {{ color: #4ade80; font-weight: 800; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }}
             .auditor-item {{ padding: 5px 0; border-bottom: 1px solid #1e293b; font-size: 11.5px; }}
             .auditor-item:last-child {{ border: none; }}
+
+            .search-box {{ background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 10px; margin-bottom: 12px; display: flex; gap: 8px; }}
+            .search-input {{ flex: 1; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none; }}
+            .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
+            #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
 
             .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
             .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }}
@@ -557,11 +590,31 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Sistema Cuántico Multimoneda</p>
+                    <p>Sistema Cuántico Titan Ultra v6.0</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_hoy}</div>
                     <div class="brand-clock" id="live_time">--:--:--</div>
+                </div>
+            </div>
+
+            <!-- PANEL DE FRANCOTIRADOR (TIRO DIRECTO) -->
+            <div class="sniper-card">
+                <div class="sniper-item">
+                    <b>🎯 TIRO DIRECTO</b>
+                    <span class="sniper-num" id="s_fijo">04</span>
+                </div>
+                <div class="sniper-item">
+                    <b>🛡️ REVÉS OBLIGADO</b>
+                    <span class="sniper-num" style="color:#f59e0b;" id="s_virado">40</span>
+                </div>
+                <div class="sniper-item">
+                    <b>💥 PALÉ TITÁN</b>
+                    <span class="sniper-num" style="color:#4ade80; font-size:18px;" id="s_pale">04 - 54</span>
+                </div>
+                <div class="sniper-item">
+                    <b>⚡ PROBABILIDAD</b>
+                    <span class="sniper-badge" id="s_fuerza">98.9%</span>
                 </div>
             </div>
 
@@ -902,6 +955,14 @@ def index(request: Request):
                 document.getElementById('nombre_sala').innerText = "(" + info.nombre + ")";
                 document.getElementById('dictamen_sala').innerText = "[" + info.nombre + "]";
 
+                // Actualizar Sniper
+                if (info.tiro_fijo) {{
+                    document.getElementById('s_fijo').innerText = info.tiro_fijo.num;
+                    document.getElementById('s_virado').innerText = info.tiro_fijo.virado;
+                    document.getElementById('s_pale').innerText = info.tiro_fijo.palé_titan;
+                    document.getElementById('s_fuerza').innerText = info.tiro_fijo.fuerza + "%";
+                }}
+
                 if (info.dictamen) {{
                     document.getElementById('d_flujo').innerText = info.dictamen.flujo;
                     document.getElementById('d_decena').innerText = info.dictamen.decena;
@@ -1122,18 +1183,17 @@ def index(request: Request):
                             `⭐ *Estrellas:* [${{ed.apuestas_euro[0].estrellas}}]\\n` +
                             `⚡ *SHNEYDER IA PRO RD*`;
                 }} else {{
-                    const topNums = info.sueltos.slice(0, 5).map(s => s.num).join(", ");
-                    const p1 = info.sueltos[0].num + " - " + info.sueltos[1].num;
-                    const p2 = info.sueltos[0].num + " - " + (info.sueltos[2] ? info.sueltos[2].num : "00");
+                    const tf = info.tiro_fijo ? info.tiro_fijo.num : info.sueltos[0].num;
+                    const tv = info.tiro_fijo ? info.tiro_fijo.virado : info.sueltos[0].num.split('').reverse().join('');
+                    const tp = info.tiro_fijo ? info.tiro_fijo.palé_titan : (info.sueltos[0].num + " - " + info.sueltos[1].num);
                     const trip = info.sueltos.slice(0, 3).map(s => s.num).join(" - ");
 
-                    texto = `🔥 *JUGADA SHNEYDER IA PRO RD* 🔥\\n` +
+                    texto = `🔥 *JUGADA TITAN SHNEYDER IA PRO RD* 🔥\\n` +
                             `📍 *${{info.nombre}}*\\n` +
-                            `⚡ *Dictamen:* ${{info.dictamen ? info.dictamen.flujo : 'Estándar'}} | Decena: ${{info.dictamen ? info.dictamen.decena : '--'}}\\n` +
-                            `🎯 *Líneas Fuertes:* ${{topNums}}\\n` +
-                            `💥 *Palés:* [${{p1}}] / [${{p2}}]\\n` +
+                            `🎯 *Tiro Fijo:* [${{tf}}] | Revés: [${{tv}}]\\n` +
+                            `💥 *Palé Titán:* [${{tp}}]\\n` +
                             `🏆 *Tripleta:* [${{trip}}]\\n` +
-                            `🛡️ *Nota:* Cuidar con el virado si pasa de 85%`;
+                            `⚡ *Dictamen:* ${{info.dictamen ? info.dictamen.flujo : 'Estándar'}} | Decena: ${{info.dictamen ? info.dictamen.decena : '--'}}`;
                 }}
 
                 navigator.clipboard.writeText(texto).then(() => {{
@@ -1154,14 +1214,14 @@ def index(request: Request):
                              `---------------------------------\\n`;
 
                 if (info.sueltos) {{
-                    ticket += `QUINIELAS:\\n`;
-                    info.sueltos.slice(0, 5).forEach((s, i) => {{
-                        ticket += ` #${{i+1}} [${{s.num}}] (Fuerza: ${{s.fuerza}}%)\\n`;
-                    }});
-                    ticket += `---------------------------------\\n` +
-                              `PALÉ TITÁN:\\n` +
-                              ` [${{info.sueltos[0].num}} - ${{info.sueltos[1].num}}]\\n` +
-                              ` [${{info.sueltos[0].num}} - ${{info.sueltos[0].num.split('').reverse().join('')}}] (Virado)\\n` +
+                    const tf = info.tiro_fijo ? info.tiro_fijo.num : info.sueltos[0].num;
+                    const tv = info.tiro_fijo ? info.tiro_fijo.virado : info.sueltos[0].num.split('').reverse().join('');
+                    const tp = info.tiro_fijo ? info.tiro_fijo.palé_titan : (info.sueltos[0].num + " - " + info.sueltos[1].num);
+
+                    ticket += `TIRO DIRECTO: [${{tf}}] (Fuerza: 98.9%)\\n` +
+                              `REVÉS OBLIGADO: [${{tv}}]\\n` +
+                              `---------------------------------\\n` +
+                              `PALÉ TITÁN:\\n [${{tp}}]\\n` +
                               `---------------------------------\\n` +
                               `TRIPLETA BLINDADA:\\n` +
                               ` [${{info.sueltos[0].num}} - ${{info.sueltos[1].num}} - ${{info.sueltos[2].num}}]\\n`;
