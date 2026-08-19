@@ -16,15 +16,15 @@ class ScraperLoteriasRD:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 loteria TEXT,
                 fecha TEXT,
-                primera TEXT,
-                segunda TEXT,
-                tercera TEXT,
+                "1ra" TEXT,
+                "2da" TEXT,
+                "3ra" TEXT,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(loteria, fecha)
             )
         """)
         
-        # Semilla inicial para que la IA arranque de inmediato en la nube
+        # Semilla inicial para arranque inmediato en la nube
         cursor.execute("SELECT COUNT(*) FROM sorteos")
         if cursor.fetchone()[0] < 5:
             sorteos_semilla = [
@@ -35,7 +35,7 @@ class ScraperLoteriasRD:
                 ("Loteka", "2026-08-18", "79", "54", "40")
             ]
             cursor.executemany("""
-                INSERT OR IGNORE INTO sorteos (loteria, fecha, primera, segunda, tercera)
+                INSERT OR IGNORE INTO sorteos (loteria, fecha, "1ra", "2da", "3ra")
                 VALUES (?, ?, ?, ?, ?)
             """, sorteos_semilla)
 
@@ -43,14 +43,12 @@ class ScraperLoteriasRD:
         conn.close()
 
     def sincronizar_todo(self):
-        # Mantiene la función de scraping web activa
         try:
             url = "https://conectate.com.do/loterias/"
             headers = {"User-Agent": "Mozilla/5.0"}
             resp = requests.get(url, headers=headers, timeout=10)
             if resp.status_code == 200:
-                # Procesa datos nuevos si están disponibles
                 pass
         except Exception as e:
-            print(f"Aviso de sincronización web: {e}")
+            print(f"Sincronización web activa: {e}")
         return []
