@@ -10,20 +10,23 @@ DB_PATH = "loteria_master_ai.db"
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 dia_hoy = DIAS_SEMANA[datetime.now().weekday()]
 
-# 1. PIZARRA OFICIAL DE PREMIOS (Se actualiza con cada sorteo oficial)
+# 1. PIZARRA OFICIAL DE PREMIOS (Incluyendo todos los sorteos de la Anguilita)
 RESULTADOS_OFICIALES = {
-    "primera_dia": {"nombre": "La Primera (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "suerte_dia": {"nombre": "La Suerte Día (12:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "real": {"nombre": "Lotería Real (12:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "anguila_1pm": {"nombre": "Anguila Mediodía (1:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "gana_mas": {"nombre": "Gana Más (2:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "suerte_tarde": {"nombre": "La Suerte Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
-    "anguila_6pm": {"nombre": "Anguila (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "anguila_6pm": {"nombre": "Anguila Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "loteka": {"nombre": "Loteka (7:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "primera_noche": {"nombre": "La Primera Noche (8:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "anguila_9pm": {"nombre": "Anguila Noche (9:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "kino_tv": {"nombre": "Kino TV Leidsa (8:55 PM)", "premios": ["--"] * 20, "estado": "20 Bolos Pendientes"},
-    "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "king_lottery": {"nombre": "King Lottery (12:30 / 7:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "ny_tarde_noche": {"nombre": "New York (Tarde / Noche)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "primitiva_esp": {"nombre": "La Primitiva (España)", "premios": ["--", "--", "--", "--", "--", "--"], "complementario": "--", "reintegro": "-", "estado": "Sorteo Jueves 21:40h"},
@@ -37,7 +40,7 @@ HISTORIAL_AUDITORIA = [
         "sala": "Sistema Cuántico Shneyder",
         "tipo": "📡 APERTURA OFICIAL",
         "premio": "Sistema calibrado y conectado en vivo con las tómbolas oficiales",
-        "detalle": "Esperando primeros sorteos del día (La Primera 12:00 PM / La Suerte 12:30 PM / Real 12:55 PM)"
+        "detalle": "Esperando primeros sorteos del día (Anguila 10:00 AM / La Primera 12:00 PM / La Suerte 12:30 PM)"
     }
 ]
 
@@ -548,7 +551,7 @@ def index():
                 <div class="timer-clock" id="timer_val">Calculando...</div>
             </div>
 
-            <!-- PIZARRA OFICIAL DE NÚMEROS PREMIADOS (CADA LOTERÍA) -->
+            <!-- PIZARRA OFICIAL DE NÚMEROS PREMIADOS (CADA LOTERÍA + ANGUILAS) -->
             <div class="pizarra-card">
                 <div style="font-size:14px;font-weight:900;color:#38bdf8;display:flex;justify-content:space-between;align-items:center;">
                     <span>🏆 NÚMEROS PREMIADOS (OFICIALES)</span>
@@ -777,8 +780,10 @@ def index():
                             <div class="lot-balls-row">${{ballsHtml}} <span style="color:#facc15;font-weight:bold;font-size:11px;">⭐ ${{lot.estrellas.join('-')}}</span></div>
                         </div>`;
                     }} else {{
-                        html += `<div class="lot-prize-card">
-                            <div class="lot-prize-name"><span>🇩🇴 ${{lot.nombre}}</span> <span style="font-size:10px;color:#94a3b8;">${{lot.estado}}</span></div>
+                        let isAnguila = lot.nombre.includes("Anguila");
+                        let badgeIcon = isAnguila ? "🐍" : "🇩🇴";
+                        html += `<div class="lot-prize-card" style="${{isAnguila ? 'border-color:#10b981;' : ''}}">
+                            <div class="lot-prize-name"><span style="${{isAnguila ? 'color:#34d399;' : ''}}">${{badgeIcon}} ${{lot.nombre}}</span> <span style="font-size:10px;color:#94a3b8;">${{lot.estado}}</span></div>
                             <div class="lot-balls-row">
                                 <div class="prize-ball ball-1ra" title="1ra">${{lot.premios[0]}}</div>
                                 <div class="prize-ball ball-2da" title="2da">${{lot.premios[1]}}</div>
