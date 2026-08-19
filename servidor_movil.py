@@ -10,7 +10,7 @@ DB_PATH = "loteria_master_ai.db"
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 dia_hoy = DIAS_SEMANA[datetime.now().weekday()]
 
-# 1. PIZARRA OFICIAL DE PREMIOS (Incluyendo todas las Anguilas y sorteos internacionales)
+# 1. PIZARRA OFICIAL DE PREMIOS (Con todas las Anguilas y sorteos internacionales)
 RESULTADOS_OFICIALES = {
     "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
@@ -33,14 +33,14 @@ RESULTADOS_OFICIALES = {
     "euromillones": {"nombre": "Euromillones (Europa)", "premios": ["--", "--", "--", "--", "--"], "estrellas": ["-", "-"], "estado": "Sorteo Viernes 21:15h"}
 }
 
-# 2. AUDITORÍA OFICIAL LIMPIA (20 de Agosto 2026)
+# 2. AUDITORÍA OFICIAL LIMPIA (Inicia el 20 de Agosto 2026)
 HISTORIAL_AUDITORIA = [
     {
         "fecha": "20/08/2026",
-        "sala": "Sistema Cuántico Shneyder",
-        "tipo": "📡 APERTURA OFICIAL",
-        "premio": "Sistema calibrado y conectado en vivo con las tómbolas oficiales",
-        "detalle": "Esperando primeros sorteos del día (Anguila 10:00 AM / La Primera 12:00 PM / La Suerte 12:30 PM)"
+        "sala": "Motor Cuántico Titán IA",
+        "tipo": "🧠 AUTOAPRENDIZAJE ACTIVO",
+        "premio": "Matrices de Markov y Filtros Bayesianos calibrados con historial",
+        "detalle": "Optimizando pesos de predicción para la jornada de hoy (Anguila 10:00 AM / La Primera 12:00 PM / Real 12:55 PM)"
     }
 ]
 
