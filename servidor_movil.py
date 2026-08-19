@@ -10,7 +10,7 @@ DB_PATH = "loteria_master_ai.db"
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 dia_hoy = DIAS_SEMANA[datetime.now().weekday()]
 
-# Base de datos cuántica con Dictamen del Titán, Ruptura de Presión y Fuego Cruzado
+# Base de datos cuántica con Loterías Tradicionales + Venta Especial Kino Leidsa
 DATOS_LOTERIAS = {
     "todas": {
         "nombre": "Todas las Loterías (Consenso General)",
@@ -45,6 +45,40 @@ DATOS_LOTERIAS = {
             {"num": "88", "fuerza": 28.4, "tipo": "pareja", "lot": "Loteria Real 12:55pm"},
             {"num": "67", "fuerza": 25.0, "tipo": "atrasado", "lot": "Loteka 7:55pm"},
             {"num": "12", "fuerza": 22.8, "tipo": "fuerte", "lot": "New York Noche"}
+        ]
+    },
+    "kino_leidsa": {
+        "nombre": "VENTA ESPECIAL: KINO LEIDSA TV",
+        "salidor": "Último Sorteo: 20 Bolos Registrados",
+        "kino_data": {
+            "estado_tombola": "🔥 TÓMBOLA CALIENTE: Consistencia 92.4% (Momento Óptimo)",
+            "zona_muerta": "🚫 ZONA DE RETENCIÓN: 40 al 52 (No botar dinero en este rango)",
+            "duenos": ["07", "14", "23", "38", "45", "59", "62", "71", "78", "80"],
+            "bloques_5": [
+                {"bloque": "07 - 23 - 45 - 62 - 78", "fuerza": 94.8},
+                {"bloque": "14 - 38 - 59 - 71 - 80", "fuerza": 91.5},
+                {"bloque": "07 - 14 - 23 - 38 - 71", "fuerza": 88.2}
+            ],
+            "bloques_7": [
+                {"bloque": "07 - 14 - 23 - 45 - 59 - 71 - 78", "fuerza": 96.2},
+                {"bloque": "14 - 23 - 38 - 62 - 71 - 78 - 80", "fuerza": 93.0}
+            ]
+        },
+        "dictamen": {
+            "flujo": "EXPANSIVO (1 al 80)",
+            "decena": "Dominio de las decenas 20s, 60s y 70s",
+            "terminal": "Terminales 7, 8, 3 y 4",
+            "pareja": "ALTA (22, 44, 77)",
+            "digito_fuerte": "Dígitos 7 y 8",
+            "presion": "🎯 RECOMENDACIÓN: Jugar bloques cerrados de 5 y 7 números.",
+            "dia_tendencia": f"{dia_hoy}: Alta concentración en números impares"
+        },
+        "sueltos": [
+            {"num": "07", "fuerza": 96.5, "tipo": "fuerte", "lot": "Kino TV 8:55pm"},
+            {"num": "78", "fuerza": 94.2, "tipo": "fuerte", "lot": "Kino TV 8:55pm"},
+            {"num": "23", "fuerza": 91.0, "tipo": "caliente", "lot": "Kino TV 8:55pm"},
+            {"num": "71", "fuerza": 88.7, "tipo": "caliente", "lot": "Kino TV 8:55pm"},
+            {"num": "45", "fuerza": 85.3, "tipo": "atrasado", "lot": "Kino TV 8:55pm"}
         ]
     },
     "nacional": {
@@ -272,99 +306,3 @@ DATOS_LOTERIAS = {
         "salidor": "23 - 09 - 03",
         "dictamen": {
             "flujo": "BAJO (00 al 39)",
-            "decena": "Los 20s y 30s (20-29 / 30-39)",
-            "terminal": "Terminales 3, 2 y 9",
-            "pareja": "BAJA (33, 99)",
-            "digito_fuerte": "Dígitos 2 y 3",
-            "presion": "🚨 RUPTURA: El 23 con índice máximo en plaza estadounidense",
-            "dia_tendencia": f"{dia_hoy}: Movimiento de secuencias matemáticas exactas"
-        },
-        "sueltos": [
-            {"num": "23", "fuerza": 87.2, "tipo": "fuerte", "lot": "NY Noche"},
-            {"num": "32", "fuerza": 78.4, "tipo": "virado", "lot": "NY Noche"},
-            {"num": "09", "fuerza": 74.5, "tipo": "caliente", "lot": "Florida Tarde"},
-            {"num": "15", "fuerza": 68.3, "tipo": "atrasado", "lot": "NY Tarde"},
-            {"num": "67", "fuerza": 61.0, "tipo": "fuerte", "lot": "Florida Noche"}
-        ]
-    }
-}
-
-@app.get("/", response_class=HTMLResponse)
-def index():
-    datos_json = json.dumps(DATOS_LOTERIAS)
-    hora_actual = datetime.now().strftime("%I:%M:%S %p")
-
-    return f"""
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <meta http-equiv="refresh" content="60">
-        <title>Shneyder IA Pro RD</title>
-        <style>
-            * {{ box-sizing: border-box; }}
-            body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }}
-            
-            .brand {{ text-align: center; background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid #38bdf8; box-shadow: 0 4px 10px rgba(56,189,248,0.15); }}
-            .brand h1 {{ font-size: 20px; color: #38bdf8; margin: 0; font-weight: 900; letter-spacing: 1px; }}
-            .brand p {{ font-size: 11px; color: #94a3b8; margin: 3px 0 0 0; text-transform: uppercase; letter-spacing: 2px; }}
-            
-            .pill {{ background: #111827; padding: 10px; border-radius: 10px; text-align: center; font-size: 13px; margin-bottom: 12px; border: 1px solid #374151; }}
-            
-            .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
-            .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
-            .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
-
-            .btn-wa {{ display: block; width: 100%; background: #22c55e; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 14px; cursor: pointer; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }}
-            
-            .dictamen-box {{ background: #0f172a; border: 1px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 12px; }}
-            .dictamen-box h3 {{ margin: 0 0 8px 0; color: #38bdf8; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }}
-            .dictamen-item {{ margin-bottom: 5px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 3px; }}
-            .dictamen-item b {{ color: #94a3b8; }}
-            .dictamen-val {{ color: #f8fafc; font-weight: bold; }}
-
-            .presion-alert {{ background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 8px; border-radius: 8px; margin-top: 8px; font-size: 11px; font-weight: bold; text-align: center; }}
-
-            .card {{ background: #131d31; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid #233249; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }}
-            h2 {{ font-size: 14px; margin-top: 0; padding-bottom: 6px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }}
-            .table-container {{ max-height: 400px; overflow-y: auto; -webkit-overflow-scrolling: touch; }}
-            table {{ width: 100%; border-collapse: collapse; text-align: center; font-size: 12px; }}
-            th {{ background: #1e293b; padding: 6px 2px; color: #94a3b8; font-size: 11px; position: sticky; top: 0; }}
-            td {{ padding: 8px 3px; border-bottom: 1px solid #1e293b; }}
-            
-            #toast {{ display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #38bdf8; color: #0f172a; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }}
-        </style>
-    </head>
-    <body>
-        <div class="brand">
-            <h1>SHNEYDER IA PRO RD</h1>
-            <p>Sistema Cuántico de Loterías</p>
-        </div>
-
-        <div class="pill">
-            🎯 <b>ÚLTIMO REGISTRO:</b> <span id="salidor_txt">40 - 72 - 18</span><br>
-            🕒 <small>Día: <b>{dia_hoy}</b> | Hora: {hora_actual}</small>
-        </div>
-
-        <div class="tabs-scroll">
-            <button class="tab-btn active" onclick="cambiarTab('todas')">🌐 TODAS</button>
-            <button class="tab-btn" onclick="cambiarTab('nacional')">NACIONAL / GANA MÁS</button>
-            <button class="tab-btn" onclick="cambiarTab('leidsa')">LEIDSA</button>
-            <button class="tab-btn" onclick="cambiarTab('suerte_dia')">LA SUERTE DÍA (12:30)</button>
-            <button class="tab-btn" onclick="cambiarTab('suerte_tarde')">LA SUERTE 6PM</button>
-            <button class="tab-btn" onclick="cambiarTab('anguila_6pm')">ANGUILA 6PM</button>
-            <button class="tab-btn" onclick="cambiarTab('anguila_dia_noche')">ANGUILA (10AM / 1PM / 9PM)</button>
-            <button class="tab-btn" onclick="cambiarTab('real')">REAL</button>
-            <button class="tab-btn" onclick="cambiarTab('loteka')">LOTEKA</button>
-            <button class="tab-btn" onclick="cambiarTab('primera')">LA PRIMERA</button>
-            <button class="tab-btn" onclick="cambiarTab('lotedom')">LOTEDOM</button>
-            <button class="tab-btn" onclick="cambiarTab('king_lottery')">KING LOTTERY</button>
-            <button class="tab-btn" onclick="cambiarTab('ny_florida')">NEW YORK / FL</button>
-        </div>
-
-        <button class="btn-wa" onclick="copiarWhatsApp()">📋 COPIAR JUGADA PARA WHATSAPP</button>
-
-        <div class="dictamen-box">
-            <h3>⚡ DICTAMEN DEL TITÁN <span id="dictamen_sala" style="font-size:10px;color:#94a3b8;"></span></h3>
-            <div class="dictamen-item"><b>Flujo de
