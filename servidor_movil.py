@@ -1,16 +1,20 @@
 import json
 import sqlite3
+import time
 from datetime import datetime
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="Shneyder IA Pro RD")
 DB_PATH = "loteria_master_ai.db"
 
+# Memoria de control Anti-Saturación (Protección silenciosa para no tumbar el servidor)
+PETICIONES_IP = {}
+
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 dia_hoy = DIAS_SEMANA[datetime.now().weekday()]
 
-# 1. PIZARRA OFICIAL DE PREMIOS (Con todas las Anguilas y sorteos internacionales)
+# 1. PIZARRA OFICIAL DE PREMIOS (Incluyendo todas las Anguilas y sorteos internacionales)
 RESULTADOS_OFICIALES = {
     "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
@@ -33,14 +37,14 @@ RESULTADOS_OFICIALES = {
     "euromillones": {"nombre": "Euromillones (Europa)", "premios": ["--", "--", "--", "--", "--"], "estrellas": ["-", "-"], "estado": "Sorteo Viernes 21:15h"}
 }
 
-# 2. AUDITORÍA OFICIAL LIMPIA (Inicia el 20 de Agosto 2026)
+# 2. AUDITORÍA OFICIAL LIMPIA
 HISTORIAL_AUDITORIA = [
     {
         "fecha": "20/08/2026",
-        "sala": "Motor Cuántico Titán IA",
-        "tipo": "🧠 AUTOAPRENDIZAJE ACTIVO",
-        "premio": "Matrices de Markov y Filtros Bayesianos calibrados con historial",
-        "detalle": "Optimizando pesos de predicción para la jornada de hoy (Anguila 10:00 AM / La Primera 12:00 PM / Real 12:55 PM)"
+        "sala": "Titán IA",
+        "tipo": "🌐 ACCESO PÚBLICO LIBRE",
+        "premio": "Sistema abierto y conectado con todas las tómbolas oficiales",
+        "detalle": "Monitoreando sorteos en tiempo real (Anguila 10:00 AM / La Primera 12:00 PM / Real 12:55 PM)"
     }
 ]
 
@@ -418,8 +422,26 @@ DATOS_LOTERIAS = {
     }
 }
 
+def verificar_anti_ddos(client_ip: str) -> bool:
+    """Permite hasta 60 peticiones por minuto por IP para evitar saturación"""
+    ahora = time.time()
+    if client_ip not in PETICIONES_IP:
+        PETICIONES_IP[client_ip] = []
+    PETICIONES_IP[client_ip] = [t for t in PETICIONES_IP[client_ip] if ahora - t < 60]
+    if len(PETICIONES_IP[client_ip]) > 60:
+        return False
+    PETICIONES_IP[client_ip].append(ahora)
+    return True
+
 @app.get("/", response_class=HTMLResponse)
-def index():
+def index(request: Request):
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    if not verificar_anti_ddos(client_ip):
+        return HTMLResponse(
+            "<h2>⚠️ SISTEMA EN PROTECCIÓN</h2><p>Has recargado demasiadas veces seguidas. Espera un momento.</p>",
+            status_code=429
+        )
+
     datos_json = json.dumps(DATOS_LOTERIAS)
     suenos_json = json.dumps(DICCIONARIO_SUENOS)
     auditoria_json = json.dumps(HISTORIAL_AUDITORIA)
@@ -439,7 +461,7 @@ def index():
             
             .main-wrapper {{ max-width: 900px; margin: 0 auto; }}
 
-            /* Cabecera limpia y profesional */
+            /* Cabecera con Nombre y Reloj en Vivo */
             .brand {{ 
                 display: flex; 
                 justify-content: space-between; 
