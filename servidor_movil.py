@@ -66,7 +66,6 @@ DATOS_LOTERIAS = {
     "todas": {
         "nombre": "Todas las Loterías (Consenso General)",
         "tipo_juego": "quiniela",
-        "hora_cierre": "20:45",
         "dictamen": {
             "flujo": "ALTO (50 al 99)",
             "decena": "Los 70s y 40s (70-79 / 40-49)",
@@ -102,7 +101,6 @@ DATOS_LOTERIAS = {
     "kino_leidsa": {
         "nombre": "VENTA ESPECIAL: KINO LEIDSA TV",
         "tipo_juego": "kino",
-        "hora_cierre": "20:50",
         "kino_data": {
             "estado_tombola": "🔥 TÓMBOLA CALIENTE: Consistencia 92.4% (Filtro Anti-Consecutivos Activo)",
             "paridad_optima": "⚖️ RATIO DE PARIDAD: 10 Pares / 10 Impares (82% de acierto)",
@@ -131,7 +129,6 @@ DATOS_LOTERIAS = {
     "primitiva_esp": {
         "nombre": "🇪🇸 LA PRIMITIVA (ESPAÑA)",
         "tipo_juego": "primitiva",
-        "hora_cierre": "21:15",
         "primitiva_data": {
             "reintegro": "7",
             "reintegro_fuerza": 94.5,
@@ -157,7 +154,6 @@ DATOS_LOTERIAS = {
     "euromillones": {
         "nombre": "🇪🇺 EUROMILLONES (EUROPA)",
         "tipo_juego": "euromillones",
-        "hora_cierre": "20:30",
         "euro_data": {
             "estrellas_fijas": ["03", "08"],
             "estrellas_reserva": ["02", "11"],
@@ -183,7 +179,6 @@ DATOS_LOTERIAS = {
     "nacional": {
         "nombre": "Gana Más (2:30 PM) / Nacional Noche (8:50 PM)",
         "tipo_juego": "quiniela",
-        "hora_cierre": "20:30",
         "dictamen": {
             "flujo": "MIXTO (Foco en 00-49 y 70-79)",
             "decena": "Los 00s y 40s (01-09 / 40-49)",
@@ -204,7 +199,6 @@ DATOS_LOTERIAS = {
     "leidsa": {
         "nombre": "Leidsa (8:55 PM)",
         "tipo_juego": "quiniela",
-        "hora_cierre": "20:45",
         "dictamen": {
             "flujo": "ALTO (Foco 60 al 99)",
             "decena": "Los 20s y 90s (20-29 / 90-99)",
@@ -225,7 +219,6 @@ DATOS_LOTERIAS = {
     "suerte_dia": {
         "nombre": "La Suerte Dominicana (12:30 PM)",
         "tipo_juego": "quiniela",
-        "hora_cierre": "12:15",
         "dictamen": {
             "flujo": "BAJO A MEDIO (20 al 60)",
             "decena": "Los 70s y 20s (70-79 / 20-29)",
@@ -246,7 +239,6 @@ DATOS_LOTERIAS = {
     "suerte_tarde": {
         "nombre": "La Suerte Dominicana (6:00 PM)",
         "tipo_juego": "quiniela",
-        "hora_cierre": "17:45",
         "dictamen": {
             "flujo": "BAJO (00 al 49)",
             "decena": "Los 10s y 00s (10-19 / 01-09)",
@@ -267,7 +259,6 @@ DATOS_LOTERIAS = {
     "anguila_6pm": {
         "nombre": "Anguila (6:00 PM)",
         "tipo_juego": "quiniela",
-        "hora_cierre": "17:50",
         "dictamen": {
             "flujo": "ALTO (70 al 99)",
             "decena": "Los 30s y 80s (30-39 / 80-89)",
@@ -288,7 +279,6 @@ DATOS_LOTERIAS = {
     "anguila_dia_noche": {
         "nombre": "Anguila (10 AM / 1 PM / 9 PM)",
         "tipo_juego": "quiniela",
-        "hora_cierre": "20:50",
         "dictamen": {
             "flujo": "ALTO (80 al 99)",
             "decena": "Los 80s y 90s (80-89 / 90-99)",
@@ -309,7 +299,6 @@ DATOS_LOTERIAS = {
     "real": {
         "nombre": "Lotería Real (12:55 PM)",
         "tipo_juego": "quiniela",
-        "hora_cierre": "12:40",
         "dictamen": {
             "flujo": "ALTO (50 al 89)",
             "decena": "Los 80s y 50s (80-89 / 50-59)",
@@ -330,7 +319,6 @@ DATOS_LOTERIAS = {
     "loteka": {
         "nombre": "Loteka (7:55 PM)",
         "tipo_juego": "quiniela",
-        "hora_cierre": "19:40",
         "dictamen": {
             "flujo": "ALTO (70 al 99)",
             "decena": "Los 70s y 90s (70-79 / 90-99)",
@@ -351,7 +339,6 @@ DATOS_LOTERIAS = {
     "primera": {
         "nombre": "La Primera (12:00 PM / 8:00 PM)",
         "tipo_juego": "quiniela",
-        "hora_cierre": "19:45",
         "dictamen": {
             "flujo": "BAJO (10 al 30)",
             "decena": "Los 10s y 70s (10-19 / 70-79)",
@@ -372,7 +359,6 @@ DATOS_LOTERIAS = {
     "lotedom": {
         "nombre": "LoteDom / El Quemaito (12:00 PM)",
         "tipo_juego": "quiniela",
-        "hora_cierre": "11:45",
         "dictamen": {
             "flujo": "BAJO (10 al 49)",
             "decena": "Los 10s y 60s (10-19 / 60-69)",
@@ -393,7 +379,6 @@ DATOS_LOTERIAS = {
     "king_lottery": {
         "nombre": "King Lottery (12:30 PM / 7:30 PM)",
         "tipo_juego": "quiniela",
-        "hora_cierre": "19:15",
         "dictamen": {
             "flujo": "ALTO (60 al 89)",
             "decena": "Los 60s y 20s (60-69 / 20-29)",
@@ -414,7 +399,6 @@ DATOS_LOTERIAS = {
     "ny_florida": {
         "nombre": "New York & Florida",
         "tipo_juego": "quiniela",
-        "hora_cierre": "22:15",
         "dictamen": {
             "flujo": "BAJO (00 al 39)",
             "decena": "Los 20s y 30s (20-29 / 30-39)",
@@ -455,7 +439,7 @@ def index():
             
             .main-wrapper {{ max-width: 900px; margin: 0 auto; }}
 
-            /* Cabecera con Nombre a la izquierda y Reloj en Vivo a la derecha */
+            /* Cabecera limpia y profesional */
             .brand {{ 
                 display: flex; 
                 justify-content: space-between; 
@@ -472,9 +456,6 @@ def index():
             .brand-right {{ text-align: right; }}
             .brand-date {{ font-size: 11px; color: #cbd5e1; font-weight: 600; }}
             .brand-clock {{ font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; letter-spacing: 1px; }}
-
-            .timer-box {{ background: linear-gradient(135deg, #7f1d1d, #450a0a); border: 1px solid #ef4444; border-radius: 10px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; }}
-            .timer-clock {{ color: #facc15; font-size: 15px; font-family: monospace; }}
 
             .search-box {{ background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 10px; margin-bottom: 12px; display: flex; gap: 8px; }}
             .search-input {{ flex: 1; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none; }}
@@ -536,7 +517,7 @@ def index():
     <body>
         <div class="main-wrapper">
             
-            <!-- ENCABEZADO CON NOMBRE Y RELOJ EN LA ESQUINA DERECHA -->
+            <!-- ENCABEZADO CON NOMBRE Y RELOJ EN VIVO -->
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
@@ -546,12 +527,6 @@ def index():
                     <div class="brand-date" id="live_date">{dia_hoy}</div>
                     <div class="brand-clock" id="live_time">--:--:--</div>
                 </div>
-            </div>
-
-            <!-- RELOJ DE CIERRE DE BANCA -->
-            <div class="timer-box">
-                <div>⏳ <span id="timer_sala">Cierre de Banca:</span></div>
-                <div class="timer-clock" id="timer_val">Calculando...</div>
             </div>
 
             <!-- PIZARRA OFICIAL DE NÚMEROS PREMIADOS -->
@@ -862,31 +837,6 @@ def index():
                 }}
             }}
 
-            function actualizarReloj() {{
-                const info = db[tabActual];
-                document.getElementById('timer_sala').innerText = "Cierre " + (info.nombre.split(' (')[0]) + ":";
-                
-                const ahora = new Date();
-                const [hStr, mStr] = (info.hora_cierre || "20:30").split(':');
-                const cierre = new Date();
-                cierre.setHours(parseInt(hStr), parseInt(mStr), 0, 0);
-
-                let diff = cierre - ahora;
-                if (diff < 0) {{
-                    document.getElementById('timer_val').innerText = "Sorteo Cerrado";
-                    document.getElementById('timer_val').style.color = "#94a3b8";
-                }} else {{
-                    let horas = Math.floor(diff / (1000 * 60 * 60));
-                    let mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    let segs = Math.floor((diff % (1000 * 60)) / 1000);
-                    document.getElementById('timer_val').innerText = 
-                        String(horas).padStart(2, '0') + ":" + 
-                        String(mins).padStart(2, '0') + ":" + 
-                        String(segs).padStart(2, '0');
-                    document.getElementById('timer_val').style.color = "#facc15";
-                }}
-            }}
-
             function actualizarVista() {{
                 const info = db[tabActual];
                 document.getElementById('nombre_sala').innerText = "(" + info.nombre + ")";
@@ -1181,10 +1131,8 @@ def index():
             cargarPizarraPremios();
             cargarAuditoria();
             setInterval(actualizarRelojCabecera, 1000);
-            setInterval(actualizarReloj, 1000);
             actualizarRelojCabecera();
             actualizarVista();
-            actualizarReloj();
         </script>
     </body>
     </html>
