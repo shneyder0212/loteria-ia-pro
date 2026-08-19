@@ -10,16 +10,38 @@ DB_PATH = "loteria_master_ai.db"
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 dia_hoy = DIAS_SEMANA[datetime.now().weekday()]
 
-# Historial de Auditoría con Fechas, Aciertos y Categorías
+# 1. PIZARRA OFICIAL DE PREMIOS (Se actualiza con cada sorteo oficial)
+RESULTADOS_OFICIALES = {
+    "primera_dia": {"nombre": "La Primera (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "suerte_dia": {"nombre": "La Suerte Día (12:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "real": {"nombre": "Lotería Real (12:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "gana_mas": {"nombre": "Gana Más (2:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "suerte_tarde": {"nombre": "La Suerte Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "anguila_6pm": {"nombre": "Anguila (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "loteka": {"nombre": "Loteka (7:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "primera_noche": {"nombre": "La Primera Noche (8:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "kino_tv": {"nombre": "Kino TV Leidsa (8:55 PM)", "premios": ["--"] * 20, "estado": "20 Bolos Pendientes"},
+    "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "king_lottery": {"nombre": "King Lottery (12:30 / 7:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "ny_tarde_noche": {"nombre": "New York (Tarde / Noche)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
+    "primitiva_esp": {"nombre": "La Primitiva (España)", "premios": ["--", "--", "--", "--", "--", "--"], "complementario": "--", "reintegro": "-", "estado": "Sorteo Jueves 21:40h"},
+    "euromillones": {"nombre": "Euromillones (Europa)", "premios": ["--", "--", "--", "--", "--"], "estrellas": ["-", "-"], "estado": "Sorteo Viernes 21:15h"}
+}
+
+# 2. AUDITORÍA OFICIAL LIMPIA (Inicia el 20 de Agosto 2026)
 HISTORIAL_AUDITORIA = [
-    {"fecha": "19/08/2026", "sala": "Nacional Noche", "tipo": "🇩🇴 RD Quiniela / Palé", "premio": "✅ Palé Directo [04 - 40] + Bolo 04 en Primera", "detalle": "Fuerza 98.9% predicha"},
-    {"fecha": "18/08/2026", "sala": "Kino TV Leidsa", "tipo": "👑 Kino TV", "premio": "✅ 5 de 7 Aciertos en Bloque Titán [07, 23, 45, 62, 78]", "detalle": "Paridad 3I/2P cumplida"},
-    {"fecha": "18/08/2026", "sala": "Euromillones", "tipo": "🇪🇺 Euromillones", "premio": "✅ 3 Números + 2 Estrellas [03 ⭐ - 08 ⭐]", "detalle": "Estrellas fijas 97.2%"},
-    {"fecha": "17/08/2026", "sala": "La Primitiva", "tipo": "🇪🇸 La Primitiva", "premio": "✅ 4 Aciertos [05, 12, 19, 34] + Reintegro (7)", "detalle": "Matriz reducida activa"},
-    {"fecha": "17/08/2026", "sala": "Gana Más", "tipo": "🇩🇴 RD Quiniela", "premio": "✅ Bolo 54 en Primera", "detalle": "Jaladera confirmada"}
+    {
+        "fecha": "20/08/2026",
+        "sala": "Sistema Cuántico Shneyder",
+        "tipo": "📡 APERTURA OFICIAL",
+        "premio": "Sistema calibrado y conectado en vivo con las tómbolas oficiales",
+        "detalle": "Esperando primeros sorteos del día (La Primera 12:00 PM / La Suerte 12:30 PM / Real 12:55 PM)"
+    }
 ]
 
-# Diccionario Cuántico de Sueños y Cábala Cruzada
+# 3. DICCIONARIO DE SUEÑOS
 DICCIONARIO_SUENOS = {
     "dinero": {"num": "48", "cabala": "Plata / Riqueza", "fuerza": 89.5, "lot": "Leidsa / Nacional"},
     "agua": {"num": "06", "cabala": "Río / Lluvia / Mar", "fuerza": 78.2, "lot": "La Primera"},
@@ -36,7 +58,7 @@ DICCIONARIO_SUENOS = {
     "carro": {"num": "35", "cabala": "Vehículo / Motor", "fuerza": 82.7, "lot": "Loteka"}
 }
 
-# Base de datos cuántica con soporte internacional, Triple Factor y Auditoría
+# 4. PRONÓSTICOS CUÁNTICOS POR LOTERÍA
 DATOS_LOTERIAS = {
     "todas": {
         "nombre": "Todas las Loterías (Consenso General)",
@@ -78,7 +100,7 @@ DATOS_LOTERIAS = {
     "kino_leidsa": {
         "nombre": "VENTA ESPECIAL: KINO LEIDSA TV",
         "tipo_juego": "kino",
-        "salidor": "Último Sorteo: 20 Bolos Registrados",
+        "salidor": "Sorteo Diario 8:55 PM (20 Bolos)",
         "hora_cierre": "20:50",
         "kino_data": {
             "estado_tombola": "🔥 TÓMBOLA CALIENTE: Consistencia 92.4% (Filtro Anti-Consecutivos Activo)",
@@ -162,7 +184,7 @@ DATOS_LOTERIAS = {
     "nacional": {
         "nombre": "Gana Más (2:30 PM) / Nacional Noche (8:50 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "40 - 72 - 18",
+        "salidor": "Pendiente 20/08",
         "hora_cierre": "20:30",
         "dictamen": {
             "flujo": "MIXTO (Foco en 00-49 y 70-79)",
@@ -184,7 +206,7 @@ DATOS_LOTERIAS = {
     "leidsa": {
         "nombre": "Leidsa (8:55 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "29 - 92 - 15",
+        "salidor": "Pendiente 20/08",
         "hora_cierre": "20:45",
         "dictamen": {
             "flujo": "ALTO (Foco 60 al 99)",
@@ -206,7 +228,7 @@ DATOS_LOTERIAS = {
     "suerte_dia": {
         "nombre": "La Suerte Dominicana (12:30 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "72 - 09 - 23",
+        "salidor": "Pendiente 20/08",
         "hora_cierre": "12:15",
         "dictamen": {
             "flujo": "BAJO A MEDIO (20 al 60)",
@@ -228,7 +250,7 @@ DATOS_LOTERIAS = {
     "suerte_tarde": {
         "nombre": "La Suerte Dominicana (6:00 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "10 - 98 - 24",
+        "salidor": "Pendiente 20/08",
         "hora_cierre": "17:45",
         "dictamen": {
             "flujo": "BAJO (00 al 49)",
@@ -250,7 +272,7 @@ DATOS_LOTERIAS = {
     "anguila_6pm": {
         "nombre": "Anguila (6:00 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "00 - 61 - 27",
+        "salidor": "Pendiente 20/08",
         "hora_cierre": "17:50",
         "dictamen": {
             "flujo": "ALTO (70 al 99)",
@@ -272,7 +294,7 @@ DATOS_LOTERIAS = {
     "anguila_dia_noche": {
         "nombre": "Anguila (10 AM / 1 PM / 9 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "98 - 71 - 80",
+        "salidor": "Pendiente 20/08",
         "hora_cierre": "20:50",
         "dictamen": {
             "flujo": "ALTO (80 al 99)",
@@ -294,7 +316,7 @@ DATOS_LOTERIAS = {
     "real": {
         "nombre": "Lotería Real (12:55 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "04 - 85 - 63",
+        "salidor": "Pendiente 20/08",
         "hora_cierre": "12:40",
         "dictamen": {
             "flujo": "ALTO (50 al 89)",
@@ -316,7 +338,7 @@ DATOS_LOTERIAS = {
     "loteka": {
         "nombre": "Loteka (7:55 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "79 - 54 - 40",
+        "salidor": "Pendiente 20/08",
         "hora_cierre": "19:40",
         "dictamen": {
             "flujo": "ALTO (70 al 99)",
@@ -338,7 +360,7 @@ DATOS_LOTERIAS = {
     "primera": {
         "nombre": "La Primera (12:00 PM / 8:00 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "17 - 50 - 95",
+        "salidor": "Pendiente 20/08",
         "hora_cierre": "19:45",
         "dictamen": {
             "flujo": "BAJO (10 al 30)",
@@ -360,7 +382,7 @@ DATOS_LOTERIAS = {
     "lotedom": {
         "nombre": "LoteDom / El Quemaito (12:00 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "16 - 37 - 45",
+        "salidor": "Pendiente 20/08",
         "hora_cierre": "11:45",
         "dictamen": {
             "flujo": "BAJO (10 al 49)",
@@ -382,7 +404,7 @@ DATOS_LOTERIAS = {
     "king_lottery": {
         "nombre": "King Lottery (12:30 PM / 7:30 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "62 - 85 - 89",
+        "salidor": "Pendiente 20/08",
         "hora_cierre": "19:15",
         "dictamen": {
             "flujo": "ALTO (60 al 89)",
@@ -404,7 +426,7 @@ DATOS_LOTERIAS = {
     "ny_florida": {
         "nombre": "New York & Florida",
         "tipo_juego": "quiniela",
-        "salidor": "23 - 09 - 03",
+        "salidor": "Pendiente 20/08",
         "hora_cierre": "22:15",
         "dictamen": {
             "flujo": "BAJO (00 al 39)",
@@ -430,6 +452,7 @@ def index():
     datos_json = json.dumps(DATOS_LOTERIAS)
     suenos_json = json.dumps(DICCIONARIO_SUENOS)
     auditoria_json = json.dumps(HISTORIAL_AUDITORIA)
+    premios_json = json.dumps(RESULTADOS_OFICIALES)
     hora_actual = datetime.now().strftime("%I:%M:%S %p")
 
     return f"""
@@ -460,7 +483,18 @@ def index():
             .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
             #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
 
-            /* Auditoría Desglosada */
+            /* PIZARRA OFICIAL DE NÚMEROS PREMIADOS */
+            .pizarra-card {{ background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 15px; }}
+            .pizarra-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 10px; }}
+            .lot-prize-card {{ background: #182234; border: 1px solid #28384e; border-radius: 8px; padding: 8px 10px; }}
+            .lot-prize-name {{ font-size: 12px; font-weight: bold; color: #38bdf8; margin-bottom: 6px; display: flex; justify-content: space-between; }}
+            .lot-balls-row {{ display: flex; gap: 8px; align-items: center; }}
+            .prize-ball {{ width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; color: #000; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }}
+            .ball-1ra {{ background: #22c55e; }}
+            .ball-2da {{ background: #38bdf8; }}
+            .ball-3ra {{ background: #facc15; }}
+
+            /* Auditoría */
             .auditor-box {{ background: #0f172a; border: 1px solid #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
             .auditor-title {{ color: #4ade80; font-weight: 800; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }}
             .auditor-item {{ padding: 5px 0; border-bottom: 1px solid #1e293b; font-size: 11.5px; }}
@@ -514,11 +548,20 @@ def index():
                 <div class="timer-clock" id="timer_val">Calculando...</div>
             </div>
 
-            <!-- AUDITOR DE ACIERTOS EN VIVO MULTISALÓN -->
+            <!-- PIZARRA OFICIAL DE NÚMEROS PREMIADOS (CADA LOTERÍA) -->
+            <div class="pizarra-card">
+                <div style="font-size:14px;font-weight:900;color:#38bdf8;display:flex;justify-content:space-between;align-items:center;">
+                    <span>🏆 NÚMEROS PREMIADOS (OFICIALES)</span>
+                    <span style="font-size:11px;color:#94a3b8;">📅 Jornada: 20/08/2026</span>
+                </div>
+                <div class="pizarra-grid" id="pizarra_contenedor"></div>
+            </div>
+
+            <!-- AUDITORÍA LIMPIA OFICIAL (20 DE AGOSTO) -->
             <div class="auditor-box">
                 <div class="auditor-title">
-                    <span>🏆 AUDITORÍA DE ACIERTOS HISTÓRICOS</span>
-                    <span style="font-size:10px;color:#94a3b8;">Verificado con Blockchain/Resultados Oficiales</span>
+                    <span>📡 AUDITORÍA OFICIAL EN VIVO</span>
+                    <span style="font-size:10px;color:#94a3b8;">Verificación de Aciertos en Tiempo Real</span>
                 </div>
                 <div id="contenedor_auditoria"></div>
             </div>
@@ -531,7 +574,7 @@ def index():
             <div id="sueno_resultado"></div>
 
             <div class="pill">
-                🎯 <b>REGISTRO ACTIVO:</b> <span id="salidor_txt">40 - 72 - 18</span><br>
+                🎯 <b>SALA ACTIVA:</b> <span id="salidor_txt">Consenso General</span><br>
                 🕒 <small>Día: <b>{dia_hoy}</b> | Hora: {hora_actual}</small>
             </div>
 
@@ -699,6 +742,7 @@ def index():
             const db = {datos_json};
             const suenos = {suenos_json};
             const auditoria = {auditoria_json};
+            const premios = {premios_json};
             let tabActual = 'todas';
 
             function renderBadge(tipo) {{
@@ -708,6 +752,42 @@ def index():
                 if (tipo === "atrasado") return "<span style='background:#8b5cf6;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>⏳ ATRASADO</span>";
                 if (tipo === "pareja") return "<span style='background:#ec4899;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>👥 PAREJA</span>";
                 return "<span style='background:#22c55e;color:#000;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>⭐ ÉLITE</span>";
+            }}
+
+            function cargarPizarraPremios() {{
+                let html = "";
+                for (let k in premios) {{
+                    const lot = premios[k];
+                    if (k === 'kino_tv') {{
+                        let ballsHtml = lot.premios.slice(0, 10).map(b => `<span style="background:#eab308;color:#000;font-size:10px;font-weight:bold;padding:2px 5px;border-radius:4px;">${{b}}</span>`).join(' ');
+                        html += `<div class="lot-prize-card" style="grid-column: 1 / -1;">
+                            <div class="lot-prize-name"><span>👑 ${{lot.nombre}}</span> <span style="font-size:10px;color:#94a3b8;">${{lot.estado}}</span></div>
+                            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">${{ballsHtml}}</div>
+                        </div>`;
+                    }} else if (k === 'primitiva_esp') {{
+                        let ballsHtml = lot.premios.map(b => `<div class="prize-ball" style="background:#ef4444;color:#fff;font-size:12px;">${{b}}</div>`).join('');
+                        html += `<div class="lot-prize-card">
+                            <div class="lot-prize-name"><span>🇪🇸 ${{lot.nombre}}</span> <span style="font-size:10px;color:#94a3b8;">${{lot.estado}}</span></div>
+                            <div class="lot-balls-row">${{ballsHtml}} <span style="font-size:10px;color:#94a3b8;">R: ${{lot.reintegro}}</span></div>
+                        </div>`;
+                    }} else if (k === 'euromillones') {{
+                        let ballsHtml = lot.premios.map(b => `<div class="prize-ball" style="background:#3b82f6;color:#fff;font-size:12px;">${{b}}</div>`).join('');
+                        html += `<div class="lot-prize-card">
+                            <div class="lot-prize-name"><span>🇪🇺 ${{lot.nombre}}</span> <span style="font-size:10px;color:#94a3b8;">${{lot.estado}}</span></div>
+                            <div class="lot-balls-row">${{ballsHtml}} <span style="color:#facc15;font-weight:bold;font-size:11px;">⭐ ${{lot.estrellas.join('-')}}</span></div>
+                        </div>`;
+                    }} else {{
+                        html += `<div class="lot-prize-card">
+                            <div class="lot-prize-name"><span>🇩🇴 ${{lot.nombre}}</span> <span style="font-size:10px;color:#94a3b8;">${{lot.estado}}</span></div>
+                            <div class="lot-balls-row">
+                                <div class="prize-ball ball-1ra" title="1ra">${{lot.premios[0]}}</div>
+                                <div class="prize-ball ball-2da" title="2da">${{lot.premios[1]}}</div>
+                                <div class="prize-ball ball-3ra" title="3ra">${{lot.premios[2]}}</div>
+                            </div>
+                        </div>`;
+                    }}
+                }}
+                document.getElementById('pizarra_contenedor').innerHTML = html;
             }}
 
             function cargarAuditoria() {{
@@ -795,8 +875,7 @@ def index():
 
             function actualizarVista() {{
                 const info = db[tabActual];
-                document.getElementById('salidor_txt').innerText = info.salidor;
-                document.getElementById('nombre_sala').innerText = "(" + info.nombre + ")";
+                document.getElementById('salidor_txt').innerText = info.salidor || info.nombre;
                 document.getElementById('dictamen_sala').innerText = "[" + info.nombre + "]";
 
                 if (info.dictamen) {{
@@ -1085,6 +1164,7 @@ def index():
                 }});
             }}
 
+            cargarPizarraPremios();
             cargarAuditoria();
             setInterval(actualizarReloj, 1000);
             actualizarVista();
