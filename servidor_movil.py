@@ -10,7 +10,7 @@ DB_PATH = "loteria_master_ai.db"
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 dia_hoy = DIAS_SEMANA[datetime.now().weekday()]
 
-# 1. PIZARRA OFICIAL DE PREMIOS (Incluyendo todos los sorteos de la Anguilita)
+# 1. PIZARRA OFICIAL DE PREMIOS (Incluyendo todas las Anguilas y sorteos internacionales)
 RESULTADOS_OFICIALES = {
     "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
     "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente sorteo 20/08"},
@@ -33,7 +33,7 @@ RESULTADOS_OFICIALES = {
     "euromillones": {"nombre": "Euromillones (Europa)", "premios": ["--", "--", "--", "--", "--"], "estrellas": ["-", "-"], "estado": "Sorteo Viernes 21:15h"}
 }
 
-# 2. AUDITORÍA OFICIAL LIMPIA (Inicia el 20 de Agosto 2026)
+# 2. AUDITORÍA OFICIAL LIMPIA (20 de Agosto 2026)
 HISTORIAL_AUDITORIA = [
     {
         "fecha": "20/08/2026",
@@ -66,7 +66,6 @@ DATOS_LOTERIAS = {
     "todas": {
         "nombre": "Todas las Loterías (Consenso General)",
         "tipo_juego": "quiniela",
-        "salidor": "40 - 72 - 18",
         "hora_cierre": "20:45",
         "dictamen": {
             "flujo": "ALTO (50 al 99)",
@@ -103,7 +102,6 @@ DATOS_LOTERIAS = {
     "kino_leidsa": {
         "nombre": "VENTA ESPECIAL: KINO LEIDSA TV",
         "tipo_juego": "kino",
-        "salidor": "Sorteo Diario 8:55 PM (20 Bolos)",
         "hora_cierre": "20:50",
         "kino_data": {
             "estado_tombola": "🔥 TÓMBOLA CALIENTE: Consistencia 92.4% (Filtro Anti-Consecutivos Activo)",
@@ -133,7 +131,6 @@ DATOS_LOTERIAS = {
     "primitiva_esp": {
         "nombre": "🇪🇸 LA PRIMITIVA (ESPAÑA)",
         "tipo_juego": "primitiva",
-        "salidor": "Sorteos: Lunes, Jueves y Sábados (21:40h)",
         "hora_cierre": "21:15",
         "primitiva_data": {
             "reintegro": "7",
@@ -160,7 +157,6 @@ DATOS_LOTERIAS = {
     "euromillones": {
         "nombre": "🇪🇺 EUROMILLONES (EUROPA)",
         "tipo_juego": "euromillones",
-        "salidor": "Sorteos: Martes y Viernes (21:15h)",
         "hora_cierre": "20:30",
         "euro_data": {
             "estrellas_fijas": ["03", "08"],
@@ -187,7 +183,6 @@ DATOS_LOTERIAS = {
     "nacional": {
         "nombre": "Gana Más (2:30 PM) / Nacional Noche (8:50 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "Pendiente 20/08",
         "hora_cierre": "20:30",
         "dictamen": {
             "flujo": "MIXTO (Foco en 00-49 y 70-79)",
@@ -209,7 +204,6 @@ DATOS_LOTERIAS = {
     "leidsa": {
         "nombre": "Leidsa (8:55 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "Pendiente 20/08",
         "hora_cierre": "20:45",
         "dictamen": {
             "flujo": "ALTO (Foco 60 al 99)",
@@ -231,7 +225,6 @@ DATOS_LOTERIAS = {
     "suerte_dia": {
         "nombre": "La Suerte Dominicana (12:30 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "Pendiente 20/08",
         "hora_cierre": "12:15",
         "dictamen": {
             "flujo": "BAJO A MEDIO (20 al 60)",
@@ -253,7 +246,6 @@ DATOS_LOTERIAS = {
     "suerte_tarde": {
         "nombre": "La Suerte Dominicana (6:00 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "Pendiente 20/08",
         "hora_cierre": "17:45",
         "dictamen": {
             "flujo": "BAJO (00 al 49)",
@@ -275,7 +267,6 @@ DATOS_LOTERIAS = {
     "anguila_6pm": {
         "nombre": "Anguila (6:00 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "Pendiente 20/08",
         "hora_cierre": "17:50",
         "dictamen": {
             "flujo": "ALTO (70 al 99)",
@@ -297,7 +288,6 @@ DATOS_LOTERIAS = {
     "anguila_dia_noche": {
         "nombre": "Anguila (10 AM / 1 PM / 9 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "Pendiente 20/08",
         "hora_cierre": "20:50",
         "dictamen": {
             "flujo": "ALTO (80 al 99)",
@@ -319,7 +309,6 @@ DATOS_LOTERIAS = {
     "real": {
         "nombre": "Lotería Real (12:55 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "Pendiente 20/08",
         "hora_cierre": "12:40",
         "dictamen": {
             "flujo": "ALTO (50 al 89)",
@@ -341,7 +330,6 @@ DATOS_LOTERIAS = {
     "loteka": {
         "nombre": "Loteka (7:55 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "Pendiente 20/08",
         "hora_cierre": "19:40",
         "dictamen": {
             "flujo": "ALTO (70 al 99)",
@@ -363,7 +351,6 @@ DATOS_LOTERIAS = {
     "primera": {
         "nombre": "La Primera (12:00 PM / 8:00 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "Pendiente 20/08",
         "hora_cierre": "19:45",
         "dictamen": {
             "flujo": "BAJO (10 al 30)",
@@ -385,7 +372,6 @@ DATOS_LOTERIAS = {
     "lotedom": {
         "nombre": "LoteDom / El Quemaito (12:00 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "Pendiente 20/08",
         "hora_cierre": "11:45",
         "dictamen": {
             "flujo": "BAJO (10 al 49)",
@@ -407,7 +393,6 @@ DATOS_LOTERIAS = {
     "king_lottery": {
         "nombre": "King Lottery (12:30 PM / 7:30 PM)",
         "tipo_juego": "quiniela",
-        "salidor": "Pendiente 20/08",
         "hora_cierre": "19:15",
         "dictamen": {
             "flujo": "ALTO (60 al 89)",
@@ -429,7 +414,6 @@ DATOS_LOTERIAS = {
     "ny_florida": {
         "nombre": "New York & Florida",
         "tipo_juego": "quiniela",
-        "salidor": "Pendiente 20/08",
         "hora_cierre": "22:15",
         "dictamen": {
             "flujo": "BAJO (00 al 39)",
@@ -456,7 +440,6 @@ def index():
     suenos_json = json.dumps(DICCIONARIO_SUENOS)
     auditoria_json = json.dumps(HISTORIAL_AUDITORIA)
     premios_json = json.dumps(RESULTADOS_OFICIALES)
-    hora_actual = datetime.now().strftime("%I:%M:%S %p")
 
     return f"""
     <!DOCTYPE html>
@@ -472,12 +455,24 @@ def index():
             
             .main-wrapper {{ max-width: 900px; margin: 0 auto; }}
 
-            .brand {{ text-align: center; background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid #38bdf8; box-shadow: 0 4px 10px rgba(56,189,248,0.15); }}
-            .brand h1 {{ font-size: 22px; color: #38bdf8; margin: 0; font-weight: 900; letter-spacing: 1px; }}
-            .brand p {{ font-size: 11px; color: #94a3b8; margin: 3px 0 0 0; text-transform: uppercase; letter-spacing: 2px; }}
-            
-            .pill {{ background: #111827; padding: 10px; border-radius: 10px; text-align: center; font-size: 13px; margin-bottom: 12px; border: 1px solid #374151; }}
-            
+            /* Cabecera con Nombre a la izquierda y Reloj en Vivo a la derecha */
+            .brand {{ 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                background: linear-gradient(135deg, #1e293b, #0f172a); 
+                border-radius: 12px; 
+                padding: 12px 16px; 
+                margin-bottom: 12px; 
+                border: 1px solid #38bdf8; 
+                box-shadow: 0 4px 10px rgba(56,189,248,0.15); 
+            }}
+            .brand-left h1 {{ font-size: 20px; color: #38bdf8; margin: 0; font-weight: 900; letter-spacing: 1px; }}
+            .brand-left p {{ font-size: 10px; color: #94a3b8; margin: 3px 0 0 0; text-transform: uppercase; letter-spacing: 2px; }}
+            .brand-right {{ text-align: right; }}
+            .brand-date {{ font-size: 11px; color: #cbd5e1; font-weight: 600; }}
+            .brand-clock {{ font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; letter-spacing: 1px; }}
+
             .timer-box {{ background: linear-gradient(135deg, #7f1d1d, #450a0a); border: 1px solid #ef4444; border-radius: 10px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: bold; }}
             .timer-clock {{ color: #facc15; font-size: 15px; font-family: monospace; }}
 
@@ -540,9 +535,17 @@ def index():
     </head>
     <body>
         <div class="main-wrapper">
+            
+            <!-- ENCABEZADO CON NOMBRE Y RELOJ EN LA ESQUINA DERECHA -->
             <div class="brand">
-                <h1>SHNEYDER IA PRO RD</h1>
-                <p>Sistema Cuántico Multimoneda (RD$ & €)</p>
+                <div class="brand-left">
+                    <h1>SHNEYDER IA PRO RD</h1>
+                    <p>Sistema Cuántico Multimoneda</p>
+                </div>
+                <div class="brand-right">
+                    <div class="brand-date" id="live_date">{dia_hoy}</div>
+                    <div class="brand-clock" id="live_time">--:--:--</div>
+                </div>
             </div>
 
             <!-- RELOJ DE CIERRE DE BANCA -->
@@ -551,7 +554,7 @@ def index():
                 <div class="timer-clock" id="timer_val">Calculando...</div>
             </div>
 
-            <!-- PIZARRA OFICIAL DE NÚMEROS PREMIADOS (CADA LOTERÍA + ANGUILAS) -->
+            <!-- PIZARRA OFICIAL DE NÚMEROS PREMIADOS -->
             <div class="pizarra-card">
                 <div style="font-size:14px;font-weight:900;color:#38bdf8;display:flex;justify-content:space-between;align-items:center;">
                     <span>🏆 NÚMEROS PREMIADOS (OFICIALES)</span>
@@ -560,7 +563,7 @@ def index():
                 <div class="pizarra-grid" id="pizarra_contenedor"></div>
             </div>
 
-            <!-- AUDITORÍA LIMPIA OFICIAL (20 DE AGOSTO) -->
+            <!-- AUDITORÍA LIMPIA OFICIAL -->
             <div class="auditor-box">
                 <div class="auditor-title">
                     <span>📡 AUDITORÍA OFICIAL EN VIVO</span>
@@ -575,11 +578,6 @@ def index():
                 <button class="search-btn" onclick="buscarSueno()">🔮 CONSULTAR</button>
             </div>
             <div id="sueno_resultado"></div>
-
-            <div class="pill">
-                🎯 <b>SALA ACTIVA:</b> <span id="salidor_txt">Consenso General</span><br>
-                🕒 <small>Día: <b>{dia_hoy}</b> | Hora: {hora_actual}</small>
-            </div>
 
             <!-- SELECTOR DE LOTERÍAS -->
             <div class="tabs-scroll">
@@ -757,6 +755,17 @@ def index():
                 return "<span style='background:#22c55e;color:#000;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>⭐ ÉLITE</span>";
             }}
 
+            function actualizarRelojCabecera() {{
+                const ahora = new Date();
+                const opcionesFecha = {{ weekday: 'short', day: '2-digit', month: 'short' }};
+                document.getElementById('live_date').innerText = ahora.toLocaleDateString('es-ES', opcionesFecha).toUpperCase();
+                
+                let horas = String(ahora.getHours()).padStart(2, '0');
+                let minutos = String(ahora.getMinutes()).padStart(2, '0');
+                let segundos = String(ahora.getSeconds()).padStart(2, '0');
+                document.getElementById('live_time').innerText = horas + ":" + minutos + ":" + segundos;
+            }}
+
             function cargarPizarraPremios() {{
                 let html = "";
                 for (let k in premios) {{
@@ -880,7 +889,7 @@ def index():
 
             function actualizarVista() {{
                 const info = db[tabActual];
-                document.getElementById('salidor_txt').innerText = info.salidor || info.nombre;
+                document.getElementById('nombre_sala').innerText = "(" + info.nombre + ")";
                 document.getElementById('dictamen_sala').innerText = "[" + info.nombre + "]";
 
                 if (info.dictamen) {{
@@ -1171,7 +1180,9 @@ def index():
 
             cargarPizarraPremios();
             cargarAuditoria();
+            setInterval(actualizarRelojCabecera, 1000);
             setInterval(actualizarReloj, 1000);
+            actualizarRelojCabecera();
             actualizarVista();
             actualizarReloj();
         </script>
