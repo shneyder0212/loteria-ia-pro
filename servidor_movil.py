@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum Max v21.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum Max v22.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
@@ -162,7 +162,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     lot_fuerte_principal = pool_salas[0]
     lot_fuerte_respaldo = pool_salas[1]
 
-    # --- QUINIELAS RD ---
     numeros_rd = list(range(100))
     rng.shuffle(numeros_rd)
     todas_pool = []
@@ -182,7 +181,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"cruse": f"{n2} (Tarde) × {n4} (Noche)", "salas": "Gana Más 2:30 PM × Nacional Noche 8:50 PM", "fuerza": 96.1}
     ]
 
-    # --- KINO TV LEIDSA (1 AL 80) ---
     kino_duenos = [f"{n:02d}" for n in sorted(rng.sample(range(1, 81), 10))]
     def gen_bloque_kino(cant):
         return " - ".join([f"{n:02d}" for n in sorted(rng.sample(range(1, 81), cant))])
@@ -197,7 +195,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"bloque": gen_bloque_kino(7), "paridad": "4 Pares / 3 Impares", "fuerza": 96.5, "ia_origen": "IA-06 Bayesiana de Bolos Base"}
     ]
 
-    # --- LA PRIMITIVA ESPAÑA (1 AL 49) ---
     def gen_primitiva_optima():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 50), 6))
@@ -216,7 +213,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"combinacion": " - ".join([f"{n:02d}" for n in prim_nums2]), "reintegro": str(rng.randint(0, 9)), "fuerza": 96.5, "tipo": "IA-09 Algoritmo Delta"}
     ]
 
-    # --- EUROMILLONES EUROPA (5/50 + 2/12) ---
     def gen_euro_valida():
         for _ in range(500):
             comb = sorted(rng.sample(range(1, 51), 5))
@@ -227,7 +223,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     euro_nums = gen_euro_valida()
     euro_e1, euro_e2 = f"{rng.randint(1, 6):02d}", f"{rng.randint(7, 12):02d}"
 
-    # --- EURODREAMS (6/40 + SUEÑO 1-5) ---
     def gen_eurodreams():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 41), 6))
@@ -249,7 +244,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         ]
     }
 
-    # --- ANGUILA CASCADA 4X ---
     anguila_cascada_data = {
         "10am": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 98.1, "estado": "Tanda Apertura"},
         "1pm": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 97.5, "estado": "Cascada Mediodía"},
@@ -609,7 +603,6 @@ def index(request: Request):
             .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
             #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
 
-            /* TODAS LAS PESTAÑAS ACTIVAS */
             .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
             .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
             .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
@@ -685,7 +678,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum Max v21.0 - Panel Completo</p>
+                    <p>Titan Quantum Max v22.0 - Panel Completo</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -766,7 +759,6 @@ def index(request: Request):
             </div>
             <div id="sueno_resultado"></div>
 
-            <!-- TODAS LAS PESTAÑAS DISPONIBLES -->
             <div class="tabs-scroll">
                 <button class="tab-btn active" onclick="cambiarTab('todas')">🌐 TODAS (RD)</button>
                 <button class="tab-btn tab-kino" onclick="cambiarTab('kino_leidsa')">👑 KINO LEIDSA</button>
@@ -823,7 +815,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- SECCIÓN KINO LEIDSA TV -->
             <div id="seccion_kino" style="display:none;">
                 <div class="card" style="border: 2px solid #eab308; background:#18181b;">
                     <h2 style="color: #facc15;">👑 LOS 10 DUEÑOS DEL KINO (IA-06 BAYESIANA DEL MES)</h2>
@@ -850,7 +841,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- SECCIÓN LA PRIMITIVA ESPAÑA -->
             <div id="seccion_primitiva" style="display:none;">
                 <div class="card" style="border: 2px solid #ef4444; background:#18181b;">
                     <h2 style="color: #f87171;">🇪🇸 NÚMEROS BASE & RADAR DEL REINTEGRO (IA-01 / IA-10)</h2>
@@ -871,7 +861,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- SECCIÓN EUROMILLONES -->
             <div id="seccion_euromillones" style="display:none;">
                 <div class="card" style="border: 2px solid #3b82f6; background:#18181b;">
                     <h2 style="color: #60a5fa;">🇪🇺 RED DE AFINIDAD & ESTRELLAS FIJAS</h2>
@@ -892,7 +881,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- SECCIÓN EURODREAMS -->
             <div id="seccion_eurodreams" style="display:none;">
                 <div class="card" style="border: 2px solid #8b5cf6; background:#18181b;">
                     <h2 style="color: #c084fc;">🇪🇺 RED GAUSSIANA EURODREAMS (6/40 + SUEÑO)</h2>
@@ -912,7 +900,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- SECCIÓN ANGUILA CASCADA 4X -->
             <div id="seccion_anguila" style="display:none;">
                 <div class="card" style="border: 2px solid #10b981; background:#18181b;">
                     <h2 style="color: #34d399;">🐍 MATRIZ CASCADA 4X (10 AM / 1 PM / 6 PM / 9 PM)</h2>
@@ -923,7 +910,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- TABLAS QUINIELAS TRADICIONALES -->
             <div id="seccion_tradicional">
                 <div class="card" style="border: 2px solid #f59e0b; background: linear-gradient(135deg, #1c1917, #0c0a09);">
                     <h2 style="color: #fbbf24;">⚡ SUPER PALÉ CRUZADO INTELIGENTE (PAGO RD$ 3,000 × 1)</h2>
