@@ -2,43 +2,19 @@ import json
 import sqlite3
 import time
 import random
-import re
-import ssl
-import urllib.request
-import urllib.parse
 from datetime import datetime, timedelta
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v32.0 Total")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v33.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
-RESULTADOS_OFICIALES_REALES = {}
-
-ESTADO_MOTOR = {
-    "ultima_actualizacion": "--:--:--",
-    "ciclos_completados": 0,
-    "estado_ia": "Iniciando...",
-    "fase_dia": "Tarde / Noche",
-    "eficiencia_global": "99.8%",
-    "scraper_log": "Iniciando captura oficial..."
-}
-
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS control_motor_24_7 (
-            id INTEGER PRIMARY KEY,
-            timestamp TEXT,
-            ciclos INTEGER,
-            estado TEXT,
-            eficiencia TEXT
-        )
-    """)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS resultados_guardados (
             clave TEXT PRIMARY KEY,
@@ -77,118 +53,6 @@ TABLA_JALADERA = {
 def obtener_jalamatico(num_str):
     return TABLA_JALADERA.get(num_str, [num_str[::-1], f"{(int(num_str)+10)%100:02d}", f"{(int(num_str)+50)%100:02d}"])
 
-# SCRAPER ROBUSTO DIRECTO
-def ejecutar_scraper_profundo():
-    global RESULTADOS_OFICIALES_REALES
-    _, fecha_str, _ = obtener_fechas_rd()
-
-    pizarra = {
-        "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 94%"},
-        "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
-        "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟡 Regular 82%"},
-        "suerte_dia": {"nombre": "La Suerte Día (12:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 91%"},
-        "real": {"nombre": "Lotería Real (12:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 98%"},
-        "anguila_1pm": {"nombre": "Anguila Mediodía (1:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟡 Regular 84%"},
-        "gana_mas": {"nombre": "Gana Más (2:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 97%"},
-        "suerte_tarde": {"nombre": "La Suerte Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🔴 Dispersión 68%"},
-        "anguila_6pm": {"nombre": "Anguila Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 93%"},
-        "loteka": {"nombre": "Loteka (7:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🔴 Dispersión 72%"},
-        "primera_noche": {"nombre": "La Primera Noche (8:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 95%"},
-        "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 98%"},
-        "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 99%"},
-        "anguila_9pm": {"nombre": "Anguila Noche (9:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
-        "kino_tv": {"nombre": "Kino TV Leidsa (8:55 PM)", "premios": ["--"] * 20, "estado": "Pendiente 20 Bolos", "volatilidad": "🟢 20 Bolos"},
-        "primitiva_esp": {"nombre": "La Primitiva (España)", "premios": ["--", "--", "--", "--", "--", "--"], "complementario": "--", "reintegro": "-", "estado": "Sorteo Jueves/Sábado 21:40h", "volatilidad": "🟢 Gaussiana"},
-        "euromillones": {"nombre": "Euromillones (Europa)", "premios": ["--", "--", "--", "--", "--"], "estrellas": ["-", "-"], "estado": "Sorteo Martes/Viernes 21:15h", "volatilidad": "🟢 Cuántica"},
-        "eurodreams_esp": {"nombre": "EuroDreams (Europa)", "premios": ["--", "--", "--", "--", "--", "--"], "sueno": "-", "estado": "Sorteo Lunes/Jueves 21:00h", "volatilidad": "🟢 6/40"}
-    }
-
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-        cur.execute("SELECT clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad FROM resultados_guardados WHERE fecha = ?", (fecha_str,))
-        for f in cur.fetchall():
-            c_key, _, b1, b2, b3, st, vol = f
-            if c_key in pizarra and b1 != "--":
-                pizarra[c_key]["premios"] = [b1, b2, b3]
-                pizarra[c_key]["estado"] = st
-                pizarra[c_key]["volatilidad"] = vol
-        conn.close()
-    except Exception:
-        pass
-
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-
-    url_base = "https://loteriasdominicanas.com/"
-    proxies = [
-        f"https://api.allorigins.win/raw?url={urllib.parse.quote(url_base)}",
-        f"https://api.codetabs.com/v1/proxy?quest={urllib.parse.quote(url_base)}",
-        url_base
-    ]
-
-    html = ""
-    for p_url in proxies:
-        try:
-            req = urllib.request.Request(p_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/122.0.0.0 Safari/537.36'})
-            with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
-                data = resp.read().decode('utf-8', errors='ignore')
-                if "game-" in data or "score" in data or "Primera" in data:
-                    html = data
-                    break
-        except Exception:
-            continue
-
-    capturas = 0
-    if html:
-        bloques = re.findall(r'<div[^>]*class="[^"]*game-[^"]*"[^>]*>[\s\S]*?</div>\s*</div>', html)
-        for b in bloques:
-            bolos = re.findall(r'<(?:span|div)[^>]*class="[^"]*score[^"]*"[^>]*>\s*(\d{1,2})\s*</', b, re.IGNORECASE)
-            if len(bolos) < 3: bolos = re.findall(r'>\s*(\d{1,2})\s*</span>', b)
-            if len(bolos) < 3: bolos = re.findall(r'\b(\d{2})\b', b)
-
-            if len(bolos) >= 3:
-                trio = [bolos[0].zfill(2), bolos[1].zfill(2), bolos[2].zfill(2)]
-                bl = b.lower()
-
-                def guardar(clave):
-                    nonlocal capturas
-                    if pizarra[clave]["premios"][0] == "--":
-                        pizarra[clave]["premios"] = trio
-                        pizarra[clave]["estado"] = "Oficial RD"
-                        capturas += 1
-                        try:
-                            c_db = sqlite3.connect(DB_PATH)
-                            cur_db = c_db.cursor()
-                            cur_db.execute("""
-                                INSERT OR REPLACE INTO resultados_guardados (clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad, fecha)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                            """, (clave, pizarra[clave]["nombre"], trio[0], trio[1], trio[2], "Oficial RD", pizarra[clave]["volatilidad"], fecha_str))
-                            c_db.commit()
-                            c_db.close()
-                        except Exception:
-                            pass
-
-                if "primera" in bl and ("12" in bl or "día" in bl or "dia" in bl): guardar("primera_dia")
-                elif "gana más" in bl or "gana-mas" in bl: guardar("gana_mas")
-                elif "real" in bl: guardar("real")
-                elif "primera" in bl and ("noche" in bl or "8" in bl or "20" in bl): guardar("primera_noche")
-                elif "leidsa" in bl: guardar("leidsa")
-                elif "nacional" in bl and ("noche" in bl or "8:50" in bl): guardar("nacional_noche")
-                elif "loteka" in bl: guardar("loteka")
-                elif "lotedom" in bl: guardar("lotedom")
-                elif "suerte" in bl and ("12" in bl or "día" in bl or "dia" in bl): guardar("suerte_dia")
-                elif "suerte" in bl and ("6" in bl or "18" in bl or "tarde" in bl): guardar("suerte_tarde")
-                elif "anguila" in bl and "10" in bl: guardar("anguila_10am")
-                elif "anguila" in bl and ("1" in bl or "13" in bl): guardar("anguila_1pm")
-                elif "anguila" in bl and ("6" in bl or "18" in bl): guardar("anguila_6pm")
-                elif "anguila" in bl and ("9" in bl or "21" in bl): guardar("anguila_9pm")
-
-    RESULTADOS_OFICIALES_REALES = pizarra
-    ESTADO_MOTOR["scraper_log"] = f"Última lectura: {capturas} salas confirmadas"
-
-# MOTOR CON ANCLAJE MATEMÁTICO 100% BLINDADO
 def cluster_universal_15_ia(hora_rd, dia_nombre):
     seed_base = int(hora_rd.strftime("%Y%m%d"))
     es_tarde_noche = hora_rd.hour >= 18
@@ -202,14 +66,13 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     lot_fuerte_principal = pool_salas[0]
     lot_fuerte_respaldo = pool_salas[1]
 
-    # ANCLAJE ESTRICTO: decena_base + terminal
+    # ANCLAJE ESTRICTO MATEMÁTICO (Evita el error del 26 fuera de rango)
     decenas_lista = [("00-09", 0), ("10-19", 10), ("20-29", 20), ("40-49", 40), ("70-79", 70), ("80-89", 80)]
     decena_elegida_nombre, decena_base = rng.choice(decenas_lista)
     
     terminal_1 = rng.choice([6, 8, 2, 4, 7])
     terminal_2 = rng.choice([8, 2, 9, 3, 5]) if terminal_1 != 8 else 2
 
-    # n1 ES OBLIGATORIAMENTE EL NÚMERO EXACTO DE LA DECENA CRÍTICA
     n1_int = decena_base + (terminal_1 % 10)
     n1 = f"{n1_int:02d}"
 
@@ -432,21 +295,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         }
     }
 
-def motor_segundo_plano():
-    while True:
-        try:
-            hora_rd, _, _ = obtener_fechas_rd()
-            ejecutar_scraper_profundo()
-            ESTADO_MOTOR["ultima_actualizacion"] = hora_rd.strftime("%H:%M:%S")
-            ESTADO_MOTOR["ciclos_completados"] += 1
-            ESTADO_MOTOR["estado_ia"] = f"Motor 15 IAs Activo (#{ESTADO_MOTOR['ciclos_completados']})"
-        except Exception:
-            pass
-        time.sleep(300)
-
-hilo_ia = threading.Thread(target=motor_segundo_plano, daemon=True)
-hilo_ia.start()
-
 DICCIONARIO_SUENOS = {
     "dinero": {"num": "48", "cabala": "Plata / Riqueza", "fuerza": 89.5, "lot": "Leidsa / Nacional"},
     "agua": {"num": "06", "cabala": "Río / Lluvia / Mar", "fuerza": 78.2, "lot": "La Primera"},
@@ -459,38 +307,47 @@ DICCIONARIO_SUENOS = {
     "casa": {"num": "04", "cabala": "Propiedad / Techo", "fuerza": 98.9, "lot": "Gana Mas / Nacional"}
 }
 
-def verificar_anti_ddos(client_ip: str) -> bool:
-    ahora = time.time()
-    if client_ip not in PETICIONES_IP:
-        PETICIONES_IP[client_ip] = []
-    PETICIONES_IP[client_ip] = [t for t in PETICIONES_IP[client_ip] if ahora - t < 60]
-    if len(PETICIONES_IP[client_ip]) > 60:
-        return False
-    PETICIONES_IP[client_ip].append(ahora)
-    return True
-
-@app.get("/ping")
-def ping():
-    return {"status": "ok", "motor": "Titan Quantum v32.0"}
-
-@app.get("/api/forzar_scraping")
-def forzar_scraping():
-    ejecutar_scraper_profundo()
-    return JSONResponse({"status": "ok", "resultados": RESULTADOS_OFICIALES_REALES})
+@app.post("/api/guardar_manual")
+def guardar_manual(loteria: str = Form(...), b1: str = Form(...), b2: str = Form(...), b3: str = Form(...)):
+    _, fecha_str, _ = obtener_fechas_rd()
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        nombre_lot = loteria.replace("_", " ").title()
+        cur.execute("""
+            INSERT OR REPLACE INTO resultados_guardados (clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad, fecha)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (loteria, nombre_lot, b1.zfill(2), b2.zfill(2), b3.zfill(2), "Oficial RD", "🟢 Manual Banca", fecha_str))
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+    return RedirectResponse(url="/", status_code=303)
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
-    client_ip = request.client.host if request.client else "127.0.0.1"
-    if not verificar_anti_ddos(client_ip):
-        return HTMLResponse("<h2>⚠️ SISTEMA EN PROTECCIÓN</h2><p>Espera un momento antes de recargar.</p>", status_code=429)
-
     hora_rd, fecha_str, dia_nombre = obtener_fechas_rd()
-
-    if not RESULTADOS_OFICIALES_REALES:
-        ejecutar_scraper_profundo()
-
     datos_loterias = cluster_universal_15_ia(hora_rd, dia_nombre)
-    resultados_oficiales = RESULTADOS_OFICIALES_REALES
+
+    pizarra_inicial = {
+        "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
+        "real": {"nombre": "Lotería Real (12:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 98%"},
+        "gana_mas": {"nombre": "Gana Más (2:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 97%"},
+        "loteka": {"nombre": "Loteka (7:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🔴 Dispersión 72%"},
+        "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 98%"},
+        "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 99%"}
+    }
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("SELECT clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad FROM resultados_guardados WHERE fecha = ?", (fecha_str,))
+        for f in cur.fetchall():
+            c_key, nom, b1, b2, b3, st, vol = f
+            pizarra_inicial[c_key] = {"nombre": nom, "premios": [b1, b2, b3], "estado": st, "volatilidad": vol}
+        conn.close()
+    except Exception:
+        pass
 
     termometro = {
         "decenas_calientes": [
@@ -505,20 +362,18 @@ def index(request: Request):
         ]
     }
 
-    historial_auditoria = [
-        {
-            "fecha": fecha_str,
-            "sala": "Clúster 15 IAs Activo",
-            "tipo": f"⚡ HORA RD: {hora_rd.strftime('%I:%M %p')}",
-            "premio": f"Anclaje Estricto ({dia_nombre})",
-            "detalle": f"Fase: {datos_loterias['todas']['fase']} | Cobertura ±1 y Revés Activa"
-        }
-    ]
+    historial_auditoria = [{
+        "fecha": fecha_str,
+        "sala": "Modo Banca Activo",
+        "tipo": f"⚡ HORA RD: {hora_rd.strftime('%I:%M %p')}",
+        "premio": f"Anclaje Estricto ({dia_nombre})",
+        "detalle": "Panel Manual de 1 Toque Habilitado"
+    }]
 
     datos_json = json.dumps(datos_loterias)
     suenos_json = json.dumps(DICCIONARIO_SUENOS)
     auditoria_json = json.dumps(historial_auditoria)
-    premios_json = json.dumps(resultados_oficiales)
+    premios_json = json.dumps(pizarra_inicial)
     termometro_json = json.dumps(termometro)
 
     es_tarde_noche = datos_loterias["todas"]["es_tarde_noche"]
@@ -532,117 +387,55 @@ def index(request: Request):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-        <meta http-equiv="Pragma" content="no-cache">
-        <meta http-equiv="Expires" content="0">
-        <title>Shneyder IA Pro RD v32.0</title>
+        <title>Shneyder IA Pro RD v33.0</title>
         <style>
             * {{ box-sizing: border-box; }}
             body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }}
             .main-wrapper {{ max-width: 900px; margin: 0 auto; }}
 
             .brand {{ 
-                display: flex; 
-                justify-content: space-between; 
-                align-items: center; 
-                background: linear-gradient(135deg, #1e293b, #0f172a); 
-                border-radius: 12px; 
-                padding: 12px 16px; 
-                margin-bottom: 12px; 
-                border: 1px solid #38bdf8; 
-                box-shadow: 0 4px 10px rgba(56,189,248,0.15); 
+                display: flex; justify-content: space-between; align-items: center; 
+                background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 12px; 
+                padding: 12px 16px; margin-bottom: 12px; border: 1px solid #38bdf8; 
             }}
-            .brand-left h1 {{ font-size: 20px; color: #38bdf8; margin: 0; font-weight: 900; letter-spacing: 1px; }}
-            .brand-left p {{ font-size: 10px; color: #94a3b8; margin: 3px 0 0 0; text-transform: uppercase; letter-spacing: 2px; }}
+            .brand-left h1 {{ font-size: 20px; color: #38bdf8; margin: 0; font-weight: 900; }}
+            .brand-left p {{ font-size: 10px; color: #94a3b8; margin: 3px 0 0 0; text-transform: uppercase; }}
             .brand-right {{ text-align: right; }}
-            .brand-date {{ font-size: 11px; color: #cbd5e1; font-weight: 600; }}
-            .brand-clock {{ font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; letter-spacing: 1px; }}
+            .brand-clock {{ font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; }}
 
             .banner-fase {{
-                background: {banner_color};
-                border: 2px solid {banner_borde};
-                border-radius: 10px;
-                padding: 8px 12px;
-                margin-bottom: 12px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                font-size: 11px;
-                font-weight: 900;
-                color: #fff;
+                background: {banner_color}; border: 2px solid {banner_borde};
+                border-radius: 10px; padding: 8px 12px; margin-bottom: 12px;
+                display: flex; justify-content: space-between; align-items: center;
+                font-size: 11px; font-weight: 900; color: #fff;
             }}
 
-            .btn-sync {{ background: #38bdf8; color: #000; border: none; border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 10px; cursor: pointer; }}
-
-            .bingo-alert {{
+            .banca-panel {{
                 background: linear-gradient(135deg, #064e3b, #022c22);
-                border: 2px solid #22c55e;
-                border-radius: 12px;
-                padding: 10px 14px;
-                margin-bottom: 12px;
-                box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
-                display: none;
+                border: 2px solid #22c55e; border-radius: 12px; padding: 12px; margin-bottom: 12px;
             }}
-            .bingo-title {{ color: #4ade80; font-weight: 900; font-size: 13px; text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between; }}
+            .banca-form {{ display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }}
+            .banca-input, .banca-select {{ background: #0f172a; border: 1px solid #22c55e; color: #fff; padding: 6px; border-radius: 6px; font-size: 12px; }}
+            .banca-btn {{ background: #22c55e; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }}
 
             .sniper-card {{ 
-                background: linear-gradient(135deg, #1e1b4b, #0f172a); 
-                border: 2px solid #818cf8; 
-                border-radius: 12px; 
-                padding: 14px; 
-                margin-bottom: 12px; 
-                box-shadow: 0 4px 12px rgba(129,140,248,0.25);
+                background: linear-gradient(135deg, #1e1b4b, #0f172a); border: 2px solid #818cf8; 
+                border-radius: 12px; padding: 14px; margin-bottom: 12px; 
             }}
-            .sniper-grid {{
-                display: flex; 
-                justify-content: space-around; 
-                align-items: center; 
-                text-align: center;
-                margin-bottom: 10px;
-            }}
+            .sniper-grid {{ display: flex; justify-content: space-around; align-items: center; text-align: center; margin-bottom: 10px; }}
             .sniper-item b {{ font-size: 10px; color: #a5b4fc; text-transform: uppercase; display: block; }}
             .sniper-num {{ font-size: 26px; font-weight: 900; color: #38bdf8; }}
             .sniper-badge {{ font-size: 13px; font-weight: bold; color: #4ade80; }}
+            .sniper-lot-box {{ background: rgba(15, 23, 42, 0.8); border: 1px solid #38bdf8; border-radius: 8px; padding: 6px 10px; text-align: center; font-size: 12px; display: flex; justify-content: center; align-items: center; gap: 6px; }}
 
-            .sniper-lot-box {{
-                background: rgba(15, 23, 42, 0.8);
-                border: 1px solid #38bdf8;
-                border-radius: 8px;
-                padding: 6px 10px;
-                text-align: center;
-                font-size: 12px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 6px;
-            }}
-
-            .matriz-card {{
-                background: linear-gradient(135deg, #1e1b4b, #111827);
-                border: 1px solid #c084fc;
-                border-radius: 12px;
-                padding: 10px;
-                margin-bottom: 12px;
-                font-size: 11.5px;
-            }}
-            .matriz-grid {{
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-                margin-top: 6px;
-            }}
-            .matriz-box {{
-                background: #0f172a;
-                border: 1px solid #334155;
-                border-radius: 8px;
-                padding: 8px;
-            }}
+            .matriz-card {{ background: linear-gradient(135deg, #1e1b4b, #111827); border: 1px solid #c084fc; border-radius: 12px; padding: 10px; margin-bottom: 12px; font-size: 11.5px; }}
+            .matriz-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }}
+            .matriz-box {{ background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px; }}
 
             .termo-card {{ background: #111c30; border: 1px solid #f97316; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
             .termo-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; font-size: 11px; }}
             .termo-box {{ background: #18263e; padding: 10px; border-radius: 8px; border: 1px solid #283e60; }}
             .termo-row {{ margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); }}
-            .termo-row:last-child {{ margin-bottom: 0; padding-bottom: 0; border-bottom: none; }}
             .termo-lot {{ font-size: 9.5px; color: #38bdf8; margin-top: 2px; font-weight: 600; display: block; }}
 
             .pizarra-card {{ background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
@@ -652,12 +445,10 @@ def index(request: Request):
             .lot-semaforo {{ font-size: 10px; font-weight: bold; margin-bottom: 6px; }}
             .lot-balls-row {{ display: flex; gap: 8px; align-items: center; }}
             .prize-ball {{ width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; color: #000; }}
-            .ball-1ra {{ background: #22c55e; }}
-            .ball-2da {{ background: #38bdf8; }}
-            .ball-3ra {{ background: #facc15; }}
+            .ball-1ra {{ background: #22c55e; }} .ball-2da {{ background: #38bdf8; }} .ball-3ra {{ background: #facc15; }}
 
             .auditor-box {{ background: #0f172a; border: 1px solid #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
-            .auditor-title {{ color: #4ade80; font-weight: 800; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }}
+            .auditor-title {{ color: #4ade80; font-weight: 800; margin-bottom: 6px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }}
             .auditor-item {{ padding: 5px 0; border-bottom: 1px solid #1e293b; font-size: 11.5px; }}
 
             .search-box {{ background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 10px; margin-bottom: 12px; display: flex; gap: 8px; }}
@@ -665,15 +456,14 @@ def index(request: Request):
             .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
             #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
 
-            /* 6 BOTONES FIJOS */
             .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
             .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
             .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
-            .tab-kino {{ background: linear-gradient(135deg, #eab308, #ca8a04); color: #000; border: 1px solid #fde047; font-weight: 900; }}
-            .tab-esp {{ background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff; border: 1px solid #f87171; font-weight: 900; }}
-            .tab-euro {{ background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: 1px solid #60a5fa; font-weight: 900; }}
-            .tab-ed {{ background: linear-gradient(135deg, #7c3aed, #4c1d95); color: #fff; border: 1px solid #c084fc; font-weight: 900; }}
-            .tab-ang {{ background: linear-gradient(135deg, #059669, #065f46); color: #fff; border: 1px solid #34d399; font-weight: 900; }}
+            .tab-kino {{ background: linear-gradient(135deg, #eab308, #ca8a04); color: #000; font-weight: 900; }}
+            .tab-esp {{ background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff; font-weight: 900; }}
+            .tab-euro {{ background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; font-weight: 900; }}
+            .tab-ed {{ background: linear-gradient(135deg, #7c3aed, #4c1d95); color: #fff; font-weight: 900; }}
+            .tab-ang {{ background: linear-gradient(135deg, #059669, #065f46); color: #fff; font-weight: 900; }}
 
             .btn-actions {{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }}
             .btn-wa {{ width: 100%; background: #22c55e; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 13px; cursor: pointer; }}
@@ -687,45 +477,15 @@ def index(request: Request):
             .presion-alert {{ background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 8px; border-radius: 8px; margin-top: 8px; font-size: 11px; font-weight: bold; text-align: center; }}
 
             .jugada-formada-box {{
-                background: linear-gradient(135deg, #1e1b4b, #172554);
-                border: 2px solid #facc15;
-                border-radius: 10px;
-                padding: 12px;
-                margin-top: 12px;
-                box-shadow: 0 4px 12px rgba(250, 204, 21, 0.2);
+                background: linear-gradient(135deg, #1e1b4b, #172554); border: 2px solid #facc15;
+                border-radius: 10px; padding: 12px; margin-top: 12px; box-shadow: 0 4px 12px rgba(250, 204, 21, 0.2);
             }}
-            .jf-title {{
-                color: #facc15;
-                font-size: 12px;
-                font-weight: 900;
-                text-transform: uppercase;
-                margin-bottom: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                border-bottom: 1px solid rgba(250, 204, 21, 0.3);
-                padding-bottom: 4px;
-            }}
-            .jf-lot-box {{
-                background: rgba(0, 0, 0, 0.4);
-                border: 1px solid #38bdf8;
-                border-radius: 6px;
-                padding: 6px 8px;
-                margin-bottom: 8px;
-                font-size: 11.5px;
-            }}
+            .jf-title {{ color: #facc15; font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(250, 204, 21, 0.3); padding-bottom: 4px; }}
+            .jf-lot-box {{ background: rgba(0, 0, 0, 0.4); border: 1px solid #38bdf8; border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; font-size: 11.5px; }}
             .jf-row {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; }}
             .jf-balls {{ display: flex; gap: 6px; }}
             .jf-ball {{ background: #facc15; color: #0f172a; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 6px; }}
-
-            .cobertura-box {{
-                background: rgba(56, 189, 248, 0.1);
-                border: 1px dashed #38bdf8;
-                border-radius: 8px;
-                padding: 8px;
-                margin-top: 8px;
-                font-size: 11.5px;
-            }}
+            .cobertura-box {{ background: rgba(56, 189, 248, 0.1); border: 1px dashed #38bdf8; border-radius: 8px; padding: 8px; margin-top: 8px; font-size: 11.5px; }}
 
             .card {{ background: #131d31; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid #233249; }}
             h2 {{ font-size: 14px; margin-top: 0; padding-bottom: 6px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }}
@@ -741,7 +501,6 @@ def index(request: Request):
             .ball-star {{ background: #facc15; color: #000; font-weight: 900; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 14px; }}
             .ball-dream {{ background: #8b5cf6; color: #fff; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }}
             .ball-sueno {{ background: #ec4899; color: #fff; font-weight: 900; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 14px; }}
-
             #toast {{ display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #38bdf8; color: #0f172a; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 100; }}
         </style>
     </head>
@@ -750,17 +509,38 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v32.0 - Suite Total</p>
+                    <p>Titan Quantum v33.0 - Modo Banca Activo</p>
                 </div>
                 <div class="brand-right">
-                    <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
+                    <div class="brand-date">{dia_nombre} {fecha_str}</div>
                     <div class="brand-clock" id="live_time">--:--:--</div>
                 </div>
             </div>
 
+            <!-- PANEL DE INGRESO MANUAL INSTANTÁNEO -->
+            <div class="banca-panel">
+                <div style="color:#4ade80; font-weight:900; font-size:12px; display:flex; justify-content:space-between;">
+                    <span>⚡ MODO BANCA: REGISTRO MANUAL DE BOLOS</span>
+                    <span style="font-size:10px; color:#fff;">1 Toque</span>
+                </div>
+                <form action="/api/guardar_manual" method="POST" class="banca-form">
+                    <select name="loteria" class="banca-select">
+                        <option value="primera_dia">La Primera Día</option>
+                        <option value="real">Lotería Real</option>
+                        <option value="gana_mas">Gana Más</option>
+                        <option value="loteka">Loteka</option>
+                        <option value="nacional_noche">Nacional Noche</option>
+                        <option value="leidsa">Leidsa</option>
+                    </select>
+                    <input type="text" name="b1" placeholder="1ra" maxlength="2" required class="banca-input" style="text-align:center;">
+                    <input type="text" name="b2" placeholder="2da" maxlength="2" required class="banca-input" style="text-align:center;">
+                    <input type="text" name="b3" placeholder="3ra" maxlength="2" required class="banca-input" style="text-align:center;">
+                    <button type="submit" class="banca-btn">💾 GUARDAR</button>
+                </form>
+            </div>
+
             <div class="banner-fase">
                 <span>{banner_txt}</span>
-                <button class="btn-sync" onclick="sincronizarResultadosEnVivo()">🔄 ACTUALIZAR</button>
             </div>
 
             <div class="bingo-alert" id="panel_bingazos">
@@ -826,7 +606,7 @@ def index(request: Request):
             <div class="pizarra-card">
                 <div style="font-size:14px;font-weight:900;color:#38bdf8;display:flex;justify-content:space-between;align-items:center;">
                     <span>🏆 NÚMEROS PREMIADOS (OFICIALES RD)</span>
-                    <span style="font-size:11px;color:#4ade80;" id="txt_sync_status">● Auto-Sincronizado</span>
+                    <span style="font-size:11px;color:#4ade80;">● Modo Banca Activo</span>
                 </div>
                 <div class="pizarra-grid" id="pizarra_contenedor"></div>
             </div>
@@ -834,7 +614,7 @@ def index(request: Request):
             <div class="auditor-box">
                 <div class="auditor-title">
                     <span>📡 AUDITORÍA OFICIAL EN VIVO</span>
-                    <span style="font-size:10px;color:#94a3b8;">Captura Directa</span>
+                    <span style="font-size:10px;color:#94a3b8;">Registro Manual</span>
                 </div>
                 <div id="contenedor_auditoria"></div>
             </div>
@@ -845,7 +625,6 @@ def index(request: Request):
             </div>
             <div id="sueno_resultado"></div>
 
-            <!-- LAS 6 PESTAÑAS ACTIVAS -->
             <div class="tabs-scroll">
                 <button class="tab-btn active" onclick="cambiarTab('todas')">🌐 TODAS (RD)</button>
                 <button class="tab-btn tab-kino" onclick="cambiarTab('kino_leidsa')">👑 KINO LEIDSA</button>
@@ -1020,7 +799,7 @@ def index(request: Request):
                     </table>
                 </div>
 
-                <div class="card" style="border: 1px solid #22c55e;">
+                <div class="card" style="border: 2px solid #22c55e;">
                     <h2 style="color: #4ade80;">⭐ TOP 5 LÍNEAS ÉLITE DEL DÍA</h2>
                     <table>
                         <thead><tr><th>#</th><th>NÚMERO</th><th>FUERZA</th><th>ESTADO</th><th>SALA</th></tr></thead>
@@ -1320,7 +1099,7 @@ def index(request: Request):
                         document.getElementById('jf_numeros_container').innerHTML = htmlB;
                         document.getElementById('jf_pales_txt').innerText = `[${{jm.pale_1}}]  /  [${{jm.pale_2}}]`;
                         document.getElementById('jf_tripleta_txt').innerText = `[${{jm.tripleta}}]`;
-                        document.getElementById('jf_lot_txt').innerText = jm.lot_fuerte;
+                        document.getElementById('jf_lot_txt')->innerText = jm.lot_fuerte;
                         document.getElementById('jf_respaldo_txt').innerText = jm.lot_respaldo;
 
                         if (info.cobertura_lateral) {{
@@ -1356,130 +1135,17 @@ def index(request: Request):
                 }}
             }}
 
-            async function sincronizarResultadosEnVivo() {{
-                const txtStatus = document.getElementById('txt_sync_status');
-                if (txtStatus) txtStatus.innerText = "⏳ Sincronizando en vivo...";
-
-                try {{
-                    const r = await fetch('/api/forzar_scraping');
-                    const data = await r.json();
-                    if (data.status === 'ok' && data.resultados) {{
-                        let huboOficial = false;
-                        for (let k in data.resultados) {{
-                            if (data.resultados[k].estado === 'Oficial RD') {{
-                                premios[k] = data.resultados[k];
-                                huboOficial = true;
-                            }}
-                        }}
-                        if (huboOficial) {{
-                            cargarPizarraPremios();
-                            cargarBingazos();
-                            if (txtStatus) txtStatus.innerText = "● Auto-Sincronizado (Servidor OK)";
-                            return;
-                        }}
-                    }}
-                }} catch(err) {{}}
-
-                const pasarelas = [
-                    "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://loteriasdominicanas.com/?t=" + Date.now()),
-                    "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent("https://loteriasdominicanas.com/?t=" + Date.now()),
-                    "https://corsproxy.io/?" + encodeURIComponent("https://loteriasdominicanas.com/?t=" + Date.now())
-                ];
-
-                let html = "";
-                for (let endpoint of pasarelas) {{
-                    try {{
-                        const resp = await fetch(endpoint, {{ cache: "no-store" }});
-                        if (resp.ok) {{
-                            const data = await resp.text();
-                            if (data.includes("game-") || data.includes("score") || data.includes("Primera")) {{
-                                html = data;
-                                break;
-                            }}
-                        }}
-                    }} catch (err) {{ continue; }}
-                }}
-
-                if (html) {{
-                    try {{
-                        const doc = new DOMParser().parseFromString(html, "text/html");
-                        const bloques = doc.querySelectorAll(".game-block");
-                        let capturas = 0;
-
-                        bloques.forEach(b => {{
-                            const scores = Array.from(b.querySelectorAll(".score")).map(el => el.innerText.trim().padStart(2, '0'));
-                            if (scores.length >= 3) {{
-                                const trio = scores.slice(0, 3);
-                                const textoBloque = b.innerText.toLowerCase();
-
-                                function setPremio(clave) {{
-                                    if (premios[clave]) {{
-                                        premios[clave].premios = trio;
-                                        premios[clave].estado = "Oficial RD";
-                                        capturas++;
-                                    }}
-                                }}
-
-                                if (textoBloque.includes("primera") && (textoBloque.includes("12") || textoBloque.includes("día") || textoBloque.includes("dia"))) setPremio("primera_dia");
-                                else if (textoBloque.includes("gana más") || textoBloque.includes("gana-mas")) setPremio("gana_mas");
-                                else if (textoBloque.includes("real")) setPremio("real");
-                                else if (textoBloque.includes("primera") && (textoBloque.includes("noche") || textoBloque.includes("8"))) setPremio("primera_noche");
-                                else if (textoBloque.includes("leidsa")) setPremio("leidsa");
-                                else if (textoBloque.includes("nacional") && (textoBloque.includes("noche") || textoBloque.includes("8:50"))) setPremio("nacional_noche");
-                                else if (textoBloque.includes("loteka")) setPremio("loteka");
-                                else if (textoBloque.includes("lotedom")) setPremio("lotedom");
-                                else if (textoBloque.includes("suerte") && (textoBloque.includes("12") || textoBloque.includes("día") || textoBloque.includes("dia"))) setPremio("suerte_dia");
-                                else if (textoBloque.includes("suerte") && (textoBloque.includes("6") || textoBloque.includes("tarde"))) setPremio("suerte_tarde");
-                                else if (textoBloque.includes("anguila") && textoBloque.includes("10")) setPremio("anguila_10am");
-                                else if (textoBloque.includes("anguila") && (textoBloque.includes("1") || textoBloque.includes("13"))) setPremio("anguila_1pm");
-                                else if (textoBloque.includes("anguila") && (textoBloque.includes("6") || textoBloque.includes("18"))) setPremio("anguila_6pm");
-                                else if (textoBloque.includes("anguila") && (textoBloque.includes("9") || textoBloque.includes("21"))) setPremio("anguila_9pm");
-                            }}
-                        }});
-
-                        localStorage.setItem("shneyder_premios_rd", JSON.stringify(premios));
-                        cargarPizarraPremios();
-                        cargarBingazos();
-
-                        if (txtStatus) txtStatus.innerText = "● Auto-Sincronizado (" + capturas + " salas)";
-                        return;
-                    }} catch (e) {{}}
-                }}
-
-                const guardado = localStorage.getItem("shneyder_premios_rd");
-                if (guardado) {{
-                    premios = JSON.parse(guardado);
-                    cargarPizarraPremios();
-                    cargarBingazos();
-                }}
-                if (txtStatus) txtStatus.innerText = "● Conectado (Reserva)";
-            }}
-
             function copiarWhatsApp() {{
                 const info = db[tabActual] || db['todas'];
                 let texto = "";
-
                 if (info.tipo_juego === 'kino') {{
                     const kd = info.kino_data;
-                    texto = `👑 *KINO LEIDSA TV* 👑\\n⭐ *Dueños:* ${{kd.duenos.join(', ')}}\\n🎯 *Bloque 5:* [${{kd.bloques_5[0].bloque}}]\\n🏆 *Bloque 7:* [${{kd.bloques_7[0].bloque}}]\\n⚡ *SHNEYDER IA PRO RD*`;
-                }} else if (info.tipo_juego === 'primitiva') {{
-                    const pd = info.primitiva_data;
-                    texto = `🇪🇸 *LA PRIMITIVA* 🇪🇸\\n🎯 *Combinación:* [${{pd.apuestas_6[0].combinacion}}]\\n🔴 *R:* ${{pd.reintegro}} | 🔵 *C:* ${{pd.complementario}}\\n⚡ *SHNEYDER IA PRO RD*`;
-                }} else if (info.tipo_juego === 'euromillones') {{
-                    const ed = info.euro_data;
-                    texto = `🇪🇺 *EUROMILLONES* 🇪🇺\\n🎯 *5 Números:* [${{ed.apuestas_euro[0].numeros}}]\\n⭐ *Estrellas:* [${{ed.apuestas_euro[0].estrellas}}]\\n⚡ *SHNEYDER IA PRO RD*`;
-                }} else if (info.tipo_juego === 'eurodreams') {{
-                    const ed = info.ed_data;
-                    texto = `🇪🇺 *EURODREAMS (6/40)* 🇪🇺\\n🎯 *6 Números:* [${{ed.apuestas[0].combinacion}}]\\n💖 *Sueño:* [${{ed.sueno_reina}}]\\n⚡ *SHNEYDER IA PRO RD*`;
-                }} else if (info.tipo_juego === 'anguila_cascada') {{
-                    const ad = info.anguila_data;
-                    texto = `🐍 *ANGUILA CASCADA 4X* 🐍\\n📍 *10 AM:* [${{ad['10am'].fijo}}] (Palé: ${{ad['10am'].pale}})\\n📍 *1 PM:* [${{ad['1pm'].fijo}}] (Palé: ${{ad['1pm'].pale}})\\n📍 *6 PM:* [${{ad['6pm'].fijo}}] (Palé: ${{ad['6pm'].pale}})\\n📍 *9 PM:* [${{ad['9pm'].fijo}}] (Palé: ${{ad['9pm'].pale}})\\n⚡ *SHNEYDER IA PRO RD*`;
+                    texto = `👑 *KINO LEIDSA TV* 👑\\n⭐ *Dueños:* ${{kd.duenos.join(', ')}}\\n🎯 *Bloque 5:* [${{kd.bloques_5[0].bloque}}]\\n⚡ *SHNEYDER IA PRO RD*`;
                 }} else {{
                     let jm = info.jugada_maestra;
                     let cov = info.cobertura_lateral;
-                    texto = `⚡ *JUGADA TITÁN SHNEYDER IA PRO RD* ⚡\\n📍 *Lotería Fuerte:* ${{jm.lot_fuerte}}\\n🛡️ *Cobertura:* ${{jm.lot_respaldo}}\\n🎯 *3 Números Directos:* [${{jm.numeros_3[0]}}] - [${{jm.numeros_3[1]}}] - [${{jm.numeros_3[2]}}]\\n💥 *Palés:* [${{jm.pale_1}}] / [${{jm.pale_2}}] / [${{cov.pale_reves}}]\\n🛡️ *Laterales:* [+1: ${{cov.mas1}}] / [-1: ${{cov.menos1}}]\\n🏆 *Tripleta Reina:* [${{jm.tripleta}}]\\n⚡ *Super Palé:* [${{info.super_pales[0].cruse}}]`;
+                    texto = `⚡ *JUGADA TITÁN SHNEYDER IA PRO RD* ⚡\\n📍 *Sala:* ${{jm.lot_fuerte}}\\n🎯 *Directos:* [${{jm.numeros_3[0]}}] - [${{jm.numeros_3[1]}}] - [${{jm.numeros_3[2]}}]\\n💥 *Palés:* [${{jm.pale_1}}] / [${{cov.pale_reves}}]\\n🛡️ *Laterales:* [+1: ${{cov.mas1}}] / [-1: ${{cov.menos1}}]`;
                 }}
-
                 navigator.clipboard.writeText(texto).then(() => {{
                     const t = document.getElementById('toast');
                     t.innerText = "¡Copiado para WhatsApp! 📱";
@@ -1490,25 +1156,10 @@ def index(request: Request):
 
             function generarTicket() {{
                 const info = db[tabActual] || db['todas'];
-                let ticket = `=================================\\n   🎫 TICKET SHNEYDER IA PRO RD\\n=================================\\nFECHA: ${{new Date().toLocaleDateString()}}\\n`;
-
-                if (info.tipo_juego === 'kino') {{
-                    ticket += `SALA: KINO LEIDSA TV\\nBLOQUE 5: [${{info.kino_data.bloques_5[0].bloque}}]\\nBLOQUE 7: [${{info.kino_data.bloques_7[0].bloque}}]\\n`;
-                }} else if (info.tipo_juego === 'primitiva') {{
-                    ticket += `SALA: LA PRIMITIVA\\nCOMBINACIÓN: [${{info.primitiva_data.apuestas_6[0].combinacion}}]\\nREINTEGRO: [${{info.primitiva_data.reintegro}}]\\n`;
-                }} else if (info.tipo_juego === 'euromillones') {{
-                    ticket += `SALA: EUROMILLONES\\n5 NÚMEROS: [${{info.euro_data.apuestas_euro[0].numeros}}]\\nESTRELLAS: [${{info.euro_data.apuestas_euro[0].estrellas}}]\\n`;
-                }} else if (info.tipo_juego === 'eurodreams') {{
-                    ticket += `SALA: EURODREAMS\\nCOMBINACIÓN: [${{info.ed_data.apuestas[0].combinacion}}]\\nSUEÑO: [${{info.ed_data.sueno_reina}}]\\n`;
-                }} else if (info.tipo_juego === 'anguila_cascada') {{
-                    ticket += `SALA: ANGUILA CASCADA\\n10 AM: [${{info.anguila_data['10am'].fijo}}]  1 PM: [${{info.anguila_data['1pm'].fijo}}]\\n6 PM:  [${{info.anguila_data['6pm'].fijo}}]  9 PM: [${{info.anguila_data['9pm'].fijo}}]\\n`;
-                }} else {{
-                    let jm = info.jugada_maestra;
-                    let cov = info.cobertura_lateral;
-                    ticket += `📍 SALA: ${{jm.lot_fuerte.toUpperCase()}}\\n🛡️ COBERTURA: ${{jm.lot_respaldo.toUpperCase()}}\\n3 DIRECTOS: [${{jm.numeros_3[0]}}]  [${{jm.numeros_3[1]}}]  [${{jm.numeros_3[2]}}]\\nPALÉS: [${{jm.pale_1}}] / [${{jm.pale_2}}] / [${{cov.pale_reves}}]\\nLATERALES: [+1: ${{cov.mas1}}] / [-1: ${{cov.menos1}}]\\nTRIPLETA: [${{jm.tripleta}}]\\nSUPER PALÉ: [${{info.super_pales[0].cruse}}]\\n`;
-                }}
-                ticket += `=================================`;
-
+                let ticket = `=================================\\n   🎫 TICKET SHNEYDER IA PRO RD\\n=================================\\n`;
+                let jm = info.jugada_maestra;
+                let cov = info.cobertura_lateral;
+                ticket += `SALA: ${{jm.lot_fuerte.toUpperCase()}}\\n3 DIRECTOS: [${{jm.numeros_3[0]}}]  [${{jm.numeros_3[1]}}]  [${{jm.numeros_3[2]}}]\\nPALÉS: [${{jm.pale_1}}] / [${{cov.pale_reves}}]\\n=================================`;
                 navigator.clipboard.writeText(ticket).then(() => {{
                     const t = document.getElementById('toast');
                     t.innerText = "¡Ticket Copiado! 🎫";
@@ -1524,7 +1175,7 @@ def index(request: Request):
                 let match = suenos[input];
                 if (match) {{
                     res.style.display = 'block';
-                    res.innerHTML = `🔮 <b>CÁBALA:</b> "${{input.toUpperCase()}}"<br>🎯 <b>Bolo:</b> <span style="color:#4ade80;font-size:16px;font-weight:bold;">${{match.num}}</span> | Fuerza IA: ${{match.fuerza}}%<br>📍 ${{match.lot}} (${{match.cabala}})`;
+                    res.innerHTML = `🔮 <b>CÁBALA:</b> "${{input.toUpperCase()}}"<br>🎯 <b>Bolo:</b> <span style="color:#4ade80;font-size:16px;font-weight:bold;">${{match.num}}</span> | Fuerza IA: ${{match.fuerza}}%`;
                 }}
             }}
 
@@ -1534,9 +1185,6 @@ def index(request: Request):
             setInterval(actualizarRelojCabecera, 1000);
             actualizarRelojCabecera();
             actualizarVista();
-
-            sincronizarResultadosEnVivo();
-            setInterval(sincronizarResultadosEnVivo, 60000);
         </script>
     </body>
     </html>
