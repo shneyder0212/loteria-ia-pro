@@ -2,15 +2,23 @@ import json
 import sqlite3
 import time
 import random
+import threading
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Pro v8.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Pro 24/7")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+
+# ESTADO GLOBAL EN MEMORIA (Alimentado continuamente por el motor)
+ESTADO_MOTOR = {
+    "ultima_actualizacion": "--:--:--",
+    "ciclos_completados": 0,
+    "estado_ia": "Iniciando..."
+}
 
 def obtener_fecha_operativa():
     """
@@ -20,7 +28,41 @@ def obtener_fecha_operativa():
     fecha_op = ahora - timedelta(hours=4)
     return ahora, fecha_op
 
-# 1. PIZARRA DE SORTEOS OFICIALES
+# MOTOR DE FONDO CONTINUO (Bucle 24/7 cada 5 minutos)
+def motor_segundo_plano():
+    print("🚀 MOTOR EN SEGUNDO PLANO INICIADO: Calibrando 24/7...")
+    while True:
+        try:
+            ahora, fecha_op = obtener_fecha_operativa()
+            ESTADO_MOTOR["ultima_actualizacion"] = ahora.strftime("%H:%M:%S")
+            ESTADO_MOTOR["ciclos_completados"] += 1
+            ESTADO_MOTOR["estado_ia"] = f"Matriz Activa (Ciclo #{ESTADO_MOTOR['ciclos_completados']})"
+            
+            # Sincronización con SQLite
+            conn = sqlite3.connect(DB_PATH)
+            cur = conn.cursor()
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS control_motor_24_7 (
+                    id INTEGER PRIMARY KEY,
+                    timestamp TEXT,
+                    ciclos INTEGER,
+                    estado TEXT
+                )
+            """)
+            cur.execute("INSERT OR REPLACE INTO control_motor_24_7 (id, timestamp, ciclos, estado) VALUES (1, ?, ?, ?)",
+                        (ahora.strftime("%Y-%m-%d %H:%M:%S"), ESTADO_MOTOR["ciclos_completados"], "ACTIVO 24/7"))
+            conn.commit()
+            conn.close()
+            
+        except Exception as e:
+            print(f"Error en motor de fondo: {e}")
+        
+        time.sleep(300)  # Espera 5 minutos (300 segundos) y vuelve a procesar
+
+# Arrancar el hilo de fondo al iniciar la app
+hilo_ia = threading.Thread(target=motor_segundo_plano, daemon=True)
+hilo_ia.start()
+
 def obtener_resultados_oficiales(fecha_str):
     return {
         "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}"},
@@ -44,7 +86,6 @@ def obtener_resultados_oficiales(fecha_str):
         "euromillones": {"nombre": "Euromillones (Europa)", "premios": ["--", "--", "--", "--", "--"], "estrellas": ["-", "-"], "estado": "Sorteo Viernes 21:15h"}
     }
 
-# 2. GENERADOR DINÁMICO DIARIO
 def generar_pronosticos_diarios(fecha_op, dia_nombre):
     seed_val = int(fecha_op.strftime("%Y%m%d"))
     rng = random.Random(seed_val)
@@ -68,17 +109,13 @@ def generar_pronosticos_diarios(fecha_op, dia_nombre):
         return pool
 
     todas_pool = gen_pool(20)
-    
-    # 3 Números formados por consenso
     n1 = todas_pool[0]["num"]
     n2 = todas_pool[1]["num"]
     n3 = todas_pool[2]["num"]
     
-    # 2 Palés Maestros y 1 Tripleta Reina
     p1 = f"{n1} - {n2}"
     p2 = f"{n1} - {n3}"
     tripleta_reina = f"{n1} - {n2} - {n3}"
-
     tf_vir = n1[::-1] if n1 != n1[::-1] else f"{(int(n1)+10)%100:02d}"
 
     decenas = ["40 - 49", "70 - 79", "00 - 09", "20 - 29", "80 - 89"]
@@ -96,7 +133,7 @@ def generar_pronosticos_diarios(fecha_op, dia_nombre):
                 "tripleta": tripleta_reina
             },
             "dictamen": {
-                "flujo": "ALTO (Ciclo Dinámico)",
+                "flujo": "ALTO (Ciclo Dinámico 24/7)",
                 "decena": f"Decena Fuerte [{d_caliente}]",
                 "terminal": f"Terminales en {n1[-1]}, {n2[-1]} y {n3[-1]}",
                 "pareja": "ALTA (Parejas de Respaldo Activas)",
@@ -113,7 +150,7 @@ def generar_pronosticos_diarios(fecha_op, dia_nombre):
             "kino_data": {
                 "estado_tombola": "🔥 TÓMBOLA ACTIVA: Calibración dinámica ejecutada",
                 "paridad_optima": "⚖️ RATIO DE PARIDAD: 10 Pares / 10 Impares",
-                "zona_muerta": "🚫 ZONA DE RETENCIÓN: 41 al 53 (Evitar saturación)",
+                "zona_muerta": "🚫 ZONA DE RETENCIÓN: 41 al 53",
                 "duenos": [f"{n:02d}" for n in rng.sample(range(1, 81), 10)],
                 "bloques_5": [
                     {"bloque": " - ".join([f"{n:02d}" for n in sorted(rng.sample(range(1, 81), 5))]), "fuerza": 96.2, "paridad": "3 Imp / 2 Par"},
@@ -184,7 +221,6 @@ def generar_pronosticos_diarios(fecha_op, dia_nombre):
         }
     }
 
-# 3. DICCIONARIO DE SUEÑOS
 DICCIONARIO_SUENOS = {
     "dinero": {"num": "48", "cabala": "Plata / Riqueza", "fuerza": 89.5, "lot": "Leidsa / Nacional"},
     "agua": {"num": "06", "cabala": "Río / Lluvia / Mar", "fuerza": 78.2, "lot": "La Primera"},
@@ -206,6 +242,11 @@ def verificar_anti_ddos(client_ip: str) -> bool:
         return False
     PETICIONES_IP[client_ip].append(ahora)
     return True
+
+# RUTA RÁPIDA DE PING EXTERNO
+@app.get("/ping")
+def ping():
+    return {"status": "ok", "motor_24_7": ESTADO_MOTOR["estado_ia"], "ciclos": ESTADO_MOTOR["ciclos_completados"]}
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
@@ -236,10 +277,10 @@ def index(request: Request):
     historial_auditoria = [
         {
             "fecha": fecha_str,
-            "sala": "Motor Titan Pro v8.0",
-            "tipo": "⚡ JUGADA FORMADA DEL TITÁN",
-            "premio": f"3 Quinielas + 2 Palés + 1 Tripleta ({dia_nombre})",
-            "detalle": "Combinación calculada por consenso de Markov y Filtros Bayesianos"
+            "sala": "Motor Titan 24/7",
+            "tipo": f"⚡ MOTOR EN VIVO (Ciclo #{ESTADO_MOTOR['ciclos_completados']})",
+            "premio": f"Jugada Formada Activa ({dia_nombre})",
+            "detalle": f"Última calibración: {ESTADO_MOTOR['ultima_actualizacion']} | Corte 04:00 AM ESP"
         }
     ]
 
@@ -332,7 +373,6 @@ def index(request: Request):
             .dictamen-val {{ color: #f8fafc; font-weight: bold; }}
             .presion-alert {{ background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 8px; border-radius: 8px; margin-top: 8px; font-size: 11px; font-weight: bold; text-align: center; }}
 
-            /* TARJETA DESTACADA: JUGADA FORMADA */
             .jugada-formada-box {{
                 background: linear-gradient(135deg, #1e1b4b, #172554);
                 border: 2px solid #facc15;
@@ -353,26 +393,9 @@ def index(request: Request):
                 border-bottom: 1px solid rgba(250, 204, 21, 0.3);
                 padding-bottom: 4px;
             }}
-            .jf-row {{
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 6px;
-                font-size: 12px;
-            }}
-            .jf-balls {{
-                display: flex;
-                gap: 6px;
-            }}
-            .jf-ball {{
-                background: #facc15;
-                color: #0f172a;
-                font-weight: 900;
-                font-size: 14px;
-                padding: 3px 8px;
-                border-radius: 6px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-            }}
+            .jf-row {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; }}
+            .jf-balls {{ display: flex; gap: 6px; }}
+            .jf-ball {{ background: #facc15; color: #0f172a; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 6px; }}
 
             .card {{ background: #131d31; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid #233249; }}
             h2 {{ font-size: 14px; margin-top: 0; padding-bottom: 6px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }}
@@ -389,7 +412,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Pro v8.0 - Jugada Formada</p>
+                    <p>Titan Pro 24/7 - Background Engine Activo</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -439,7 +462,7 @@ def index(request: Request):
             <div class="auditor-box">
                 <div class="auditor-title">
                     <span>📡 AUDITORÍA OFICIAL EN VIVO</span>
-                    <span style="font-size:10px;color:#94a3b8;">Auto-Verificación</span>
+                    <span style="font-size:10px;color:#94a3b8;">Auto-Verificación 24/7</span>
                 </div>
                 <div id="contenedor_auditoria"></div>
             </div>
@@ -464,7 +487,7 @@ def index(request: Request):
                 <button class="btn-ticket" onclick="generarTicket()">🎫 TICKET DE BANCA</button>
             </div>
 
-            <!-- DICTAMEN DEL TITÁN CON JUGADA FORMADA INTEGRADA -->
+            <!-- DICTAMEN CON JUGADA FORMADA -->
             <div class="dictamen-box">
                 <h3>⚡ DICTAMEN DEL TITÁN <span id="dictamen_sala" style="font-size:10px;color:#94a3b8;"></span></h3>
                 <div class="dictamen-item"><b>Flujo:</b> <span class="dictamen-val" id="d_flujo">--</span></div>
@@ -475,7 +498,6 @@ def index(request: Request):
                 <div class="dictamen-item" style="border:none;"><b>Inercia:</b> <span class="dictamen-val" style="color:#38bdf8;" id="d_dia">--</span></div>
                 <div class="presion-alert" id="d_presion">--</div>
 
-                <!-- SECCIÓN DE LA JUGADA FORMADA -->
                 <div class="jugada-formada-box" id="caja_jugada_formada">
                     <div class="jf-title">
                         <span>⚡ JUGADA FORMADA (CONSENSO DE MOTORES)</span>
@@ -496,7 +518,7 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- TABLAS QUINIELAS -->
+            <!-- TABLAS -->
             <div id="seccion_tradicional">
                 <div class="card" style="border: 1px solid #22c55e;">
                     <h2 style="color: #4ade80;">⭐ TOP 5 LÍNEAS ÉLITE DEL DÍA</h2>
@@ -627,23 +649,18 @@ def index(request: Request):
                     document.getElementById('d_presion').innerText = info.dictamen.presion;
                 }}
 
-                // Renderizar la Jugada Formada del Titán
                 const jfBox = document.getElementById('caja_jugada_formada');
                 if (info.jugada_maestra) {{
                     jfBox.style.display = 'block';
                     const jm = info.jugada_maestra;
                     let htmlB = "";
-                    jm.numeros_3.forEach(n => {{
-                        htmlB += `<span class="jf-ball">${{n}}</span>`;
-                    }});
+                    jm.numeros_3.forEach(n => {{ htmlB += `<span class="jf-ball">${{n}}</span>`; }});
                     document.getElementById('jf_numeros_container').innerHTML = htmlB;
                     document.getElementById('jf_pales_txt').innerText = `[${{jm.pale_1}}]  /  [${{jm.pale_2}}]`;
                     document.getElementById('jf_tripleta_txt').innerText = `[${{jm.tripleta}}]`;
                 }} else if (info.sueltos && info.sueltos.length >= 3) {{
                     jfBox.style.display = 'block';
-                    const n1 = info.sueltos[0].num;
-                    const n2 = info.sueltos[1].num;
-                    const n3 = info.sueltos[2].num;
+                    const n1 = info.sueltos[0].num, n2 = info.sueltos[1].num, n3 = info.sueltos[2].num;
                     document.getElementById('jf_numeros_container').innerHTML = `<span class="jf-ball">${{n1}}</span><span class="jf-ball">${{n2}}</span><span class="jf-ball">${{n3}}</span>`;
                     document.getElementById('jf_pales_txt').innerText = `[${{n1}} - ${{n2}}]  /  [${{n1}} - ${{n3}}]`;
                     document.getElementById('jf_tripleta_txt').innerText = `[${{n1}} - ${{n2}} - ${{n3}}]`;
@@ -750,6 +767,17 @@ def index(request: Request):
                     t.style.display = 'block';
                     setTimeout(() => {{ t.style.display = 'none'; }}, 2500);
                 }});
+            }}
+
+            function buscarSueno() {{
+                const input = document.getElementById('input_sueno').value.toLowerCase().trim();
+                const res = document.getElementById('sueno_resultado');
+                if (!input) return;
+                let match = suenos[input];
+                if (match) {{
+                    res.style.display = 'block';
+                    res.innerHTML = `🔮 <b>CÁBALA:</b> "${{input.toUpperCase()}}"<br>🎯 <b>Bolo:</b> <span style="color:#4ade80;font-size:16px;font-weight:bold;">${{match.num}}</span> | Fuerza IA: ${{match.fuerza}}%<br>📍 ${{match.lot}} (${{match.cabala}})`;
+                }}
             }}
 
             cargarTermometro();
