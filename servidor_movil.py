@@ -8,10 +8,9 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 import uvicorn
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum Definitivo")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum Definitivo v55.0")
 DB_PATH = "loteria_master_ai.db"
 
-PETICIONES_IP = {}
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
 def init_db():
@@ -271,6 +270,7 @@ def index(request: Request):
     hora_rd, fecha_str, dia_nombre = obtener_fechas_rd()
     datos_loterias = cluster_universal_15_ia(hora_rd, dia_nombre)
 
+    # Las 14 Loterías Oficiales de la República Dominicana integradas
     pizarra_inicial = {
         "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 94%"},
         "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
@@ -339,7 +339,7 @@ def index(request: Request):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-        <title>Shneyder IA Pro RD v54.0</title>
+        <title>Shneyder IA Pro RD v55.0</title>
         <style>
             * { box-sizing: border-box; }
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }
@@ -425,7 +425,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v54.0</p>
+                    <p>Titan Quantum v55.0</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-clock" id="live_time">--:--:--</div>
@@ -517,8 +517,8 @@ def index(request: Request):
 
             <div class="pizarra-card">
                 <div style="font-size:14px;font-weight:900;color:#38bdf8;display:flex;justify-content:space-between;align-items:center;">
-                    <span>🏆 NÚMEROS PREMIADOS (OFICIALES RD)</span>
-                    <span style="font-size:11px;color:#4ade80;">● Actualizado por Banca</span>
+                    <span>🏆 NÚMEROS PREMIADOS (OFICIALES RD - 14 SALAS)</span>
+                    <span style="font-size:11px;color:#4ade80;">● Sincronizado</span>
                 </div>
                 <div class="pizarra-grid" id="pizarra_contenedor"></div>
             </div>
@@ -532,7 +532,7 @@ def index(request: Request):
             </div>
 
             <div class="search-box">
-                <input type="text" id="input_sueno" class="search-input" placeholder="Escribe tu sueño o cábala...">
+                <input type="text" id="input_sueno" class="search-input" placeholder="Escribe tu sueño o cábala (ej. dinero, agua)..." onkeydown="if(event.key==='Enter') buscarSueno()">
                 <button class="search-btn" onclick="buscarSueno()">🔮 CONSULTAR</button>
             </div>
             <div id="sueno_resultado"></div>
@@ -920,7 +920,7 @@ def index(request: Request):
                         jm.numeros_3.forEach(n => { htmlB += `<span class="jf-ball">${n}</span>`; });
                         document.getElementById('jf_numeros_container').innerHTML = htmlB;
                         document.getElementById('jf_pales_txt').innerText = `[${jm.pale_1}] / [${jm.pale_2}]`;
-                        document.getElementById('jf_tripleta_txt').innerText = `[${jm.tripleta}]`;
+                        document.getElementById('jf_tripleta_txt</th>'].innerText = `[${jm.tripleta}]`;
                         document.getElementById('jf_lot_txt').innerText = jm.lot_fuerte;
                         document.getElementById('jf_respaldo_txt').innerText = jm.lot_respaldo;
 
@@ -979,7 +979,10 @@ def index(request: Request):
                 let match = suenos[input];
                 if (match) {
                     res.style.display = 'block';
-                    res.innerHTML = `🔮 <b>CÁBALA:</b> "${input.toUpperCase()}"<br>🎯 <b>Bolo:</b> <span style="color:#4ade80;font-size:16px;font-weight:bold;">${match.num}</span>`;
+                    res.innerHTML = `🔮 <b>CÁBALA:</b> "${input.toUpperCase()}"<br>🎯 <b>Bolo:</b> <span style="color:#4ade80;font-size:16px;font-weight:bold;">${match.num}</span> (${match.lot})`;
+                } else {
+                    res.style.display = 'block';
+                    res.innerHTML = `🔮 Sin coincidencia directa para "${input}". Intenta con: dinero, agua, muerte, boda.`;
                 }
             }
 
@@ -994,7 +997,6 @@ def index(request: Request):
     </html>
     """
 
-    # Reemplazos limpios línea por línea para evitar pantallas blancas y errores de renderizado
     html_final = html_template.replace("__BANNER_COLOR__", banner_color)
     html_final = html_final.replace("__BANNER_BORDE__", banner_borde)
     html_final = html_final.replace("__BANNER_TXT__", banner_txt)
