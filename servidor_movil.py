@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v26.0 (Auto-Sync Móvil)")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v28.0 (Todas las Salas)")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
@@ -50,7 +50,6 @@ TABLA_JALADERA = {
 def obtener_jalamatico(num_str):
     return TABLA_JALADERA.get(num_str, [num_str[::-1], f"{(int(num_str)+10)%100:02d}", f"{(int(num_str)+50)%100:02d}"])
 
-# MOTOR CON ANCLAJE ESTRICTO (PROBABILIDAD ACOPLADA 100%)
 def cluster_universal_15_ia(hora_rd, dia_nombre):
     seed_base = int(hora_rd.strftime("%Y%m%d"))
     es_tarde_noche = hora_rd.hour >= 18
@@ -115,7 +114,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"bloque": gen_bloque_kino(7), "paridad": "4 Impares / 3 Pares", "fuerza": 99.1, "ia_origen": "IA-07 Optimizador Genético"}
     ]
 
-    # --- LA PRIMITIVA ---
+    # --- LA PRIMITIVA (ESPAÑA 6/49) ---
     def gen_primitiva_optima():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 50), 6))
@@ -134,7 +133,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"combinacion": " - ".join([f"{n:02d}" for n in prim_nums2]), "reintegro": str(rng.randint(0, 9)), "fuerza": 96.5, "tipo": "IA-09 Algoritmo Delta"}
     ]
 
-    # --- EUROMILLONES ---
+    # --- EUROMILLONES (EUROPA 5/50 + 2 ESTRELLAS) ---
     def gen_euro_valida():
         for _ in range(500):
             comb = sorted(rng.sample(range(1, 51), 5))
@@ -145,7 +144,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     euro_nums = gen_euro_valida()
     euro_e1, euro_e2 = f"{rng.randint(1, 6):02d}", f"{rng.randint(7, 12):02d}"
 
-    # --- EURODREAMS ---
+    # --- EURODREAMS (EUROPA 6/40 + SUEÑO) ---
     def gen_eurodreams():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 41), 6))
@@ -319,7 +318,7 @@ def verificar_anti_ddos(client_ip: str) -> bool:
 
 @app.get("/ping")
 def ping():
-    return {"status": "ok", "motor": "Titan Quantum v26.0", "sync": "Auto-Móvil Directo"}
+    return {"status": "ok", "motor": "Titan Quantum v28.0"}
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
@@ -330,7 +329,6 @@ def index(request: Request):
     hora_rd, fecha_str, dia_nombre = obtener_fechas_rd()
     datos_loterias = cluster_universal_15_ia(hora_rd, dia_nombre)
 
-    # Pizarra base que el JavaScript del móvil actualizará de inmediato
     pizarra_inicial = {
         "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟢 Fidelidad 94%"},
         "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟢 Fidelidad 96%"},
@@ -368,10 +366,10 @@ def index(request: Request):
     historial_auditoria = [
         {
             "fecha": fecha_str,
-            "sala": "Auto-Sync Móvil 24/7",
+            "sala": "Clúster Total 15 IAs Activo",
             "tipo": f"⚡ HORA RD: {hora_rd.strftime('%I:%M %p')}",
             "premio": f"Anclaje Estricto ({dia_nombre})",
-            "detalle": "Lectura directa residencial sin bloqueos de IP"
+            "detalle": "RD + Kino Leidsa + Primitiva + Euromillones + EuroDreams + Anguila"
         }
     ]
 
@@ -494,6 +492,7 @@ def index(request: Request):
             .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
             #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
 
+            /* TODAS LAS PESTAÑAS VISIBLES */
             .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
             .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
             .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
@@ -569,7 +568,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v26.0 - Auto-Sync Móvil</p>
+                    <p>Titan Quantum v28.0 - Suite Total</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -579,8 +578,8 @@ def index(request: Request):
 
             <div class="cluster-card">
                 <div>
-                    <span class="cluster-tag">AUTO-SINCRONIZACIÓN MÓVIL</span>
-                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">Lectura Directa Residencial Activa</span>
+                    <span class="cluster-tag">CLÚSTER TOTAL 15 IAs</span>
+                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">RD + Kino Leidsa + Primitiva + Euromillones + EuroDreams + Anguila</span>
                 </div>
                 <div>
                     <button class="btn-sync" onclick="sincronizarResultadosEnVivo()">🔄 ACTUALIZAR AHORA</button>
@@ -650,6 +649,7 @@ def index(request: Request):
             </div>
             <div id="sueno_resultado"></div>
 
+            <!-- TODAS LAS PESTAÑAS -->
             <div class="tabs-scroll">
                 <button class="tab-btn active" onclick="cambiarTab('todas')">🌐 TODAS (RD)</button>
                 <button class="tab-btn tab-kino" onclick="cambiarTab('kino_leidsa')">👑 KINO LEIDSA</button>
@@ -706,6 +706,7 @@ def index(request: Request):
                 </div>
             </div>
 
+            <!-- VISTA KINO LEIDSA TV -->
             <div id="seccion_kino" style="display:none;">
                 <div class="card" style="border: 2px solid #eab308; background:#18181b;">
                     <h2 style="color: #facc15;">👑 LOS 10 DUEÑOS DEL KINO (IA-06 BAYESIANA DEL MES)</h2>
@@ -732,6 +733,7 @@ def index(request: Request):
                 </div>
             </div>
 
+            <!-- VISTA LA PRIMITIVA -->
             <div id="seccion_primitiva" style="display:none;">
                 <div class="card" style="border: 2px solid #ef4444; background:#18181b;">
                     <h2 style="color: #f87171;">🇪🇸 NÚMEROS BASE & RADAR DEL REINTEGRO (IA-01 / IA-10)</h2>
@@ -752,6 +754,7 @@ def index(request: Request):
                 </div>
             </div>
 
+            <!-- VISTA EUROMILLONES -->
             <div id="seccion_euromillones" style="display:none;">
                 <div class="card" style="border: 2px solid #3b82f6; background:#18181b;">
                     <h2 style="color: #60a5fa;">🇪🇺 RED DE AFINIDAD & ESTRELLAS FIJAS</h2>
@@ -772,6 +775,7 @@ def index(request: Request):
                 </div>
             </div>
 
+            <!-- VISTA EURODREAMS -->
             <div id="seccion_eurodreams" style="display:none;">
                 <div class="card" style="border: 2px solid #8b5cf6; background:#18181b;">
                     <h2 style="color: #c084fc;">🇪🇺 RED GAUSSIANA EURODREAMS (6/40 + SUEÑO)</h2>
@@ -791,6 +795,7 @@ def index(request: Request):
                 </div>
             </div>
 
+            <!-- VISTA ANGUILA CASCADA 4X -->
             <div id="seccion_anguila" style="display:none;">
                 <div class="card" style="border: 2px solid #10b981; background:#18181b;">
                     <h2 style="color: #34d399;">🐍 MATRIZ CASCADA 4X (10 AM / 1 PM / 6 PM / 9 PM)</h2>
@@ -801,6 +806,7 @@ def index(request: Request):
                 </div>
             </div>
 
+            <!-- TABLAS QUINIELAS TRADICIONALES -->
             <div id="seccion_tradicional">
                 <div class="card" style="border: 2px solid #f59e0b; background: linear-gradient(135deg, #1c1917, #0c0a09);">
                     <h2 style="color: #fbbf24;">⚡ SUPER PALÉ CRUZADO INTELIGENTE (PAGO RD$ 3,000 × 1)</h2>
@@ -1141,7 +1147,6 @@ def index(request: Request):
                 }}
             }}
 
-            // --- LECTURA DIRECTA RESIDENCIAL DESDE TU MÓVIL ---
             async function sincronizarResultadosEnVivo() {{
                 const txtStatus = document.getElementById('txt_sync_status');
                 if (txtStatus) txtStatus.innerText = "⏳ Sincronizando en vivo...";
@@ -1163,9 +1168,11 @@ def index(request: Request):
                             const textoBloque = b.innerText.toLowerCase();
 
                             function setPremio(clave) {{
-                                premios[clave].premios = trio;
-                                premios[clave].estado = "Oficial RD";
-                                capturas++;
+                                if (premios[clave]) {{
+                                    premios[clave].premios = trio;
+                                    premios[clave].estado = "Oficial RD";
+                                    capturas++;
+                                }}
                             }}
 
                             if (textoBloque.includes("primera") && (textoBloque.includes("12") || textoBloque.includes("día") || textoBloque.includes("dia"))) setPremio("primera_dia");
@@ -1185,15 +1192,12 @@ def index(request: Request):
                         }}
                     }});
 
-                    // Guardar en memoria local del móvil para persistencia
                     localStorage.setItem("shneyder_premios_rd", JSON.stringify(premios));
-
                     cargarPizarraPremios();
                     cargarBingazos();
 
                     if (txtStatus) txtStatus.innerText = "● Auto-Sincronizado (" + capturas + " salas)";
                 }} catch (e) {{
-                    // Si no hay internet en ese instante, recuperar la última copia guardada
                     const guardado = localStorage.getItem("shneyder_premios_rd");
                     if (guardado) {{
                         premios = JSON.parse(guardado);
@@ -1282,9 +1286,7 @@ def index(request: Request):
             actualizarRelojCabecera();
             actualizarVista();
 
-            // EJECUTAR SINCRONIZACIÓN AUTOMÁTICA EN CUANTO ABRE LA APP
             sincronizarResultadosEnVivo();
-            // Y repetir cada 60 segundos automáticamente
             setInterval(sincronizarResultadosEnVivo, 60000);
         </script>
     </body>
