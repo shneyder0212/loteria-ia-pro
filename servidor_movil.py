@@ -2,15 +2,30 @@ import json
 import sqlite3
 import time
 import random
+import re
+import ssl
+import urllib.request
+import urllib.parse
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v30.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v31.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+
+RESULTADOS_OFICIALES_REALES = {}
+
+ESTADO_MOTOR = {
+    "ultima_actualizacion": "--:--:--",
+    "ciclos_completados": 0,
+    "estado_ia": "Iniciando...",
+    "fase_dia": "Tarde / Noche",
+    "eficiencia_global": "99.4%",
+    "scraper_log": "Esperando primer ciclo..."
+}
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -22,6 +37,18 @@ def init_db():
             ciclos INTEGER,
             estado TEXT,
             eficiencia TEXT
+        )
+    """)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS resultados_guardados (
+            clave TEXT PRIMARY KEY,
+            nombre TEXT,
+            bolo1 TEXT,
+            bolo2 TEXT,
+            bolo3 TEXT,
+            estado TEXT,
+            volatilidad TEXT,
+            fecha TEXT
         )
     """)
     conn.commit()
@@ -50,6 +77,121 @@ TABLA_JALADERA = {
 def obtener_jalamatico(num_str):
     return TABLA_JALADERA.get(num_str, [num_str[::-1], f"{(int(num_str)+10)%100:02d}", f"{(int(num_str)+50)%100:02d}"])
 
+# SCRAPER ROBUSTO DEL SERVIDOR (Multi-Proxy + Bypass)
+def ejecutar_scraper_profundo():
+    global RESULTADOS_OFICIALES_REALES
+    _, fecha_str, _ = obtener_fechas_rd()
+
+    pizarra = {
+        "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 94%"},
+        "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
+        "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟡 Regular 82%"},
+        "suerte_dia": {"nombre": "La Suerte Día (12:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 91%"},
+        "real": {"nombre": "Lotería Real (12:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 98%"},
+        "anguila_1pm": {"nombre": "Anguila Mediodía (1:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟡 Regular 84%"},
+        "gana_mas": {"nombre": "Gana Más (2:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 97%"},
+        "suerte_tarde": {"nombre": "La Suerte Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🔴 Dispersión 68%"},
+        "anguila_6pm": {"nombre": "Anguila Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 93%"},
+        "loteka": {"nombre": "Loteka (7:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🔴 Dispersión 72%"},
+        "primera_noche": {"nombre": "La Primera Noche (8:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 95%"},
+        "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 98%"},
+        "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 99%"},
+        "anguila_9pm": {"nombre": "Anguila Noche (9:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
+        "kino_tv": {"nombre": "Kino TV Leidsa (8:55 PM)", "premios": ["--"] * 20, "estado": "Pendiente 20 Bolos", "volatilidad": "🟢 20 Bolos"},
+        "primitiva_esp": {"nombre": "La Primitiva (España)", "premios": ["--", "--", "--", "--", "--", "--"], "complementario": "--", "reintegro": "-", "estado": "Sorteo Jueves/Sábado 21:40h", "volatilidad": "🟢 Gaussiana"},
+        "euromillones": {"nombre": "Euromillones (Europa)", "premios": ["--", "--", "--", "--", "--"], "estrellas": ["-", "-"], "estado": "Sorteo Martes/Viernes 21:15h", "volatilidad": "🟢 Cuántica"},
+        "eurodreams_esp": {"nombre": "EuroDreams (Europa)", "premios": ["--", "--", "--", "--", "--", "--"], "sueno": "-", "estado": "Sorteo Lunes/Jueves 21:00h", "volatilidad": "🟢 6/40"}
+    }
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("SELECT clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad FROM resultados_guardados WHERE fecha = ?", (fecha_str,))
+        filas = cur.fetchall()
+        for f in filas:
+            c_key, _, b1, b2, b3, st, vol = f
+            if c_key in pizarra and b1 != "--":
+                pizarra[c_key]["premios"] = [b1, b2, b3]
+                pizarra[c_key]["estado"] = st
+                pizarra[c_key]["volatilidad"] = vol
+        conn.close()
+    except Exception:
+        pass
+
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
+    url_base = "https://loteriasdominicanas.com/"
+    proxies = [
+        f"https://api.allorigins.win/raw?url={urllib.parse.quote(url_base)}",
+        f"https://api.codetabs.com/v1/proxy?quest={urllib.parse.quote(url_base)}",
+        url_base
+    ]
+
+    html = ""
+    for p_url in proxies:
+        try:
+            req = urllib.request.Request(p_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/122.0.0.0 Safari/537.36'})
+            with urllib.request.urlopen(req, timeout=12, context=ctx) as resp:
+                data = resp.read().decode('utf-8', errors='ignore')
+                if "game-" in data or "score" in data or "Primera" in data:
+                    html = data
+                    break
+        except Exception:
+            continue
+
+    capturas = 0
+    if html:
+        bloques = re.findall(r'<div[^>]*class="[^"]*game-[^"]*"[^>]*>[\s\S]*?</div>\s*</div>', html)
+        for b in bloques:
+            bolos = re.findall(r'<(?:span|div)[^>]*class="[^"]*score[^"]*"[^>]*>\s*(\d{1,2})\s*</', b, re.IGNORECASE)
+            if len(bolos) < 3:
+                bolos = re.findall(r'>\s*(\d{1,2})\s*</span>', b)
+            if len(bolos) < 3:
+                bolos = re.findall(r'\b(\d{2})\b', b)
+
+            if len(bolos) >= 3:
+                trio = [bolos[0].zfill(2), bolos[1].zfill(2), bolos[2].zfill(2)]
+                bl = b.lower()
+
+                def guardar(clave):
+                    nonlocal capturas
+                    if pizarra[clave]["premios"][0] == "--":
+                        pizarra[clave]["premios"] = trio
+                        pizarra[clave]["estado"] = "Oficial RD"
+                        capturas += 1
+                        try:
+                            c_db = sqlite3.connect(DB_PATH)
+                            cur_db = c_db.cursor()
+                            cur_db.execute("""
+                                INSERT OR REPLACE INTO resultados_guardados (clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad, fecha)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                            """, (clave, pizarra[clave]["nombre"], trio[0], trio[1], trio[2], "Oficial RD", pizarra[clave]["volatilidad"], fecha_str))
+                            c_db.commit()
+                            c_db.close()
+                        except Exception:
+                            pass
+
+                if "primera" in bl and ("12" in bl or "día" in bl or "dia" in bl): guardar("primera_dia")
+                elif "gana más" in bl or "gana-mas" in bl: guardar("gana_mas")
+                elif "real" in bl: guardar("real")
+                elif "primera" in bl and ("noche" in bl or "8" in bl or "20" in bl): guardar("primera_noche")
+                elif "leidsa" in bl: guardar("leidsa")
+                elif "nacional" in bl and ("noche" in bl or "8:50" in bl): guardar("nacional_noche")
+                elif "loteka" in bl: guardar("loteka")
+                elif "lotedom" in bl: guardar("lotedom")
+                elif "suerte" in bl and ("12" in bl or "día" in bl or "dia" in bl): guardar("suerte_dia")
+                elif "suerte" in bl and ("6" in bl or "18" in bl or "tarde" in bl): guardar("suerte_tarde")
+                elif "anguila" in bl and "10" in bl: guardar("anguila_10am")
+                elif "anguila" in bl and ("1" in bl or "13" in bl): guardar("anguila_1pm")
+                elif "anguila" in bl and ("6" in bl or "18" in bl): guardar("anguila_6pm")
+                elif "anguila" in bl and ("9" in bl or "21" in bl): guardar("anguila_9pm")
+
+    RESULTADOS_OFICIALES_REALES = pizarra
+    ESTADO_MOTOR["scraper_log"] = f"Última lectura: {capturas} salas confirmadas"
+
+# MOTOR CON ANCLAJE MATEMÁTICO ESTRICTO
 def cluster_universal_15_ia(hora_rd, dia_nombre):
     seed_base = int(hora_rd.strftime("%Y%m%d"))
     es_tarde_noche = hora_rd.hour >= 18
@@ -63,12 +205,14 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     lot_fuerte_principal = pool_salas[0]
     lot_fuerte_respaldo = pool_salas[1]
 
+    # ANCLAJE FORZOSO: Si la decena es 00-09 y terminal es 6 -> n1 = "06"
     decenas_lista = [("00-09", 0), ("10-19", 10), ("20-29", 20), ("40-49", 40), ("70-79", 70), ("80-89", 80)]
     decena_elegida_nombre, decena_base = rng.choice(decenas_lista)
     
     terminal_1 = rng.choice([6, 8, 2, 4, 7])
     terminal_2 = rng.choice([8, 2, 9, 3, 5]) if terminal_1 != 8 else 2
 
+    # n1 ES OBLIGATORIAMENTE DE LA DECENA CRÍTICA
     n1_int = decena_base + (terminal_1 % 10)
     n1 = f"{n1_int:02d}"
 
@@ -78,10 +222,9 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     jals = obtener_jalamatico(n1)
     n3 = jals[2] if len(jals) > 2 else jals[0]
 
-    # Cobertura lateral (+1 / -1)
+    n1_reves = n1[::-1] if n1 != n1[::-1] else "60"
     n1_mas1 = f"{(int(n1) + 1) % 100:02d}"
     n1_menos1 = f"{(int(n1) - 1) % 100:02d}"
-    n1_reves = n1[::-1] if n1 != n1[::-1] else "60"
 
     p1 = f"{n1} - {n2}"
     p2 = f"{n1} - {n3}"
@@ -109,70 +252,57 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"cruse": f"{n3} (Tarde) × {n1_reves} (Noche)", "salas": "Gana Más 2:30 PM × Nacional Noche 8:50 PM", "fuerza": 96.4}
     ]
 
-    # --- KINO TV LEIDSA ---
+    # KINO LEIDSA TV (1 AL 80)
     kino_duenos = [f"{n:02d}" for n in sorted(rng.sample(range(1, 81), 10))]
-    def gen_bloque_kino(cant):
-        return " - ".join([f"{n:02d}" for n in sorted(rng.sample(range(1, 81), cant))])
-
+    def gen_kino(cant): return " - ".join([f"{n:02d}" for n in sorted(rng.sample(range(1, 81), cant))])
     kino_bloques_5 = [
-        {"bloque": gen_bloque_kino(5), "paridad": "3 Impares / 2 Pares", "fuerza": 98.6, "ia_origen": "IA-01 Cuadrantes + IA-02 Paridad"},
-        {"bloque": gen_bloque_kino(5), "paridad": "3 Pares / 2 Impares", "fuerza": 96.2, "ia_origen": "IA-03 Anti-Consecutivos"}
+        {"bloque": gen_kino(5), "paridad": "3 Impares / 2 Pares", "fuerza": 98.6, "ia_origen": "IA-01 Cuadrantes + IA-02 Paridad"},
+        {"bloque": gen_kino(5), "paridad": "3 Pares / 2 Impares", "fuerza": 96.2, "ia_origen": "IA-03 Anti-Consecutivos"}
     ]
-    kino_bloques_7 = [
-        {"bloque": gen_bloque_kino(7), "paridad": "4 Impares / 3 Pares", "fuerza": 99.1, "ia_origen": "IA-07 Optimizador Genético"}
-    ]
+    kino_bloques_7 = [{"bloque": gen_kino(7), "paridad": "4 Impares / 3 Pares", "fuerza": 99.1, "ia_origen": "IA-07 Optimizador Genético"}]
 
-    # --- LA PRIMITIVA ---
-    def gen_primitiva_optima():
+    # LA PRIMITIVA (6/49)
+    def gen_prim():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 50), 6))
-            if 115 <= sum(nums) <= 185:
-                return nums
+            if 115 <= sum(nums) <= 185: return nums
         return sorted(rng.sample(range(1, 50), 6))
-
-    prim_nums1 = gen_primitiva_optima()
-    prim_nums2 = gen_primitiva_optima()
+    prim_nums1 = gen_prim()
+    prim_nums2 = gen_prim()
     prim_reintegro = str(rng.randint(0, 9))
     prim_comp = f"{rng.randint(1, 49):02d}"
     prim_base = [f"{n:02d}" for n in sorted(rng.sample(range(1, 50), 8))]
-
     prim_apuestas = [
         {"combinacion": " - ".join([f"{n:02d}" for n in prim_nums1]), "reintegro": prim_reintegro, "fuerza": 98.9, "tipo": "IA-08 Suma Gaussiana (115-185)"},
         {"combinacion": " - ".join([f"{n:02d}" for n in prim_nums2]), "reintegro": str(rng.randint(0, 9)), "fuerza": 96.5, "tipo": "IA-09 Algoritmo Delta"}
     ]
 
-    # --- EUROMILLONES ---
-    def gen_euro_valida():
+    # EUROMILLONES (5/50 + 2 ESTRELLAS)
+    def gen_euro():
         for _ in range(500):
             comb = sorted(rng.sample(range(1, 51), 5))
-            if 90 <= sum(comb) <= 160:
-                return comb
+            if 90 <= sum(comb) <= 160: return comb
         return sorted(rng.sample(range(1, 51), 5))
-
-    euro_nums = gen_euro_valida()
+    euro_nums = gen_euro()
     euro_e1, euro_e2 = f"{rng.randint(1, 6):02d}", f"{rng.randint(7, 12):02d}"
 
-    # --- EURODREAMS ---
-    def gen_eurodreams():
+    # EURODREAMS (6/40 + SUEÑO)
+    def gen_ed():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 41), 6))
-            if 95 <= sum(nums) <= 155:
-                return nums
+            if 95 <= sum(nums) <= 155: return nums
         return sorted(rng.sample(range(1, 41), 6))
-
-    ed_nums1 = gen_eurodreams()
+    ed_nums1 = gen_ed()
     ed_sueno = str(rng.randint(1, 5))
     ed_base = [f"{n:02d}" for n in sorted(rng.sample(range(1, 41), 8))]
     eurodreams_data = {
         "sueno_reina": ed_sueno,
         "fuerza_sueno": 97.4,
         "numeros_base": ed_base,
-        "apuestas": [
-            {"combinacion": " - ".join([f"{n:02d}" for n in ed_nums1]), "sueno": ed_sueno, "fuerza": 98.9, "tipo": "IA Gaussiana 6/40 (Suma 95-155)"}
-        ]
+        "apuestas": [{"combinacion": " - ".join([f"{n:02d}" for n in ed_nums1]), "sueno": ed_sueno, "fuerza": 98.9, "tipo": "IA Gaussiana 6/40 (Suma 95-155)"}]
     }
 
-    # --- ANGUILA CASCADA 4X ---
+    # ANGUILA CASCADA 4X
     anguila_cascada_data = {
         "10am": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 98.1, "estado": "Tanda Apertura"},
         "1pm": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 97.5, "estado": "Cascada Mediodía"},
@@ -199,7 +329,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
             },
             "super_pales": super_pales,
             "dictamen": {
-                "flujo": "ANCLAJE ESTRICTO + COBERTURA ±1",
+                "flujo": "ANCLAJE ESTRICTO 100% ACOPLADO",
                 "decena": f"Decena Fuerte [{decena_elegida_nombre}]",
                 "terminal": f"Terminales {terminal_1}, {terminal_2} y {(terminal_1+2)%10}",
                 "pareja": "ALTA (Gemelos y Espejos en Tensión)",
@@ -305,6 +435,21 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         }
     }
 
+def motor_segundo_plano():
+    while True:
+        try:
+            hora_rd, _, _ = obtener_fechas_rd()
+            ejecutar_scraper_profundo()
+            ESTADO_MOTOR["ultima_actualizacion"] = hora_rd.strftime("%H:%M:%S")
+            ESTADO_MOTOR["ciclos_completados"] += 1
+            ESTADO_MOTOR["estado_ia"] = f"Motor 15 IAs Activo (#{ESTADO_MOTOR['ciclos_completados']})"
+        except Exception:
+            pass
+        time.sleep(300)
+
+hilo_ia = threading.Thread(target=motor_segundo_plano, daemon=True)
+hilo_ia.start()
+
 DICCIONARIO_SUENOS = {
     "dinero": {"num": "48", "cabala": "Plata / Riqueza", "fuerza": 89.5, "lot": "Leidsa / Nacional"},
     "agua": {"num": "06", "cabala": "Río / Lluvia / Mar", "fuerza": 78.2, "lot": "La Primera"},
@@ -329,7 +474,12 @@ def verificar_anti_ddos(client_ip: str) -> bool:
 
 @app.get("/ping")
 def ping():
-    return {"status": "ok", "motor": "Titan Quantum v30.0"}
+    return {"status": "ok", "motor": "Titan Quantum v31.0"}
+
+@app.get("/api/forzar_scraping")
+def forzar_scraping():
+    ejecutar_scraper_profundo()
+    return JSONResponse({"status": "ok", "resultados": RESULTADOS_OFICIALES_REALES})
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
@@ -338,28 +488,12 @@ def index(request: Request):
         return HTMLResponse("<h2>⚠️ SISTEMA EN PROTECCIÓN</h2><p>Espera un momento antes de recargar.</p>", status_code=429)
 
     hora_rd, fecha_str, dia_nombre = obtener_fechas_rd()
-    datos_loterias = cluster_universal_15_ia(hora_rd, dia_nombre)
 
-    pizarra_inicial = {
-        "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟢 Fidelidad 94%"},
-        "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟢 Fidelidad 96%"},
-        "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟡 Regular 82%"},
-        "suerte_dia": {"nombre": "La Suerte Día (12:30 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟢 Fidelidad 91%"},
-        "real": {"nombre": "Lotería Real (12:55 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟢 Fidelidad 98%"},
-        "anguila_1pm": {"nombre": "Anguila Mediodía (1:00 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟡 Regular 84%"},
-        "gana_mas": {"nombre": "Gana Más (2:30 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟢 Fidelidad 97%"},
-        "suerte_tarde": {"nombre": "La Suerte Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🔴 Dispersión 68%"},
-        "anguila_6pm": {"nombre": "Anguila Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟢 Fidelidad 93%"},
-        "loteka": {"nombre": "Loteka (7:55 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🔴 Dispersión 72%"},
-        "primera_noche": {"nombre": "La Primera Noche (8:00 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟢 Fidelidad 95%"},
-        "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟢 Fidelidad 98%"},
-        "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟢 Fidelidad 99%"},
-        "anguila_9pm": {"nombre": "Anguila Noche (9:00 PM)", "premios": ["--", "--", "--"], "estado": "Sincronizando...", "volatilidad": "🟢 Fidelidad 96%"},
-        "kino_tv": {"nombre": "Kino TV Leidsa (8:55 PM)", "premios": ["--"] * 20, "estado": "Pendiente 20 Bolos", "volatilidad": "🟢 20 Bolos"},
-        "primitiva_esp": {"nombre": "La Primitiva (España)", "premios": ["--", "--", "--", "--", "--", "--"], "complementario": "--", "reintegro": "-", "estado": "Sorteo Jueves/Sábado 21:40h", "volatilidad": "🟢 Gaussiana"},
-        "euromillones": {"nombre": "Euromillones (Europa)", "premios": ["--", "--", "--", "--", "--"], "estrellas": ["-", "-"], "estado": "Sorteo Martes/Viernes 21:15h", "volatilidad": "🟢 Cuántica"},
-        "eurodreams_esp": {"nombre": "EuroDreams (Europa)", "premios": ["--", "--", "--", "--", "--", "--"], "sueno": "-", "estado": "Sorteo Lunes/Jueves 21:00h", "volatilidad": "🟢 6/40"}
-    }
+    if not RESULTADOS_OFICIALES_REALES:
+        ejecutar_scraper_profundo()
+
+    datos_loterias = cluster_universal_15_ia(hora_rd, dia_nombre)
+    resultados_oficiales = RESULTADOS_OFICIALES_REALES
 
     termometro = {
         "decenas_calientes": [
@@ -387,7 +521,7 @@ def index(request: Request):
     datos_json = json.dumps(datos_loterias)
     suenos_json = json.dumps(DICCIONARIO_SUENOS)
     auditoria_json = json.dumps(historial_auditoria)
-    premios_json = json.dumps(pizarra_inicial)
+    premios_json = json.dumps(resultados_oficiales)
     termometro_json = json.dumps(termometro)
 
     es_tarde_noche = datos_loterias["todas"]["es_tarde_noche"]
@@ -401,7 +535,10 @@ def index(request: Request):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>Shneyder IA Pro RD</title>
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="Expires" content="0">
+        <title>Shneyder IA Pro RD v31.0</title>
         <style>
             * {{ box-sizing: border-box; }}
             body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }}
@@ -437,6 +574,8 @@ def index(request: Request):
                 font-weight: 900;
                 color: #fff;
             }}
+
+            .btn-sync {{ background: #38bdf8; color: #000; border: none; border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 10px; cursor: pointer; }}
 
             .bingo-alert {{
                 background: linear-gradient(135deg, #064e3b, #022c22);
@@ -481,7 +620,6 @@ def index(request: Request):
                 gap: 6px;
             }}
 
-            /* TARJETA ESTRATEGIA DE HORARIOS */
             .matriz-card {{
                 background: linear-gradient(135deg, #1e1b4b, #111827);
                 border: 1px solid #c084fc;
@@ -530,6 +668,7 @@ def index(request: Request):
             .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
             #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
 
+            /* TODAS LAS PESTAÑAS VISIBLES */
             .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
             .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
             .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
@@ -614,7 +753,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v30.0 - Suite Total</p>
+                    <p>Titan Quantum v31.0 - Suite Total</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -622,7 +761,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- BANNER DE FASE DINÁMICO (6:00 PM TIRO DE GRACIA) -->
             <div class="banner-fase">
                 <span>{banner_txt}</span>
                 <button class="btn-sync" onclick="sincronizarResultadosEnVivo()">🔄 ACTUALIZAR</button>
@@ -661,7 +799,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- MATRIZ DE HORARIOS Y SALAS DE MAYOR RETORNO -->
             <div class="matriz-card">
                 <div style="color:#c084fc; font-weight:900; margin-bottom:4px; display:flex; justify-content:space-between;">
                     <span>📊 MATRIZ ESTRATÉGICA DE SALAS Y HORARIOS</span>
@@ -711,6 +848,7 @@ def index(request: Request):
             </div>
             <div id="sueno_resultado"></div>
 
+            <!-- 6 PESTAÑAS COMPLETAS -->
             <div class="tabs-scroll">
                 <button class="tab-btn active" onclick="cambiarTab('todas')">🌐 TODAS (RD)</button>
                 <button class="tab-btn tab-kino" onclick="cambiarTab('kino_leidsa')">👑 KINO LEIDSA</button>
@@ -765,7 +903,6 @@ def index(request: Request):
                         <span style="color:#f472b6;font-weight:900;font-size:13px;" id="jf_tripleta_txt">--</span>
                     </div>
 
-                    <!-- COBERTURA LATERAL (+1 / -1 Y REVÉS EN PALÉ) -->
                     <div class="cobertura-box">
                         <b style="color:#38bdf8;">🛡️ COBERTURA LATERAL BLINDADA:</b>
                         <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:11px;">
@@ -1226,6 +1363,26 @@ def index(request: Request):
                 const txtStatus = document.getElementById('txt_sync_status');
                 if (txtStatus) txtStatus.innerText = "⏳ Sincronizando en vivo...";
 
+                try {{
+                    const r = await fetch('/api/forzar_scraping');
+                    const data = await r.json();
+                    if (data.status === 'ok' && data.resultados) {{
+                        let huboOficial = false;
+                        for (let k in data.resultados) {{
+                            if (data.resultados[k].estado === 'Oficial RD') {{
+                                premios[k] = data.resultados[k];
+                                huboOficial = true;
+                            }}
+                        }}
+                        if (huboOficial) {{
+                            cargarPizarraPremios();
+                            cargarBingazos();
+                            if (txtStatus) txtStatus.innerText = "● Auto-Sincronizado (Servidor OK)";
+                            return;
+                        }}
+                    }}
+                }} catch(err) {{}}
+
                 const pasarelas = [
                     "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://loteriasdominicanas.com/?t=" + Date.now()),
                     "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent("https://loteriasdominicanas.com/?t=" + Date.now()),
@@ -1233,7 +1390,6 @@ def index(request: Request):
                 ];
 
                 let html = "";
-
                 for (let endpoint of pasarelas) {{
                     try {{
                         const resp = await fetch(endpoint, {{ cache: "no-store" }});
@@ -1244,16 +1400,13 @@ def index(request: Request):
                                 break;
                             }}
                         }}
-                    }} catch (err) {{
-                        continue;
-                    }}
+                    }} catch (err) {{ continue; }}
                 }}
 
                 if (html) {{
                     try {{
                         const doc = new DOMParser().parseFromString(html, "text/html");
                         const bloques = doc.querySelectorAll(".game-block");
-
                         let capturas = 0;
 
                         bloques.forEach(b => {{
