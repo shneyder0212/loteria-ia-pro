@@ -8,9 +8,10 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 import uvicorn
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v53.0 (Estable)")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum Definitivo")
 DB_PATH = "loteria_master_ai.db"
 
+PETICIONES_IP = {}
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
 def init_db():
@@ -338,7 +339,7 @@ def index(request: Request):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-        <title>Shneyder IA Pro RD v53.0</title>
+        <title>Shneyder IA Pro RD v54.0</title>
         <style>
             * { box-sizing: border-box; }
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }
@@ -424,7 +425,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v53.0</p>
+                    <p>Titan Quantum v54.0</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-clock" id="live_time">--:--:--</div>
@@ -920,7 +921,7 @@ def index(request: Request):
                         document.getElementById('jf_numeros_container').innerHTML = htmlB;
                         document.getElementById('jf_pales_txt').innerText = `[${jm.pale_1}] / [${jm.pale_2}]`;
                         document.getElementById('jf_tripleta_txt').innerText = `[${jm.tripleta}]`;
-                        document.getElementById('jf_lot_txt').innerText =jm.lot_fuerte;
+                        document.getElementById('jf_lot_txt').innerText = jm.lot_fuerte;
                         document.getElementById('jf_respaldo_txt').innerText = jm.lot_respaldo;
 
                         if (info.cobertura_lateral) {
@@ -991,7 +992,20 @@ def index(request: Request):
         </script>
     </body>
     </html>
-    """.replace("__BANNER_COLOR__", banner_color).replace("__BANNER_BORDE__", banner_borde).replace("__BANNER_TXT__", banner_txt).replace("__FECHA_STR__", fecha_str)
+    """
+
+    # Reemplazos limpios línea por línea para evitar pantallas blancas y errores de renderizado
+    html_final = html_template.replace("__BANNER_COLOR__", banner_color)
+    html_final = html_final.replace("__BANNER_BORDE__", banner_borde)
+    html_final = html_final.replace("__BANNER_TXT__", banner_txt)
+    html_final = html_final.replace("__FECHA_STR__", fecha_str)
+    html_final = html_final.replace("__DATOS_JSON__", datos_json)
+    html_final = html_final.replace("__SUENOS_JSON__", suenos_json)
+    html_final = html_final.replace("__AUDITORIA_JSON__", auditoria_json)
+    html_final = html_final.replace("__PREMIOS_JSON__", premios_json)
+    html_final = html_final.replace("__TERMOMETRO_JSON__", termometro_json)
+
+    return html_final
 
 if __name__ == "__main__":
     uvicorn.run("servidor_movil:app", host="0.0.0.0", port=10000, reload=True)
