@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 import uvicorn
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v65.0 Limpio")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v66.0 Limpio Real")
 DB_PATH = "loteria_master_ai.db"
 
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
@@ -400,6 +400,7 @@ def index(request: Request):
     hora_rd, fecha_str, dia_nombre = obtener_fechas_rd()
     datos_loterias = cluster_universal_15_ia(hora_rd, dia_nombre)
 
+    # Pizarra inicial totalmente limpia en estado Pendiente
     pizarra_inicial = {
         "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 94%"},
         "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
@@ -447,7 +448,7 @@ def index(request: Request):
         "sala": "Matriz 14 Salas Activa",
         "tipo": "⚡ HORA RD: {}".format(hora_rd.strftime('%I:%M %p')),
         "premio": "Sincronización Individual ({})".format(dia_nombre),
-        "detalle": "Pestañas de Loterías RD Separadas"
+        "detalle": "Pizarra limpia lista para ingresos manuales"
     }]
 
     datos_json = json.dumps(datos_loterias)
