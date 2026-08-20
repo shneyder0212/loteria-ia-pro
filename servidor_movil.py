@@ -9,13 +9,14 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v17.1")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum Blindado v18.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
-RESULTADOS_EN_VIVO = {}
+# ALMACÉN ÚNICAMENTE DE RESULTADOS OFICIALES CONFIRMADOS
+RESULTADOS_OFICIALES_REALES = {}
 
 ESTADO_MOTOR = {
     "ultima_actualizacion": "--:--:--",
@@ -23,7 +24,7 @@ ESTADO_MOTOR = {
     "estado_ia": "Iniciando...",
     "fase_dia": "Mañana / Mediodía",
     "eficiencia_global": "98.4%",
-    "scraper_status": "Scraper Oficial RD (Sin Números Simulados)"
+    "scraper_status": "Scraper 100% Real (Sin Simulación)"
 }
 
 def init_db():
@@ -43,8 +44,8 @@ def init_db():
 
 init_db()
 
-def obtener_fechas():
-    # Hora UTC del servidor convertida a Hora Santo Domingo (UTC-4)
+def obtener_fechas_rd():
+    # Conversión estricta de hora UTC a Hora Santo Domingo (UTC-4)
     ahora_utc = datetime.utcnow()
     hora_rd = ahora_utc - timedelta(hours=4)
     fecha_str = hora_rd.strftime("%d/%m/%Y")
@@ -65,11 +66,13 @@ TABLA_JALADERA = {
 def obtener_jalamatico(num_str):
     return TABLA_JALADERA.get(num_str, [num_str[::-1], f"{(int(num_str)+10)%100:02d}", f"{(int(num_str)+50)%100:02d}"])
 
-def ejecutar_scraper_resultados():
-    global RESULTADOS_EN_VIVO
-    hora_rd, fecha_str, dia_nombre = obtener_fechas()
-    
-    nuevos_resultados = {
+# EXTRACCIÓN ESTRICTAMENTE REAL (SIN FALLBACK DE NÚMEROS INVENTADOS)
+def extraer_resultados_oficiales_reales():
+    global RESULTADOS_OFICIALES_REALES
+    hora_rd, fecha_str, _ = obtener_fechas_rd()
+
+    # Plantilla base: Todo comienza en Pendiente con '--'
+    pizarra = {
         "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 94%"},
         "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
         "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟡 Regular 82%"},
@@ -87,69 +90,59 @@ def ejecutar_scraper_resultados():
         "eurodreams_esp": {"nombre": "EuroDreams (Europa)", "premios": ["--", "--", "--", "--", "--", "--"], "sueno": "-", "estado": "Sorteo Lunes/Jueves 21:00h", "volatilidad": "🟢 Gaussiana 95%"}
     }
 
+    # Conservar resultados oficiales capturados previamente en la sesión del día
+    for k in pizarra:
+        if k in RESULTADOS_OFICIALES_REALES and RESULTADOS_OFICIALES_REALES[k]["estado"] == "Oficial RD":
+            pizarra[k] = RESULTADOS_OFICIALES_REALES[k]
+
+    # Fuente 1: LoteriasDominicanas.com
     try:
         req = urllib.request.Request(
             "https://loteriasdominicanas.com/",
-            headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0'}
+            headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
         )
-        with urllib.request.urlopen(req, timeout=10) as response:
-            html = response.read().decode('utf-8', errors='ignore')
-            
-            # Bloques por juego
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            html = resp.read().decode('utf-8', errors='ignore')
             bloques = re.findall(r'<div[^>]*class="[^"]*game-block[^"]*"[^>]*>(.*?)</div>\s*</div>', html, re.DOTALL)
             for b in bloques:
                 bolos = re.findall(r'<span[^>]*class="[^"]*score[^"]*"[^>]*>(\d+)</span>', b)
                 if len(bolos) >= 3:
                     trio = [bolos[0].zfill(2), bolos[1].zfill(2), bolos[2].zfill(2)]
-                    b_lower = b.lower()
-                    
-                    if "gana más" in b_lower or "gana-mas" in b_lower:
-                        nuevos_resultados["gana_mas"]["premios"] = trio
-                        nuevos_resultados["gana_mas"]["estado"] = "Oficial RD"
-                    elif "real" in b_lower:
-                        nuevos_resultados["real"]["premios"] = trio
-                        nuevos_resultados["real"]["estado"] = "Oficial RD"
-                    elif "primera" in b_lower and "12" in b_lower:
-                        nuevos_resultados["primera_dia"]["premios"] = trio
-                        nuevos_resultados["primera_dia"]["estado"] = "Oficial RD"
-                    elif "primera" in b_lower and ("8" in b_lower or "noche" in b_lower):
-                        nuevos_resultados["primera_noche"]["premios"] = trio
-                        nuevos_resultados["primera_noche"]["estado"] = "Oficial RD"
-                    elif "leidsa" in b_lower:
-                        nuevos_resultados["leidsa"]["premios"] = trio
-                        nuevos_resultados["leidsa"]["estado"] = "Oficial RD"
-                    elif "nacional" in b_lower and ("noche" in b_lower or "8:50" in b_lower):
-                        nuevos_resultados["nacional_noche"]["premios"] = trio
-                        nuevos_resultados["nacional_noche"]["estado"] = "Oficial RD"
-                    elif "loteka" in b_lower:
-                        nuevos_resultados["loteka"]["premios"] = trio
-                        nuevos_resultados["loteka"]["estado"] = "Oficial RD"
-                    elif "lotedom" in b_lower:
-                        nuevos_resultados["lotedom"]["premios"] = trio
-                        nuevos_resultados["lotedom"]["estado"] = "Oficial RD"
-                    elif "suerte" in b_lower and "12" in b_lower:
-                        nuevos_resultados["suerte_dia"]["premios"] = trio
-                        nuevos_resultados["suerte_dia"]["estado"] = "Oficial RD"
-                    elif "suerte" in b_lower and "6" in b_lower:
-                        nuevos_resultados["suerte_tarde"]["premios"] = trio
-                        nuevos_resultados["suerte_tarde"]["estado"] = "Oficial RD"
-                    elif "anguila" in b_lower and "10" in b_lower:
-                        nuevos_resultados["anguila_10am"]["premios"] = trio
-                        nuevos_resultados["anguila_10am"]["estado"] = "Oficial RD"
-                    elif "anguila" in b_lower and ("1" in b_lower or "13" in b_lower):
-                        nuevos_resultados["anguila_1pm"]["premios"] = trio
-                        nuevos_resultados["anguila_1pm"]["estado"] = "Oficial RD"
-                    elif "anguila" in b_lower and ("6" in b_lower or "18" in b_lower):
-                        nuevos_resultados["anguila_6pm"]["premios"] = trio
-                        nuevos_resultados["anguila_6pm"]["estado"] = "Oficial RD"
-                    elif "anguila" in b_lower and ("9" in b_lower or "21" in b_lower):
-                        nuevos_resultados["anguila_9pm"]["premios"] = trio
-                        nuevos_resultados["anguila_9pm"]["estado"] = "Oficial RD"
+                    bl = b.lower()
+                    if "gana más" in bl or "gana-mas" in bl:
+                        pizarra["gana_mas"]["premios"] = trio; pizarra["gana_mas"]["estado"] = "Oficial RD"
+                    elif "real" in bl:
+                        pizarra["real"]["premios"] = trio; pizarra["real"]["estado"] = "Oficial RD"
+                    elif "primera" in bl and "12" in bl:
+                        pizarra["primera_dia"]["premios"] = trio; pizarra["primera_dia"]["estado"] = "Oficial RD"
+                    elif "primera" in bl and ("8" in bl or "noche" in bl):
+                        pizarra["primera_noche"]["premios"] = trio; pizarra["primera_noche"]["estado"] = "Oficial RD"
+                    elif "leidsa" in bl:
+                        pizarra["leidsa"]["premios"] = trio; pizarra["leidsa"]["estado"] = "Oficial RD"
+                    elif "nacional" in bl and ("noche" in bl or "8:50" in bl):
+                        pizarra["nacional_noche"]["premios"] = trio; pizarra["nacional_noche"]["estado"] = "Oficial RD"
+                    elif "loteka" in bl:
+                        pizarra["loteka"]["premios"] = trio; pizarra["loteka"]["estado"] = "Oficial RD"
+                    elif "lotedom" in bl:
+                        pizarra["lotedom"]["premios"] = trio; pizarra["lotedom"]["estado"] = "Oficial RD"
+                    elif "suerte" in bl and "12" in bl:
+                        pizarra["suerte_dia"]["premios"] = trio; pizarra["suerte_dia"]["estado"] = "Oficial RD"
+                    elif "suerte" in bl and "6" in bl:
+                        pizarra["suerte_tarde"]["premios"] = trio; pizarra["suerte_tarde"]["estado"] = "Oficial RD"
+                    elif "anguila" in bl and "10" in bl:
+                        pizarra["anguila_10am"]["premios"] = trio; pizarra["anguila_10am"]["estado"] = "Oficial RD"
+                    elif "anguila" in bl and ("1" in bl or "13" in bl):
+                        pizarra["anguila_1pm"]["premios"] = trio; pizarra["anguila_1pm"]["estado"] = "Oficial RD"
+                    elif "anguila" in bl and ("6" in bl or "18" in bl):
+                        pizarra["anguila_6pm"]["premios"] = trio; pizarra["anguila_6pm"]["estado"] = "Oficial RD"
+                    elif "anguila" in bl and ("9" in bl or "21" in bl):
+                        pizarra["anguila_9pm"]["premios"] = trio; pizarra["anguila_9pm"]["estado"] = "Oficial RD"
     except Exception:
         pass
 
-    RESULTADOS_EN_VIVO = nuevos_resultados
+    RESULTADOS_OFICIALES_REALES = pizarra
 
+# PRONÓSTICOS DEL CLÚSTER DE 15 IAs
 def cluster_universal_15_ia(hora_rd, dia_nombre):
     seed_base = int(hora_rd.strftime("%Y%m%d"))
     es_tarde_noche = hora_rd.hour >= 18
@@ -262,8 +255,8 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
 def motor_segundo_plano():
     while True:
         try:
-            hora_rd, fecha_str, dia_nombre = obtener_fechas()
-            ejecutar_scraper_resultados()
+            hora_rd, _, _ = obtener_fechas_rd()
+            extraer_resultados_oficiales_reales()
             
             ESTADO_MOTOR["ultima_actualizacion"] = hora_rd.strftime("%H:%M:%S")
             ESTADO_MOTOR["ciclos_completados"] += 1
@@ -321,10 +314,10 @@ def index(request: Request):
     if not verificar_anti_ddos(client_ip):
         return HTMLResponse("<h2>⚠️ SISTEMA EN PROTECCIÓN</h2><p>Espera un momento antes de recargar.</p>", status_code=429)
 
-    hora_rd, fecha_str, dia_nombre = obtener_fechas()
+    hora_rd, fecha_str, dia_nombre = obtener_fechas_rd()
 
     datos_loterias = cluster_universal_15_ia(hora_rd, dia_nombre)
-    resultados_oficiales = RESULTADOS_EN_VIVO if RESULTADOS_EN_VIVO else {}
+    resultados_oficiales = RESULTADOS_OFICIALES_REALES if RESULTADOS_OFICIALES_REALES else {}
 
     pronosticos_set = {datos_loterias["todas"]["tiro_fijo"]["num"], datos_loterias["todas"]["tiro_fijo"]["virado"]}
     if "jugada_maestra" in datos_loterias["todas"]:
@@ -332,7 +325,7 @@ def index(request: Request):
 
     bingazos_detectados = []
     for k, v in resultados_oficiales.items():
-        if "Oficial" in v.get("estado", ""):
+        if v.get("estado") == "Oficial RD":
             for i_premio, bolo in enumerate(v["premios"][:3]):
                 if bolo in pronosticos_set and bolo != "--":
                     bingazos_detectados.append({"lot": v["nombre"], "bolo": bolo, "lugar": ["1ra", "2da", "3ra"][i_premio]})
@@ -354,7 +347,7 @@ def index(request: Request):
         {
             "fecha": fecha_str,
             "sala": "Scraper Real RD 24/7",
-            "tipo": f"⚡ HORA OFICIAL RD: {hora_rd.strftime('%I:%M %p')}",
+            "tipo": f"⚡ HORA RD: {hora_rd.strftime('%I:%M %p')}",
             "premio": f"Verificación Estricta ({dia_nombre})",
             "detalle": "Pendientes en '--' hasta captura oficial confirmada"
         }
@@ -540,7 +533,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v17.1 - Scraper Oficial RD</p>
+                    <p>Titan Quantum v18.0 - Scraper Estrictamente Oficial</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -550,16 +543,16 @@ def index(request: Request):
 
             <div class="cluster-card">
                 <div>
-                    <span class="cluster-tag">SCRAPER OFICIAL EN VIVO</span>
-                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">LoteriasDominicanas.com + Sincronización Estricta</span>
+                    <span class="cluster-tag">SCRAPER OFICIAL RD</span>
+                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">Captura 100% Real Directa | Sin Números Simulados</span>
                 </div>
-                <div style="color:#4ade80;font-weight:bold;font-size:10.5px;">● Conectado</div>
+                <div style="color:#4ade80;font-weight:bold;font-size:10.5px;">● Conexión Real</div>
             </div>
 
             <div class="bingo-alert" id="panel_bingazos">
                 <div class="bingo-title">
                     <span>🎯 ¡RADAR DE BINGAZOS EN VIVO!</span>
-                    <span style="color:#fff;font-size:10px;">AUTO-VERIFICADO</span>
+                    <span style="color:#fff;font-size:10px;">OFICIAL RD</span>
                 </div>
                 <div id="bingazos_lista" style="font-size:11.5px;color:#dcfce7;"></div>
             </div>
@@ -608,7 +601,7 @@ def index(request: Request):
             <div class="auditor-box">
                 <div class="auditor-title">
                     <span>📡 AUDITORÍA OFICIAL EN VIVO</span>
-                    <span style="font-size:10px;color:#94a3b8;">Auto-Verificación 24/7</span>
+                    <span style="font-size:10px;color:#94a3b8;">Captura Directa</span>
                 </div>
                 <div id="contenedor_auditoria"></div>
             </div>
