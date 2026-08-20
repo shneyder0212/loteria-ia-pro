@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 import uvicorn
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v66.0 Limpio Real")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v66.1")
 DB_PATH = "loteria_master_ai.db"
 
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
@@ -400,22 +400,21 @@ def index(request: Request):
     hora_rd, fecha_str, dia_nombre = obtener_fechas_rd()
     datos_loterias = cluster_universal_15_ia(hora_rd, dia_nombre)
 
-    # Pizarra inicial totalmente limpia en estado Pendiente
     pizarra_inicial = {
-        "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 94%"},
-        "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
-        "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟡 Regular 82%"},
-        "suerte_dia": {"nombre": "La Suerte Día (12:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 91%"},
-        "real": {"nombre": "Lotería Real (12:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 98%"},
-        "anguila_1pm": {"nombre": "Anguila Mediodía (1:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟡 Regular 84%"},
-        "gana_mas": {"nombre": "Gana Más (2:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 97%"},
-        "suerte_tarde": {"nombre": "La Suerte Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🔴 Dispersión 68%"},
-        "anguila_6pm": {"nombre": "Anguila Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 93%"},
-        "loteka": {"nombre": "Loteka (7:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🔴 Dispersión 72%"},
-        "primera_noche": {"nombre": "La Primera Noche (8:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 95%"},
-        "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 98%"},
-        "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 99%"},
-        "anguila_9pm": {"nombre": "Anguila Noche (9:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"}
+        "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "suerte_dia": {"nombre": "La Suerte Día (12:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "real": {"nombre": "Lotería Real (12:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "anguila_1pm": {"nombre": "Anguila Mediodía (1:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "gana_mas": {"nombre": "Gana Más (2:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "suerte_tarde": {"nombre": "La Suerte Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "anguila_6pm": {"nombre": "Anguila Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "loteka": {"nombre": "Loteka (7:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "primera_noche": {"nombre": "La Primera Noche (8:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
+        "anguila_9pm": {"nombre": "Anguila Noche (9:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"}
     }
 
     try:
@@ -448,7 +447,7 @@ def index(request: Request):
         "sala": "Matriz 14 Salas Activa",
         "tipo": "⚡ HORA RD: {}".format(hora_rd.strftime('%I:%M %p')),
         "premio": "Sincronización Individual ({})".format(dia_nombre),
-        "detalle": "Pizarra limpia lista para ingresos manuales"
+        "detalle": "Pizarra limpia en espera de resultados reales"
     }]
 
     datos_json = json.dumps(datos_loterias)
@@ -469,7 +468,7 @@ def index(request: Request):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-        <title>Shneyder IA Pro RD v65.0</title>
+        <title>Shneyder IA Pro RD v66.1</title>
         <style>
             * {{ box-sizing: border-box; }}
             body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }}
@@ -554,7 +553,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v65.0</p>
+                    <p>Titan Quantum v66.1</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-clock" id="live_time">--:--:--</div>
@@ -590,7 +589,7 @@ def index(request: Request):
                 </form>
             </div>
 
-            <div class="banner-fase" style="background: __BANNER_COLOR__; border: 2px solid __BANNER_BORDE__;">
+            <div class="banner-fase">
                 <span>__BANNER_TXT__</span>
             </div>
 
