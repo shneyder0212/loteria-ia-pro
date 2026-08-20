@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum Max v22.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v23.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
@@ -65,6 +65,25 @@ TABLA_JALADERA = {
 def obtener_jalamatico(num_str):
     return TABLA_JALADERA.get(num_str, [num_str[::-1], f"{(int(num_str)+10)%100:02d}", f"{(int(num_str)+50)%100:02d}"])
 
+# EXTRACTOR CON TRIPLE PATRÓN DE PARSEO
+def extraer_bolos_de_bloque(html_bloque):
+    # Patrón 1: span o div con clase score
+    bolos = re.findall(r'<(?:span|div)[^>]*class="[^"]*score[^"]*"[^>]*>\s*(\d{1,2})\s*</', html_bloque, re.IGNORECASE)
+    if len(bolos) >= 3:
+        return [b.zfill(2) for b in bolos[:3]]
+    
+    # Patrón 2: bolos verdes circulares por atributos
+    bolos2 = re.findall(r'>\s*(\d{1,2})\s*</span>', html_bloque)
+    if len(bolos2) >= 3:
+        return [b.zfill(2) for b in bolos2[:3]]
+        
+    # Patrón 3: dígitos directos de dos cifras aislados
+    bolos3 = re.findall(r'\b(\d{2})\b', html_bloque)
+    if len(bolos3) >= 3:
+        return bolos3[:3]
+        
+    return None
+
 def ejecutar_scraper_profundo():
     global RESULTADOS_OFICIALES_REALES
     _, fecha_str, _ = obtener_fechas_rd()
@@ -90,6 +109,7 @@ def ejecutar_scraper_profundo():
         "eurodreams_esp": {"nombre": "EuroDreams (Europa)", "premios": ["--", "--", "--", "--", "--", "--"], "sueno": "-", "estado": "Sorteo Lunes/Jueves 21:00h", "volatilidad": "🟢 6/40"}
     }
 
+    # Conservar resultados oficiales capturados
     for k in pizarra:
         if k in RESULTADOS_OFICIALES_REALES and RESULTADOS_OFICIALES_REALES[k]["estado"] == "Oficial RD":
             pizarra[k] = RESULTADOS_OFICIALES_REALES[k]
@@ -99,28 +119,31 @@ def ejecutar_scraper_profundo():
     ctx.verify_mode = ssl.CERT_NONE
 
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
+        'Accept-Language': 'es-DO,es-ES;q=0.9,es;q=0.8'
     }
 
     capturas = 0
+
+    # FUENTE: loteriasdominicanas.com
     try:
         req = urllib.request.Request("https://loteriasdominicanas.com/", headers=headers)
-        with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
+        with urllib.request.urlopen(req, timeout=12, context=ctx) as resp:
             html = resp.read().decode('utf-8', errors='ignore')
-            patron_juegos = re.findall(r'(<div[^>]*class="[^"]*game-[^"]*"[^>]*>.*?</div>\s*</div>)', html, re.DOTALL)
-            for bloque in patron_juegos:
-                bolos = re.findall(r'<span[^>]*class="[^"]*score[^"]*"[^>]*>\s*(\d+)\s*</span>', bloque)
-                if len(bolos) >= 3:
-                    trio = [bolos[0].zfill(2), bolos[1].zfill(2), bolos[2].zfill(2)]
-                    bl = bloque.lower()
-                    if ("gana más" in bl or "gana-mas" in bl) and pizarra["gana_mas"]["premios"][0] == "--":
+            
+            # Segmentar por bloques individuales de loterías
+            bloques = re.findall(r'<div[^>]*class="[^"]*game-[^"]*"[^>]*>[\s\S]*?</div>\s*</div>', html)
+            for b in bloques:
+                trio = extraer_bolos_de_bloque(b)
+                if trio:
+                    bl = b.lower()
+                    if ("primera" in bl and ("12" in bl or "día" in bl or "dia" in bl)) and pizarra["primera_dia"]["premios"][0] == "--":
+                        pizarra["primera_dia"]["premios"] = trio; pizarra["primera_dia"]["estado"] = "Oficial RD"; capturas += 1
+                    elif ("gana más" in bl or "gana-mas" in bl) and pizarra["gana_mas"]["premios"][0] == "--":
                         pizarra["gana_mas"]["premios"] = trio; pizarra["gana_mas"]["estado"] = "Oficial RD"; capturas += 1
                     elif "real" in bl and pizarra["real"]["premios"][0] == "--":
                         pizarra["real"]["premios"] = trio; pizarra["real"]["estado"] = "Oficial RD"; capturas += 1
-                    elif "primera" in bl and ("12" in bl or "día" in bl or "dia" in bl) and pizarra["primera_dia"]["premios"][0] == "--":
-                        pizarra["primera_dia"]["premios"] = trio; pizarra["primera_dia"]["estado"] = "Oficial RD"; capturas += 1
                     elif "primera" in bl and ("noche" in bl or "8" in bl or "20" in bl) and pizarra["primera_noche"]["premios"][0] == "--":
                         pizarra["primera_noche"]["premios"] = trio; pizarra["primera_noche"]["estado"] = "Oficial RD"; capturas += 1
                     elif "leidsa" in bl and pizarra["leidsa"]["premios"][0] == "--":
@@ -144,10 +167,10 @@ def ejecutar_scraper_profundo():
                     elif "anguila" in bl and ("9" in bl or "21" in bl) and pizarra["anguila_9pm"]["premios"][0] == "--":
                         pizarra["anguila_9pm"]["premios"] = trio; pizarra["anguila_9pm"]["estado"] = "Oficial RD"; capturas += 1
     except Exception as e:
-        ESTADO_MOTOR["scraper_log"] = f"F1 error: {str(e)[:30]}"
+        ESTADO_MOTOR["scraper_log"] = f"Error conexión: {str(e)[:30]}"
 
     RESULTADOS_OFICIALES_REALES = pizarra
-    ESTADO_MOTOR["scraper_log"] = f"Última captura: {capturas} salas oficializadas"
+    ESTADO_MOTOR["scraper_log"] = f"Última captura: {capturas} salas confirmadas"
 
 def cluster_universal_15_ia(hora_rd, dia_nombre):
     seed_base = int(hora_rd.strftime("%Y%m%d"))
@@ -678,7 +701,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum Max v22.0 - Panel Completo</p>
+                    <p>Titan Quantum v23.0 - Extracción Oficial</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -688,8 +711,8 @@ def index(request: Request):
 
             <div class="cluster-card">
                 <div>
-                    <span class="cluster-tag">CLÚSTER TOTAL 15 IAs</span>
-                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">RD + Kino Leidsa + Primitiva + Euromillones + EuroDreams + Anguila</span>
+                    <span class="cluster-tag">SCRAPER OFICIAL RD</span>
+                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">loteriasdominicanas.com</span>
                 </div>
                 <div>
                     <button class="btn-sync" onclick="forzarSincronizacion()">🔄 SINCRONIZAR AHORA</button>
