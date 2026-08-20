@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v34.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v37.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
@@ -66,13 +66,12 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     lot_fuerte_principal = pool_salas[0]
     lot_fuerte_respaldo = pool_salas[1]
 
-    decenas_lista = [("00-09", 0), ("10-19", 10), ("20-29", 20), ("40-49", 40), ("70-79", 70), ("80-89", 80)]
-    decena_elegida_nombre, decena_base = rng.choice(decenas_lista)
+    # BLINDAJE MATEMÁTICO: Decenas puras para evitar discordancias
+    decenas_puras = [("00-09", 0), ("10-19", 10), ("20-29", 20), ("30-39", 30), ("40-49", 40), ("50-59", 50), ("60-69", 60), ("70-79", 70), ("80-89", 80)]
+    decena_elegida_nombre, decena_base = rng.choice(decenas_puras)
     
-    terminal_1 = rng.choice([6, 8, 2, 4, 7])
-    terminal_2 = rng.choice([8, 2, 9, 3, 5]) if terminal_1 != 8 else 2
-
-    n1_int = decena_base + (terminal_1 % 10)
+    terminal = rng.choice([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    n1_int = decena_base + terminal
     n1 = f"{n1_int:02d}"
 
     gemelos_resonantes = ["88", "11", "22", "66", "77", "00", "55"]
@@ -111,6 +110,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"cruse": f"{n3} (Tarde) × {n1_reves} (Noche)", "salas": "Gana Más 2:30 PM × Nacional Noche 8:50 PM", "fuerza": 96.4}
     ]
 
+    # KINO LEIDSA TV (1-80)
     kino_duenos = [f"{n:02d}" for n in sorted(rng.sample(range(1, 81), 10))]
     def gen_kino(cant): return " - ".join([f"{n:02d}" for n in sorted(rng.sample(range(1, 81), cant))])
     kino_bloques_5 = [
@@ -119,6 +119,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     ]
     kino_bloques_7 = [{"bloque": gen_kino(7), "paridad": "4 Impares / 3 Pares", "fuerza": 99.1, "ia_origen": "IA-07 Optimizador Genético"}]
 
+    # LA PRIMITIVA (6/49)
     def gen_prim():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 50), 6))
@@ -134,6 +135,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"combinacion": " - ".join([f"{n:02d}" for n in prim_nums2]), "reintegro": str(rng.randint(0, 9)), "fuerza": 96.5, "tipo": "IA-09 Algoritmo Delta"}
     ]
 
+    # EUROMILLONES (5/50 + 2 ESTRELLAS)
     def gen_euro():
         for _ in range(500):
             comb = sorted(rng.sample(range(1, 51), 5))
@@ -142,6 +144,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     euro_nums = gen_euro()
     euro_e1, euro_e2 = f"{rng.randint(1, 6):02d}", f"{rng.randint(7, 12):02d}"
 
+    # EURODREAMS (6/40 + SUEÑO)
     def gen_ed():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 41), 6))
@@ -157,6 +160,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         "apuestas": [{"combinacion": " - ".join([f"{n:02d}" for n in ed_nums1]), "sueno": ed_sueno, "fuerza": 98.9, "tipo": "IA Gaussiana 6/40 (Suma 95-155)"}]
     }
 
+    # ANGUILA CASCADA 4X
     anguila_cascada_data = {
         "10am": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 98.1, "estado": "Tanda Apertura"},
         "1pm": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 97.5, "estado": "Cascada Mediodía"},
@@ -185,7 +189,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
             "dictamen": {
                 "flujo": "ANCLAJE ESTRICTO 100% ACOPLADO",
                 "decena": f"Decena Fuerte [{decena_elegida_nombre}]",
-                "terminal": f"Terminales {terminal_1}, {terminal_2} y {(terminal_1+2)%10}",
+                "terminal": f"Terminales {n1[-1]}",
                 "pareja": "ALTA (Gemelos y Espejos en Tensión)",
                 "digito_fuerte": f"Dígitos {n1[0]} y {n1[1]}",
                 "presion": f"🎯 Foco Directo: {lot_fuerte_principal}",
@@ -324,12 +328,20 @@ def index(request: Request):
     datos_loterias = cluster_universal_15_ia(hora_rd, dia_nombre)
 
     pizarra_inicial = {
+        "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 94%"},
         "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
+        "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟡 Regular 82%"},
+        "suerte_dia": {"nombre": "La Suerte Día (12:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 91%"},
         "real": {"nombre": "Lotería Real (12:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 98%"},
+        "anguila_1pm": {"nombre": "Anguila Mediodía (1:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟡 Regular 84%"},
         "gana_mas": {"nombre": "Gana Más (2:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 97%"},
+        "suerte_tarde": {"nombre": "La Suerte Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🔴 Dispersión 68%"},
+        "anguila_6pm": {"nombre": "Anguila Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 93%"},
         "loteka": {"nombre": "Loteka (7:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🔴 Dispersión 72%"},
+        "primera_noche": {"nombre": "La Primera Noche (8:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 95%"},
         "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 98%"},
-        "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 99%"}
+        "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 99%"},
+        "anguila_9pm": {"nombre": "Anguila Noche (9:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"}
     }
 
     try:
@@ -338,7 +350,8 @@ def index(request: Request):
         cur.execute("SELECT clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad FROM resultados_guardados WHERE fecha = ?", (fecha_str,))
         for f in cur.fetchall():
             c_key, nom, b1, b2, b3, st, vol = f
-            pizarra_inicial[c_key] = {"nombre": nom, "premios": [b1, b2, b3], "estado": st, "volatilidad": vol}
+            if c_key in pizarra_inicial:
+                pizarra_inicial[c_key] = {"nombre": nom, "premios": [b1, b2, b3], "estado": st, "volatilidad": vol}
         conn.close()
     except Exception:
         pass
@@ -382,55 +395,33 @@ def index(request: Request):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-        <title>Shneyder IA Pro RD v32.0</title>
+        <title>Shneyder IA Pro RD v37.0</title>
         <style>
             * {{ box-sizing: border-box; }}
             body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }}
             .main-wrapper {{ max-width: 900px; margin: 0 auto; }}
-
-            .brand {{ 
-                display: flex; justify-content: space-between; align-items: center; 
-                background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 12px; 
-                padding: 12px 16px; margin-bottom: 12px; border: 1px solid #38bdf8; 
-            }}
+            .brand {{ display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; border: 1px solid #38bdf8; }}
             .brand-left h1 {{ font-size: 20px; color: #38bdf8; margin: 0; font-weight: 900; }}
             .brand-left p {{ font-size: 10px; color: #94a3b8; margin: 3px 0 0 0; text-transform: uppercase; }}
             .brand-clock {{ font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; }}
-
-            .banner-fase {{
-                background: {banner_color}; border: 2px solid {banner_borde};
-                border-radius: 10px; padding: 8px 12px; margin-bottom: 12px;
-                display: flex; justify-content: space-between; align-items: center;
-                font-size: 11px; font-weight: 900; color: #fff;
-            }}
-
-            .banca-panel {{
-                background: linear-gradient(135deg, #064e3b, #022c22);
-                border: 2px solid #22c55e; border-radius: 12px; padding: 12px; margin-bottom: 12px;
-            }}
+            .banner-fase {{ background: {banner_color}; border: 2px solid {banner_borde}; border-radius: 10px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 900; color: #fff; }}
+            .banca-panel {{ background: linear-gradient(135deg, #064e3b, #022c22); border: 2px solid #22c55e; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
             .banca-form {{ display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }}
             .banca-input, .banca-select {{ background: #0f172a; border: 1px solid #22c55e; color: #fff; padding: 6px; border-radius: 6px; font-size: 12px; }}
             .banca-btn {{ background: #22c55e; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }}
-
-            .sniper-card {{ 
-                background: linear-gradient(135deg, #1e1b4b, #0f172a); border: 2px solid #818cf8; 
-                border-radius: 12px; padding: 14px; margin-bottom: 12px; 
-            }}
+            .sniper-card {{ background: linear-gradient(135deg, #1e1b4b, #0f172a); border: 2px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 12px; }}
             .sniper-grid {{ display: flex; justify-content: space-around; align-items: center; text-align: center; margin-bottom: 10px; }}
             .sniper-item b {{ font-size: 10px; color: #a5b4fc; text-transform: uppercase; display: block; }}
             .sniper-num {{ font-size: 26px; font-weight: 900; color: #38bdf8; }}
             .sniper-badge {{ font-size: 13px; font-weight: bold; color: #4ade80; }}
             .sniper-lot-box {{ background: rgba(15, 23, 42, 0.8); border: 1px solid #38bdf8; border-radius: 8px; padding: 6px 10px; text-align: center; font-size: 12px; display: flex; justify-content: center; align-items: center; gap: 6px; }}
-
             .matriz-card {{ background: linear-gradient(135deg, #1e1b4b, #111827); border: 1px solid #c084fc; border-radius: 12px; padding: 10px; margin-bottom: 12px; font-size: 11.5px; }}
             .matriz-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }}
             .matriz-box {{ background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px; }}
-
             .termo-card {{ background: #111c30; border: 1px solid #f97316; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
             .termo-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; font-size: 11px; }}
             .termo-box {{ background: #18263e; padding: 10px; border-radius: 8px; border: 1px solid #283e60; }}
             .termo-row {{ margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); }}
-
             .pizarra-card {{ background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
             .pizarra-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 10px; }}
             .lot-prize-card {{ background: #182234; border: 1px solid #28384e; border-radius: 8px; padding: 8px 10px; }}
@@ -438,17 +429,15 @@ def index(request: Request):
             .lot-balls-row {{ display: flex; gap: 8px; align-items: center; }}
             .prize-ball {{ width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; color: #000; }}
             .ball-1ra {{ background: #22c55e; }} .ball-2da {{ background: #38bdf8; }} .ball-3ra {{ background: #facc15; }}
-
             .auditor-box {{ background: #0f172a; border: 1px solid #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
             .auditor-title {{ color: #4ade80; font-weight: 800; margin-bottom: 6px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }}
             .auditor-item {{ padding: 5px 0; border-bottom: 1px solid #1e293b; font-size: 11.5px; }}
-
             .search-box {{ background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 10px; margin-bottom: 12px; display: flex; gap: 8px; }}
             .search-input {{ flex: 1; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none; }}
             .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
             #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
-
-            /* 6 PESTAÑAS COMPLETAS */
+            
+            /* BARRA DE 6 PESTAÑAS */
             .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
             .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
             .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
@@ -457,36 +446,29 @@ def index(request: Request):
             .tab-euro {{ background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; font-weight: 900; }}
             .tab-ed {{ background: linear-gradient(135deg, #7c3aed, #4c1d95); color: #fff; font-weight: 900; }}
             .tab-ang {{ background: linear-gradient(135deg, #059669, #065f46); color: #fff; font-weight: 900; }}
-
+            
             .btn-actions {{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }}
             .btn-wa {{ width: 100%; background: #22c55e; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 13px; cursor: pointer; }}
             .btn-ticket {{ width: 100%; background: #38bdf8; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 13px; cursor: pointer; }}
-
             .dictamen-box {{ background: #0f172a; border: 1px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 12px; }}
             .dictamen-box h3 {{ margin: 0 0 8px 0; color: #38bdf8; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }}
             .dictamen-item {{ margin-bottom: 5px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 3px; }}
             .dictamen-item b {{ color: #94a3b8; }}
             .dictamen-val {{ color: #f8fafc; font-weight: bold; }}
             .presion-alert {{ background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 8px; border-radius: 8px; margin-top: 8px; font-size: 11px; font-weight: bold; text-align: center; }}
-
-            .jugada-formada-box {{
-                background: linear-gradient(135deg, #1e1b4b, #172554); border: 2px solid #facc15;
-                border-radius: 10px; padding: 12px; margin-top: 12px; box-shadow: 0 4px 12px rgba(250, 204, 21, 0.2);
-            }}
+            .jugada-formada-box {{ background: linear-gradient(135deg, #1e1b4b, #172554); border: 2px solid #facc15; border-radius: 10px; padding: 12px; margin-top: 12px; box-shadow: 0 4px 12px rgba(250, 204, 21, 0.2); }}
             .jf-title {{ color: #facc15; font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(250, 204, 21, 0.3); padding-bottom: 4px; }}
             .jf-lot-box {{ background: rgba(0, 0, 0, 0.4); border: 1px solid #38bdf8; border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; font-size: 11.5px; }}
             .jf-row {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; }}
             .jf-balls {{ display: flex; gap: 6px; }}
             .jf-ball {{ background: #facc15; color: #0f172a; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 6px; }}
             .cobertura-box {{ background: rgba(56, 189, 248, 0.1); border: 1px dashed #38bdf8; border-radius: 8px; padding: 8px; margin-top: 8px; font-size: 11.5px; }}
-
             .card {{ background: #131d31; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid #233249; }}
             h2 {{ font-size: 14px; margin-top: 0; padding-bottom: 6px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }}
             .table-container {{ max-height: 420px; overflow-y: auto; }}
             table {{ width: 100%; border-collapse: collapse; text-align: center; font-size: 12px; }}
             th {{ background: #1e293b; padding: 6px 2px; color: #94a3b8; font-size: 11px; position: sticky; top: 0; }}
             td {{ padding: 8px 3px; border-bottom: 1px solid #1e293b; }}
-
             .balls-container {{ display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }}
             .ball-kino {{ background: #eab308; color: #000; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }}
             .ball-primitiva {{ background: #ef4444; color: #fff; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }}
@@ -502,7 +484,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v32.0</p>
+                    <p>Titan Quantum v37.0</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-clock" id="live_time">--:--:--</div>
@@ -532,14 +514,6 @@ def index(request: Request):
 
             <div class="banner-fase">
                 <span>{banner_txt}</span>
-            </div>
-
-            <div class="bingo-alert" id="panel_bingazos">
-                <div class="bingo-title">
-                    <span>🎯 ¡RADAR DE BINGAZOS EN VIVO!</span>
-                    <span style="color:#fff;font-size:10px;">OFICIAL RD</span>
-                </div>
-                <div id="bingazos_lista" style="font-size:11.5px;color:#dcfce7;"></div>
             </div>
 
             <div class="sniper-card">
@@ -595,7 +569,7 @@ def index(request: Request):
             <div class="pizarra-card">
                 <div style="font-size:14px;font-weight:900;color:#38bdf8;display:flex;justify-content:space-between;align-items:center;">
                     <span>🏆 NÚMEROS PREMIADOS (OFICIALES RD)</span>
-                    <span style="font-size:11px;color:#4ade80;">● Sincronizado</span>
+                    <span style="font-size:11px;color:#4ade80;">● Modo Banca Activo</span>
                 </div>
                 <div class="pizarra-grid" id="pizarra_contenedor"></div>
             </div>
@@ -905,16 +879,15 @@ def index(request: Request):
                     document.getElementById('d_presion').innerText = info.dictamen.presion;
                 }}
 
-                document.getElementById('seccion_kino').style.display = 'none';
-                document.getElementById('seccion_primitiva').style.display = 'none';
-                document.getElementById('seccion_euromillones').style.display = 'none';
-                document.getElementById('seccion_eurodreams').style.display = 'none';
-                document.getElementById('seccion_anguila').style.display = 'none';
-                document.getElementById('seccion_tradicional').style.display = 'none';
-                document.getElementById('caja_jugada_formada').style.display = 'none';
+                document.getElementById('seccion_kino').style.display = (tabActual === 'kino_leidsa') ? 'block' : 'none';
+                document.getElementById('seccion_primitiva').style.display = (tabActual === 'primitiva_esp') ? 'block' : 'none';
+                document.getElementById('seccion_euromillones').style.display = (tabActual === 'euromillones') ? 'block' : 'none';
+                document.getElementById('seccion_eurodreams').style.display = (tabActual === 'eurodreams') ? 'block' : 'none';
+                document.getElementById('seccion_anguila').style.display = (tabActual === 'anguila_cascada') ? 'block' : 'none';
+                document.getElementById('seccion_tradicional').style.display = (tabActual === 'todas') ? 'block' : 'none';
+                document.getElementById('caja_jugada_formada').style.display = (tabActual === 'todas') ? 'block' : 'none';
 
                 if (info.tipo_juego === 'kino') {{
-                    document.getElementById('seccion_kino').style.display = 'block';
                     const kd = info.kino_data;
                     document.getElementById('kino_estado_txt').innerText = kd.estado_tombola;
                     document.getElementById('kino_paridad_txt').innerText = kd.paridad_optima;
@@ -937,7 +910,6 @@ def index(request: Request):
                     document.getElementById('tabla_kino_7').innerHTML = htmlK7;
 
                 }} else if (info.tipo_juego === 'primitiva') {{
-                    document.getElementById('seccion_primitiva').style.display = 'block';
                     const pd = info.primitiva_data;
                     document.getElementById('prim_reintegro').innerText = pd.reintegro;
                     document.getElementById('prim_comp').innerText = pd.complementario;
@@ -952,7 +924,6 @@ def index(request: Request):
                     document.getElementById('tabla_primitiva').innerHTML = htmlP;
 
                 }} else if (info.tipo_juego === 'euromillones') {{
-                    document.getElementById('seccion_euromillones').style.display = 'block';
                     const ed = info.euro_data;
                     document.getElementById('euro_e1').innerText = ed.estrellas_fijas[0];
                     document.getElementById('euro_e2').innerText = ed.estrellas_fijas[1];
@@ -969,7 +940,6 @@ def index(request: Request):
                     document.getElementById('tabla_euromillones').innerHTML = htmlE;
 
                 }} else if (info.tipo_juego === 'eurodreams') {{
-                    document.getElementById('seccion_eurodreams').style.display = 'block';
                     const ed = info.ed_data;
                     document.getElementById('ed_sueno_val').innerText = ed.sueno_reina;
                     let htmlB = "";
@@ -983,7 +953,6 @@ def index(request: Request):
                     document.getElementById('tabla_eurodreams').innerHTML = htmlED;
 
                 }} else if (info.tipo_juego === 'anguila_cascada') {{
-                    document.getElementById('seccion_anguila').style.display = 'block';
                     const ad = info.anguila_data;
                     let htmlA = `
                         <tr><td>10:00 AM</td><td>${{ad['10am'].estado}}</td><td style="color:#4ade80;font-weight:bold;">${{ad['10am'].fijo}}</td><td>${{ad['10am'].pale}}</td><td>${{ad['10am'].fuerza}}%</td></tr>
@@ -994,9 +963,6 @@ def index(request: Request):
                     document.getElementById('tabla_anguila_cascada').innerHTML = htmlA;
 
                 }} else {{
-                    document.getElementById('seccion_tradicional').style.display = 'block';
-                    document.getElementById('caja_jugada_formada').style.display = 'block';
-
                     if (info.super_pales) {{
                         let htmlSP = "";
                         info.super_pales.forEach((sp, i) => {{
@@ -1010,13 +976,13 @@ def index(request: Request):
                         let htmlB = "";
                         jm.numeros_3.forEach(n => {{ htmlB += `<span class="jf-ball">${{n}}</span>`; }});
                         document.getElementById('jf_numeros_container').innerHTML = htmlB;
-                        document.getElementById('jf_pales_txt').innerText = `[${{jm.pale_1}}]  /  [${{jm.pale_2}}]`;
+                        document.getElementById('jf_pales_txt').innerText = `[${{jm.pale_1}}] / [${{jm.pale_2}}]`;
                         document.getElementById('jf_tripleta_txt').innerText = `[${{jm.tripleta}}]`;
-                        document.getElementById('jf_lot_txt').innerText =jm.lot_fuerte;
+                        document.getElementById('jf_lot_txt').innerText = jm.lot_fuerte;
                         document.getElementById('jf_respaldo_txt').innerText = jm.lot_respaldo;
 
                         if (info.cobertura_lateral) {{
-                            document.getElementById('cov_mas_menos').innerText = `[+1: ${{info.cobertura_lateral.mas1}}]  /  [-1: ${{info.cobertura_lateral.menos1}}]`;
+                            document.getElementById('cov_mas_menos').innerText = `[+1: ${{info.cobertura_lateral.mas1}}] / [-1: ${{info.cobertura_lateral.menos1}}]`;
                             document.getElementById('cov_pale_reves').innerText = `[${{info.cobertura_lateral.pale_reves}}]`;
                         }}
                     }}
@@ -1039,7 +1005,7 @@ def index(request: Request):
                         for (let i = 0; i < Math.min(info.sueltos.length, 5); i++) {{
                             for (let j = i + 1; j < Math.min(info.sueltos.length, 5); j++) {{
                                 let f = ((info.sueltos[i].fuerza + info.sueltos[j].fuerza) / 2).toFixed(1);
-                                htmlPales += `<tr><td>${{String(countP).padStart(2, '0')}}</td><td style="color:#facc15;font-weight:bold;">${{info.sueltos[i].num}} - ${{info.sueltos[j].num}}</td><td>${{f}}%</td><td>${{info.sueltos[i].lot}}</td></tr>`;
+                                htmlPales += `<tr><td>${{String(countP).padStart(2, '0')}}</td><td style="color:#facc15;font-weight:bold;font-size:15px;">${{info.sueltos[i].num}} - ${{info.sueltos[j].num}}</td><td>${{f}}%</td><td>${{info.sueltos[i].lot}}</td></tr>`;
                                 countP++;
                             }}
                         }}
