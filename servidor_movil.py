@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v17.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v17.1")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
@@ -23,7 +23,7 @@ ESTADO_MOTOR = {
     "estado_ia": "Iniciando...",
     "fase_dia": "Mañana / Mediodía",
     "eficiencia_global": "98.4%",
-    "scraper_status": "Auto-Scraper Conectado + Semáforo de Volatilidad"
+    "scraper_status": "Scraper Oficial RD (Sin Números Simulados)"
 }
 
 def init_db():
@@ -43,10 +43,13 @@ def init_db():
 
 init_db()
 
-def obtener_fecha_operativa():
-    ahora = datetime.now()
-    fecha_op = ahora - timedelta(hours=4)
-    return ahora, fecha_op
+def obtener_fechas():
+    # Hora UTC del servidor convertida a Hora Santo Domingo (UTC-4)
+    ahora_utc = datetime.utcnow()
+    hora_rd = ahora_utc - timedelta(hours=4)
+    fecha_str = hora_rd.strftime("%d/%m/%Y")
+    dia_nombre = DIAS_SEMANA[hora_rd.weekday()]
+    return hora_rd, fecha_str, dia_nombre
 
 TABLA_JALADERA = {
     "00": ["55", "05", "50"], "01": ["56", "10", "61"], "02": ["57", "20", "72"], "03": ["58", "30", "83"],
@@ -64,96 +67,94 @@ def obtener_jalamatico(num_str):
 
 def ejecutar_scraper_resultados():
     global RESULTADOS_EN_VIVO
-    ahora, fecha_op = obtener_fecha_operativa()
-    fecha_str = fecha_op.strftime("%d/%m/%Y")
+    hora_rd, fecha_str, dia_nombre = obtener_fechas()
     
-    # Estados de volatilidad: verde (Fidelidad Alta), amarillo (Media/Regular), rojo (Dispersión Caótica)
     nuevos_resultados = {
-        "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🟢 Fidelidad 94%"},
-        "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🟢 Fidelidad 96%"},
-        "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🟡 Regular 82%"},
-        "suerte_dia": {"nombre": "La Suerte Día (12:30 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🟢 Fidelidad 91%"},
-        "real": {"nombre": "Lotería Real (12:55 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🟢 Fidelidad 98%"},
-        "anguila_1pm": {"nombre": "Anguila Mediodía (1:00 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🟡 Regular 84%"},
-        "gana_mas": {"nombre": "Gana Más (2:30 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🟢 Fidelidad 97%"},
-        "suerte_tarde": {"nombre": "La Suerte Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🔴 Dispersión 68%"},
-        "anguila_6pm": {"nombre": "Anguila Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🟢 Fidelidad 93%"},
-        "loteka": {"nombre": "Loteka (7:55 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🔴 Dispersión 72%"},
-        "primera_noche": {"nombre": "La Primera Noche (8:00 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🟢 Fidelidad 95%"},
-        "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🟢 Fidelidad 98%"},
-        "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🟢 Fidelidad 99%"},
-        "anguila_9pm": {"nombre": "Anguila Noche (9:00 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}", "volatilidad": "🟢 Fidelidad 96%"},
+        "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 94%"},
+        "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
+        "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟡 Regular 82%"},
+        "suerte_dia": {"nombre": "La Suerte Día (12:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 91%"},
+        "real": {"nombre": "Lotería Real (12:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 98%"},
+        "anguila_1pm": {"nombre": "Anguila Mediodía (1:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟡 Regular 84%"},
+        "gana_mas": {"nombre": "Gana Más (2:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 97%"},
+        "suerte_tarde": {"nombre": "La Suerte Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🔴 Dispersión 68%"},
+        "anguila_6pm": {"nombre": "Anguila Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 93%"},
+        "loteka": {"nombre": "Loteka (7:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🔴 Dispersión 72%"},
+        "primera_noche": {"nombre": "La Primera Noche (8:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 95%"},
+        "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 98%"},
+        "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 99%"},
+        "anguila_9pm": {"nombre": "Anguila Noche (9:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
         "eurodreams_esp": {"nombre": "EuroDreams (Europa)", "premios": ["--", "--", "--", "--", "--", "--"], "sueno": "-", "estado": "Sorteo Lunes/Jueves 21:00h", "volatilidad": "🟢 Gaussiana 95%"}
     }
 
     try:
         req = urllib.request.Request(
             "https://loteriasdominicanas.com/",
-            headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+            headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0'}
         )
-        with urllib.request.urlopen(req, timeout=8) as response:
+        with urllib.request.urlopen(req, timeout=10) as response:
             html = response.read().decode('utf-8', errors='ignore')
-            bloques = re.findall(r'<div class="game-scores.*?</div', html, re.DOTALL)
+            
+            # Bloques por juego
+            bloques = re.findall(r'<div[^>]*class="[^"]*game-block[^"]*"[^>]*>(.*?)</div>\s*</div>', html, re.DOTALL)
             for b in bloques:
-                bolos = re.findall(r'<span class="score.*?">(\d+)</span>', b)
+                bolos = re.findall(r'<span[^>]*class="[^"]*score[^"]*"[^>]*>(\d+)</span>', b)
                 if len(bolos) >= 3:
                     trio = [bolos[0].zfill(2), bolos[1].zfill(2), bolos[2].zfill(2)]
-                    if "gana-mas" in b or "Gana Más" in b:
+                    b_lower = b.lower()
+                    
+                    if "gana más" in b_lower or "gana-mas" in b_lower:
                         nuevos_resultados["gana_mas"]["premios"] = trio
-                        nuevos_resultados["gana_mas"]["estado"] = "Oficial en Vivo"
-                    elif "real" in b or "Real" in b:
+                        nuevos_resultados["gana_mas"]["estado"] = "Oficial RD"
+                    elif "real" in b_lower:
                         nuevos_resultados["real"]["premios"] = trio
-                        nuevos_resultados["real"]["estado"] = "Oficial en Vivo"
-                    elif "primera" in b and ("dia" in b or "12" in b):
+                        nuevos_resultados["real"]["estado"] = "Oficial RD"
+                    elif "primera" in b_lower and "12" in b_lower:
                         nuevos_resultados["primera_dia"]["premios"] = trio
-                        nuevos_resultados["primera_dia"]["estado"] = "Oficial en Vivo"
-                    elif "leidsa" in b:
+                        nuevos_resultados["primera_dia"]["estado"] = "Oficial RD"
+                    elif "primera" in b_lower and ("8" in b_lower or "noche" in b_lower):
+                        nuevos_resultados["primera_noche"]["premios"] = trio
+                        nuevos_resultados["primera_noche"]["estado"] = "Oficial RD"
+                    elif "leidsa" in b_lower:
                         nuevos_resultados["leidsa"]["premios"] = trio
-                        nuevos_resultados["leidsa"]["estado"] = "Oficial en Vivo"
-                    elif "nacional" in b:
+                        nuevos_resultados["leidsa"]["estado"] = "Oficial RD"
+                    elif "nacional" in b_lower and ("noche" in b_lower or "8:50" in b_lower):
                         nuevos_resultados["nacional_noche"]["premios"] = trio
-                        nuevos_resultados["nacional_noche"]["estado"] = "Oficial en Vivo"
-                    elif "loteka" in b:
+                        nuevos_resultados["nacional_noche"]["estado"] = "Oficial RD"
+                    elif "loteka" in b_lower:
                         nuevos_resultados["loteka"]["premios"] = trio
-                        nuevos_resultados["loteka"]["estado"] = "Oficial en Vivo"
+                        nuevos_resultados["loteka"]["estado"] = "Oficial RD"
+                    elif "lotedom" in b_lower:
+                        nuevos_resultados["lotedom"]["premios"] = trio
+                        nuevos_resultados["lotedom"]["estado"] = "Oficial RD"
+                    elif "suerte" in b_lower and "12" in b_lower:
+                        nuevos_resultados["suerte_dia"]["premios"] = trio
+                        nuevos_resultados["suerte_dia"]["estado"] = "Oficial RD"
+                    elif "suerte" in b_lower and "6" in b_lower:
+                        nuevos_resultados["suerte_tarde"]["premios"] = trio
+                        nuevos_resultados["suerte_tarde"]["estado"] = "Oficial RD"
+                    elif "anguila" in b_lower and "10" in b_lower:
+                        nuevos_resultados["anguila_10am"]["premios"] = trio
+                        nuevos_resultados["anguila_10am"]["estado"] = "Oficial RD"
+                    elif "anguila" in b_lower and ("1" in b_lower or "13" in b_lower):
+                        nuevos_resultados["anguila_1pm"]["premios"] = trio
+                        nuevos_resultados["anguila_1pm"]["estado"] = "Oficial RD"
+                    elif "anguila" in b_lower and ("6" in b_lower or "18" in b_lower):
+                        nuevos_resultados["anguila_6pm"]["premios"] = trio
+                        nuevos_resultados["anguila_6pm"]["estado"] = "Oficial RD"
+                    elif "anguila" in b_lower and ("9" in b_lower or "21" in b_lower):
+                        nuevos_resultados["anguila_9pm"]["premios"] = trio
+                        nuevos_resultados["anguila_9pm"]["estado"] = "Oficial RD"
     except Exception:
         pass
 
-    hora_actual = ahora.hour
-    min_actual = ahora.minute
-    minutos_dia = hora_actual * 60 + min_actual
-    
-    seed_val = int(fecha_op.strftime("%Y%m%d"))
-    rng_sim = random.Random(seed_val + 555)
-
-    def bolos_hora(hora_h, min_m):
-        if minutos_dia >= (hora_h * 60 + min_m + 5):
-            return [f"{rng_sim.randint(0,99):02d}", f"{rng_sim.randint(0,99):02d}", f"{rng_sim.randint(0,99):02d}"], "Auto-Verificado"
-        return ["--", "--", "--"], f"Pendiente {fecha_str}"
-
-    for k, v in nuevos_resultados.items():
-        if v["premios"][0] == "--":
-            if k == "anguila_10am": v["premios"], v["estado"] = bolos_hora(10, 0)
-            elif k in ["primera_dia", "lotedom"]: v["premios"], v["estado"] = bolos_hora(12, 0)
-            elif k == "suerte_dia": v["premios"], v["estado"] = bolos_hora(12, 30)
-            elif k == "real": v["premios"], v["estado"] = bolos_hora(12, 55)
-            elif k == "anguila_1pm": v["premios"], v["estado"] = bolos_hora(13, 0)
-            elif k == "gana_mas": v["premios"], v["estado"] = bolos_hora(14, 30)
-            elif k in ["suerte_tarde", "anguila_6pm"]: v["premios"], v["estado"] = bolos_hora(18, 0)
-            elif k == "loteka": v["premios"], v["estado"] = bolos_hora(19, 55)
-            elif k == "primera_noche": v["premios"], v["estado"] = bolos_hora(20, 0)
-            elif k == "nacional_noche": v["premios"], v["estado"] = bolos_hora(20, 50)
-            elif k == "leidsa": v["premios"], v["estado"] = bolos_hora(20, 55)
-            elif k == "anguila_9pm": v["premios"], v["estado"] = bolos_hora(21, 0)
-
     RESULTADOS_EN_VIVO = nuevos_resultados
 
-def cluster_universal_15_ia(fecha_op, ahora):
-    seed_base = int(fecha_op.strftime("%Y%m%d"))
-    es_tarde_noche = ahora.hour >= 18 or ahora.hour < 4
+def cluster_universal_15_ia(hora_rd, dia_nombre):
+    seed_base = int(hora_rd.strftime("%Y%m%d"))
+    es_tarde_noche = hora_rd.hour >= 18
     seed_val = seed_base + (999 if es_tarde_noche else 111)
     rng = random.Random(seed_val)
-    dia_nombre = DIAS_SEMANA[fecha_op.weekday()]
 
     salas_nombres = [
         "Gana Más / Nacional Noche", "Lotería Real (12:55 PM)", "Leidsa (8:55 PM)",
@@ -261,18 +262,18 @@ def cluster_universal_15_ia(fecha_op, ahora):
 def motor_segundo_plano():
     while True:
         try:
-            ahora, fecha_op = obtener_fecha_operativa()
+            hora_rd, fecha_str, dia_nombre = obtener_fechas()
             ejecutar_scraper_resultados()
             
-            ESTADO_MOTOR["ultima_actualizacion"] = ahora.strftime("%H:%M:%S")
+            ESTADO_MOTOR["ultima_actualizacion"] = hora_rd.strftime("%H:%M:%S")
             ESTADO_MOTOR["ciclos_completados"] += 1
-            ESTADO_MOTOR["fase_dia"] = "Vespertina (Tiro de Gracia)" if ahora.hour >= 18 or ahora.hour < 4 else "Matutina / Tarde"
-            ESTADO_MOTOR["estado_ia"] = f"Auto-Scraper Activo (#{ESTADO_MOTOR['ciclos_completados']})"
+            ESTADO_MOTOR["fase_dia"] = "Vespertina (Tiro de Gracia)" if hora_rd.hour >= 18 else "Matutina / Tarde"
+            ESTADO_MOTOR["estado_ia"] = f"Scraper Oficial RD (#{ESTADO_MOTOR['ciclos_completados']})"
 
             conn = sqlite3.connect(DB_PATH)
             cur = conn.cursor()
             cur.execute("INSERT OR REPLACE INTO control_motor_24_7 (id, timestamp, ciclos, estado, eficiencia) VALUES (1, ?, ?, ?, ?)",
-                        (ahora.strftime("%Y-%m-%d %H:%M:%S"), ESTADO_MOTOR["ciclos_completados"], ESTADO_MOTOR["estado_ia"], ESTADO_MOTOR["eficiencia_global"]))
+                        (hora_rd.strftime("%Y-%m-%d %H:%M:%S"), ESTADO_MOTOR["ciclos_completados"], ESTADO_MOTOR["estado_ia"], ESTADO_MOTOR["eficiencia_global"]))
             conn.commit()
             conn.close()
         except Exception:
@@ -320,11 +321,9 @@ def index(request: Request):
     if not verificar_anti_ddos(client_ip):
         return HTMLResponse("<h2>⚠️ SISTEMA EN PROTECCIÓN</h2><p>Espera un momento antes de recargar.</p>", status_code=429)
 
-    ahora, fecha_op = obtener_fecha_operativa()
-    fecha_str = fecha_op.strftime("%d/%m/%Y")
-    dia_nombre = DIAS_SEMANA[fecha_op.weekday()]
+    hora_rd, fecha_str, dia_nombre = obtener_fechas()
 
-    datos_loterias = cluster_universal_15_ia(fecha_op, ahora)
+    datos_loterias = cluster_universal_15_ia(hora_rd, dia_nombre)
     resultados_oficiales = RESULTADOS_EN_VIVO if RESULTADOS_EN_VIVO else {}
 
     pronosticos_set = {datos_loterias["todas"]["tiro_fijo"]["num"], datos_loterias["todas"]["tiro_fijo"]["virado"]}
@@ -333,7 +332,7 @@ def index(request: Request):
 
     bingazos_detectados = []
     for k, v in resultados_oficiales.items():
-        if "Oficial" in v.get("estado", "") or "Auto-Verificado" in v.get("estado", ""):
+        if "Oficial" in v.get("estado", ""):
             for i_premio, bolo in enumerate(v["premios"][:3]):
                 if bolo in pronosticos_set and bolo != "--":
                     bingazos_detectados.append({"lot": v["nombre"], "bolo": bolo, "lugar": ["1ra", "2da", "3ra"][i_premio]})
@@ -354,10 +353,10 @@ def index(request: Request):
     historial_auditoria = [
         {
             "fecha": fecha_str,
-            "sala": "Auto-Scraper en Vivo 24/7",
-            "tipo": f"⚡ MOTOR TITÁN ({ESTADO_MOTOR['fase_dia']})",
-            "premio": f"Semáforo de Volatilidad Activo ({dia_nombre})",
-            "detalle": "Monitoreo en tiempo real de dispersión y fidelidad de tómbolas"
+            "sala": "Scraper Real RD 24/7",
+            "tipo": f"⚡ HORA OFICIAL RD: {hora_rd.strftime('%I:%M %p')}",
+            "premio": f"Verificación Estricta ({dia_nombre})",
+            "detalle": "Pendientes en '--' hasta captura oficial confirmada"
         }
     ]
 
@@ -461,7 +460,6 @@ def index(request: Request):
             .termo-row:last-child {{ margin-bottom: 0; padding-bottom: 0; border-bottom: none; }}
             .termo-lot {{ font-size: 9.5px; color: #38bdf8; margin-top: 2px; font-weight: 600; display: block; }}
 
-            /* PIZARRA CON SEMÁFORO DE VOLATILIDAD */
             .pizarra-card {{ background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
             .pizarra-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 10px; }}
             .lot-prize-card {{ background: #182234; border: 1px solid #28384e; border-radius: 8px; padding: 8px 10px; }}
@@ -542,7 +540,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v17.0 - Semáforo de Volatilidad Activo</p>
+                    <p>Titan Quantum v17.1 - Scraper Oficial RD</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -550,16 +548,14 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- CLÚSTER CON SEMÁFORO -->
             <div class="cluster-card">
                 <div>
-                    <span class="cluster-tag">SEMÁFORO DE TÓMBOLAS</span>
-                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">🟢 Alta Fidelidad | 🟡 Regular | 🔴 Dispersión Caótica</span>
+                    <span class="cluster-tag">SCRAPER OFICIAL EN VIVO</span>
+                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">LoteriasDominicanas.com + Sincronización Estricta</span>
                 </div>
-                <div style="color:#4ade80;font-weight:bold;font-size:10.5px;">● Extracción en Vivo</div>
+                <div style="color:#4ade80;font-weight:bold;font-size:10.5px;">● Conectado</div>
             </div>
 
-            <!-- RADAR BINGAZOS -->
             <div class="bingo-alert" id="panel_bingazos">
                 <div class="bingo-title">
                     <span>🎯 ¡RADAR DE BINGAZOS EN VIVO!</span>
@@ -568,7 +564,6 @@ def index(request: Request):
                 <div id="bingazos_lista" style="font-size:11.5px;color:#dcfce7;"></div>
             </div>
 
-            <!-- PANEL FRANCOTIRADOR -->
             <div class="sniper-card">
                 <div class="sniper-grid">
                     <div class="sniper-item">
@@ -594,7 +589,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- RADAR TÉRMICO -->
             <div class="termo-card">
                 <div style="font-size:13px;font-weight:bold;color:#f97316;display:flex;justify-content:space-between;align-items:center;">
                     <span>🌡️ RADAR TÉRMICO DIARIO</span>
@@ -603,16 +597,14 @@ def index(request: Request):
                 <div class="termo-grid" id="termo_contenedor"></div>
             </div>
 
-            <!-- PIZARRA OFICIAL CON SEMÁFORO -->
             <div class="pizarra-card">
                 <div style="font-size:14px;font-weight:900;color:#38bdf8;display:flex;justify-content:space-between;align-items:center;">
-                    <span>🏆 NÚMEROS PREMIADOS (OFICIALES EN VIVO)</span>
+                    <span>🏆 NÚMEROS PREMIADOS (OFICIALES RD)</span>
                     <span style="font-size:11px;color:#4ade80;">● Auto-Sincronizado</span>
                 </div>
                 <div class="pizarra-grid" id="pizarra_contenedor"></div>
             </div>
 
-            <!-- AUDITORÍA -->
             <div class="auditor-box">
                 <div class="auditor-title">
                     <span>📡 AUDITORÍA OFICIAL EN VIVO</span>
@@ -621,14 +613,12 @@ def index(request: Request):
                 <div id="contenedor_auditoria"></div>
             </div>
 
-            <!-- BUSCADOR DE SUEÑOS -->
             <div class="search-box">
                 <input type="text" id="input_sueno" class="search-input" placeholder="Escribe tu sueño o cábala (ej. dinero, boda, agua)...">
                 <button class="search-btn" onclick="buscarSueno()">🔮 CONSULTAR</button>
             </div>
             <div id="sueno_resultado"></div>
 
-            <!-- TABS -->
             <div class="tabs-scroll">
                 <button class="tab-btn active" onclick="cambiarTab('todas')">🌐 TODAS (RD)</button>
                 <button class="tab-btn tab-ed" onclick="cambiarTab('eurodreams')">🇪🇺 EURODREAMS (6/40)</button>
@@ -640,7 +630,6 @@ def index(request: Request):
                 <button class="btn-ticket" onclick="generarTicket()">🎫 TICKET DE BANCA</button>
             </div>
 
-            <!-- DICTAMEN CON JUGADA FORMADA -->
             <div class="dictamen-box">
                 <h3>⚡ DICTAMEN DEL TITÁN <span id="dictamen_sala" style="font-size:10px;color:#94a3b8;"></span></h3>
                 <div class="dictamen-item"><b>Flujo:</b> <span class="dictamen-val" id="d_flujo">--</span></div>
@@ -671,7 +660,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- VISTA EURODREAMS -->
             <div id="seccion_eurodreams" style="display:none;">
                 <div class="card" style="border: 2px solid #8b5cf6; background:#18181b;">
                     <h2 style="color: #c084fc;">🇪🇺 RED GAUSSIANA EURODREAMS (6/40 + SUEÑO)</h2>
@@ -691,7 +679,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- VISTA ANGUILA CASCADA 4X -->
             <div id="seccion_anguila" style="display:none;">
                 <div class="card" style="border: 2px solid #10b981; background:#18181b;">
                     <h2 style="color: #34d399;">🐍 MATRIZ CASCADA 4X (10 AM / 1 PM / 6 PM / 9 PM)</h2>
@@ -702,7 +689,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- TABLAS QUINIELAS TRADICIONALES -->
             <div id="seccion_tradicional">
                 <div class="card" style="border: 2px solid #f59e0b; background: linear-gradient(135deg, #1c1917, #0c0a09);">
                     <h2 style="color: #fbbf24;">⚡ SUPER PALÉ CRUZADO INTELIGENTE (PAGO RD$ 3,000 × 1)</h2>
@@ -825,10 +811,12 @@ def index(request: Request):
                     if (lot.volatilidad && lot.volatilidad.includes("🔴")) volColor = "#f87171";
                     else if (lot.volatilidad && lot.volatilidad.includes("🟡")) volColor = "#facc15";
 
+                    let estColor = lot.estado === 'Oficial RD' ? '#4ade80' : '#94a3b8';
+
                     html += `<div class="lot-prize-card">
                         <div class="lot-prize-name">
                             <span>${{isAnguila ? '🐍' : '🇩🇴'}} ${{lot.nombre}}</span>
-                            <span style="font-size:10px;color:#4ade80;">${{lot.estado}}</span>
+                            <span style="font-size:10px;color:${{estColor}};">${{lot.estado}}</span>
                         </div>
                         <div class="lot-semaforo" style="color:${{volColor}};">${{lot.volatilidad || '🟢 Normal'}}</div>
                         <div class="lot-balls-row">
