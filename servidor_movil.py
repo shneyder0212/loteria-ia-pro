@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum Pro v15.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum Pro v15.1")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
@@ -19,7 +19,7 @@ ESTADO_MOTOR = {
     "estado_ia": "Iniciando...",
     "fase_dia": "Mañana / Mediodía",
     "eficiencia_global": "98.1%",
-    "motores_activos": "Universal + Florida/NY + EuroDreams + Anguila 4X"
+    "motores_activos": "RD Universal + EuroDreams + Anguila Cascada 4X"
 }
 
 def init_db():
@@ -89,23 +89,7 @@ def cluster_universal_15_ia(fecha_op, ahora):
         {"cruse": f"{n2} (Tarde) × {n4} (Noche)", "salas": "Gana Más 2:30 PM × Nacional Noche 8:50 PM", "fuerza": 96.1}
     ]
 
-    # MOTOR 3: FLORIDA & NY (PICK 3 / PICK 4)
-    p3_d1, p3_d2, p3_d3 = str(rng.randint(0, 9)), str(rng.randint(0, 9)), str(rng.randint(0, 9))
-    p4_d1, p4_d2, p4_d3, p4_d4 = str(rng.randint(0, 9)), str(rng.randint(0, 9)), str(rng.randint(0, 9)), str(rng.randint(0, 9))
-    florida_ny_data = {
-        "pick3_directo": f"{p3_d1}{p3_d2}{p3_d3}",
-        "pick3_combo": f"{p3_d2}{p3_d1}{p3_d3}",
-        "pick4_directo": f"{p4_d1}{p4_d2}{p4_d3}{p4_d4}",
-        "fuerza_p3": 98.2,
-        "fuerza_p4": 96.7,
-        "analisis_posicional": f"Centena [{p3_d1}] | Decena [{p3_d2}] | Unidad [{p3_d3}]",
-        "jugadas_extra": [
-            {"tipo": "Pick 3 Box", "numero": f"{p3_d3}{p3_d2}{p3_d1}", "fuerza": 94.5},
-            {"tipo": "Pick 4 Front Pair", "numero": f"{p4_d1}{p4_d2}XX", "fuerza": 97.1}
-        ]
-    }
-
-    # MOTOR 4: EURODREAMS (6/40 + SUEÑO 1-5)
+    # EURODREAMS (6/40 + SUEÑO 1-5)
     def gen_eurodreams():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 41), 6))
@@ -127,7 +111,7 @@ def cluster_universal_15_ia(fecha_op, ahora):
         ]
     }
 
-    # MOTOR 5: ANGUILA CASCADA 4X
+    # ANGUILA CASCADA 4X
     anguila_cascada_data = {
         "10am": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 98.1, "estado": "Tanda Apertura"},
         "1pm": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 97.5, "estado": "Cascada Mediodía"},
@@ -137,7 +121,7 @@ def cluster_universal_15_ia(fecha_op, ahora):
 
     return {
         "todas": {
-            "nombre": "Todas las Loterías (Consenso Cuántico)",
+            "nombre": "Todas las Loterías (Consenso Cuántico RD)",
             "tipo_juego": "quiniela",
             "fase": "Recalibración Vespertina (Tiro de Gracia)" if es_tarde_noche else "Matriz Matutina",
             "tiro_fijo": {"num": n1, "virado": n1[::-1] if n1 != n1[::-1] else jals[1], "fuerza": todas_pool[0]["fuerza"], "palé_titan": f"{n1} - {n2}", "lot_fuerte": todas_pool[0]["lot"]},
@@ -153,21 +137,6 @@ def cluster_universal_15_ia(fecha_op, ahora):
                 "dia_tendencia": f"{dia_nombre}: Rotación activa"
             },
             "sueltos": todas_pool
-        },
-        "florida_ny": {
-            "nombre": "🇺🇸 USA: FLORIDA & NEW YORK NUMBERS",
-            "tipo_juego": "florida_ny",
-            "tiro_fijo": {"num": florida_ny_data["pick3_directo"][:2], "virado": florida_ny_data["pick3_directo"][1:], "fuerza": florida_ny_data["fuerza_p3"], "palé_titan": florida_ny_data["pick4_directo"], "lot_fuerte": "Florida & New York (Tarde/Noche)"},
-            "usa_data": florida_ny_data,
-            "dictamen": {
-                "flujo": "ANÁLISIS POSICIONAL INDEPENDIENTE",
-                "decena": "Rango 000 al 999 (Pick 3) / 0000 al 9999 (Pick 4)",
-                "terminal": f"Dígito Terminal [{florida_ny_data['pick3_directo'][-1]}]",
-                "pareja": "MEDIA (Front/Back Pairs)",
-                "digito_fuerte": f"Centena Fuerte [{florida_ny_data['pick3_directo'][0]}]",
-                "presion": "🎯 Tiro Directo en Caja y Combo",
-                "dia_tendencia": f"{dia_nombre}: Dispersión USA"
-            }
         },
         "eurodreams": {
             "nombre": "🇪🇺 EURODREAMS (EUROPA 6/40)",
@@ -220,8 +189,6 @@ def simular_o_scrapear_resultados(fecha_str, rng):
         "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}"},
         "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}"},
         "anguila_9pm": {"nombre": "Anguila Noche (9:00 PM)", "premios": ["--", "--", "--"], "estado": f"Pendiente {fecha_str}"},
-        "florida_dia": {"nombre": "Florida Día (Pick 3 / Pick 4)", "premios": gen_trio(), "estado": "Oficializado"},
-        "ny_dia": {"nombre": "New York Día (Numbers)", "premios": gen_trio(), "estado": "Oficializado"},
         "eurodreams_esp": {"nombre": "EuroDreams (Europa)", "premios": ["--", "--", "--", "--", "--", "--"], "sueno": "-", "estado": "Sorteo Lunes/Jueves 21:00h"}
     }
 
@@ -232,7 +199,7 @@ def motor_segundo_plano():
             ESTADO_MOTOR["ultima_actualizacion"] = ahora.strftime("%H:%M:%S")
             ESTADO_MOTOR["ciclos_completados"] += 1
             ESTADO_MOTOR["fase_dia"] = "Vespertina (Tiro de Gracia)" if ahora.hour >= 18 or ahora.hour < 4 else "Matutina / Tarde"
-            ESTADO_MOTOR["estado_ia"] = f"Titan Quantum v15 (#{ESTADO_MOTOR['ciclos_completados']})"
+            ESTADO_MOTOR["estado_ia"] = f"Titan Quantum v15.1 (#{ESTADO_MOTOR['ciclos_completados']})"
 
             conn = sqlite3.connect(DB_PATH)
             cur = conn.cursor()
@@ -313,17 +280,17 @@ def index(request: Request):
         "terminales_fuertes": [
             {"digito": datos_loterias["todas"]["tiro_fijo"]["num"][-1], "frecuencia": "Muy Alta (97.8%)", "lot": "Lotería Real (12:55 PM)"},
             {"digito": datos_loterias["todas"]["tiro_fijo"]["virado"][-1], "frecuencia": "Alta (93.4%)", "lot": "La Primera (12:00 / 8:00 PM)"},
-            {"digito": "8", "frecuencia": "Alta (89.1%)", "lot": "USA & Anguila"}
+            {"digito": "8", "frecuencia": "Alta (89.1%)", "lot": "Anguila & Nacional"}
         ]
     }
 
     historial_auditoria = [
         {
             "fecha": fecha_str,
-            "sala": "Titan Quantum Universal v15.0",
-            "tipo": f"⚡ MOTORES ESPECIALIZADOS ({ESTADO_MOTOR['fase_dia']})",
-            "premio": f"Florida/NY + EuroDreams + Anguila 4X ({dia_nombre})",
-            "detalle": "Análisis Posicional + Matriz Gaussiana 6/40 + Cascada Cuántica"
+            "sala": "Titan Quantum Universal v15.1",
+            "tipo": f"⚡ MOTORES ACTIVOS ({ESTADO_MOTOR['fase_dia']})",
+            "premio": f"RD Consenso + EuroDreams + Anguila 4X ({dia_nombre})",
+            "detalle": "Markov 1er/2do Orden + Gaussiana 6/40 + Cascada Cuántica"
         }
     ]
 
@@ -449,7 +416,6 @@ def index(request: Request):
             .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
             .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
             .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
-            .tab-usa {{ background: linear-gradient(135deg, #1d4ed8, #b91c1c); color: #fff; border: 1px solid #60a5fa; font-weight: 900; }}
             .tab-ed {{ background: linear-gradient(135deg, #7c3aed, #4c1d95); color: #fff; border: 1px solid #c084fc; font-weight: 900; }}
             .tab-ang {{ background: linear-gradient(135deg, #059669, #065f46); color: #fff; border: 1px solid #34d399; font-weight: 900; }}
 
@@ -507,7 +473,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v15.0 - Florida/NY + EuroDreams + Anguila 4X</p>
+                    <p>Titan Quantum v15.1 - RD + EuroDreams + Anguila 4X</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -519,7 +485,7 @@ def index(request: Request):
             <div class="cluster-card">
                 <div>
                     <span class="cluster-tag">CLÚSTER ESPECIALIZADO 24/7</span>
-                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">USA Pick 3/4 | EuroDreams 6/40 | Anguila Cascada</span>
+                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">RD Quinielas/Palés | EuroDreams 6/40 | Anguila Cascada 4X</span>
                 </div>
                 <div style="color:#4ade80;font-weight:bold;font-size:10.5px;">● Eficiencia 98.1%</div>
             </div>
@@ -596,7 +562,6 @@ def index(request: Request):
             <!-- TABS -->
             <div class="tabs-scroll">
                 <button class="tab-btn active" onclick="cambiarTab('todas')">🌐 TODAS (RD)</button>
-                <button class="tab-btn tab-usa" onclick="cambiarTab('florida_ny')">🇺🇸 FLORIDA / NY (PICK 3/4)</button>
                 <button class="tab-btn tab-ed" onclick="cambiarTab('eurodreams')">🇪🇺 EURODREAMS (6/40)</button>
                 <button class="tab-btn tab-ang" onclick="cambiarTab('anguila_cascada')">🐍 ANGUILA CASCADA 4X</button>
             </div>
@@ -634,26 +599,6 @@ def index(request: Request):
                         <b style="color:#a5b4fc;">🏆 1 TRIPLETA:</b>
                         <span style="color:#f472b6;font-weight:900;font-size:13px;" id="jf_tripleta_txt">--</span>
                     </div>
-                </div>
-            </div>
-
-            <!-- VISTA USA FLORIDA / NY -->
-            <div id="seccion_florida_ny" style="display:none;">
-                <div class="card" style="border: 2px solid #3b82f6; background:#18181b;">
-                    <h2 style="color: #60a5fa;">🇺🇸 MOTOR POSICIONAL PICK 3 & PICK 4 (FLORIDA / NY)</h2>
-                    <div style="display:flex; justify-content:space-around; align-items:center; margin:10px 0; background:#27272a; padding:10px; border-radius:8px;">
-                        <div><b>🎯 PICK 3 DIRECTO:</b> <span style="color:#4ade80; font-size:20px; font-weight:900;" id="usa_p3_dir">---</span></div>
-                        <div><b>💥 PICK 4 TITÁN:</b> <span style="color:#facc15; font-size:20px; font-weight:900;" id="usa_p4_dir">----</span></div>
-                    </div>
-                    <div style="background:#27272a;color:#38bdf8;padding:8px;border-radius:8px;font-size:11px;margin-top:5px;text-align:center;" id="usa_posicional_txt"></div>
-                </div>
-
-                <div class="card" style="border: 1px solid #3b82f6;">
-                    <h2 style="color: #60a5fa;">🎯 COMBINACIONES BOX & FRONT PAIR</h2>
-                    <table>
-                        <thead><tr><th>TIPO DE JUGADA</th><th>NÚMERO SUGERIDO</th><th>FUERZA IA</th></tr></thead>
-                        <tbody id="tabla_usa_extra"></tbody>
-                    </table>
                 </div>
             </div>
 
@@ -861,26 +806,12 @@ def index(request: Request):
                     document.getElementById('d_presion').innerText = info.dictamen.presion;
                 }}
 
-                document.getElementById('seccion_florida_ny').style.display = 'none';
                 document.getElementById('seccion_eurodreams').style.display = 'none';
                 document.getElementById('seccion_anguila').style.display = 'none';
                 document.getElementById('seccion_tradicional').style.display = 'none';
                 document.getElementById('caja_jugada_formada').style.display = 'none';
 
-                if (info.tipo_juego === 'florida_ny') {{
-                    document.getElementById('seccion_florida_ny').style.display = 'block';
-                    const ud = info.usa_data;
-                    document.getElementById('usa_p3_dir').innerText = ud.pick3_directo;
-                    document.getElementById('usa_p4_dir').innerText = ud.pick4_directo;
-                    document.getElementById('usa_posicional_txt').innerText = "📍 " + ud.analisis_posicional;
-
-                    let htmlU = `<tr><td>Pick 3 Box</td><td style="color:#facc15;font-weight:bold;">${{ud.pick3_combo}}</td><td style="color:#4ade80;font-weight:bold;">95.2%</td></tr>`;
-                    ud.jugadas_extra.forEach(j => {{
-                        htmlU += `<tr><td>${{j.tipo}}</td><td style="color:#facc15;font-weight:bold;">${{j.numero}}</td><td style="color:#4ade80;font-weight:bold;">${{j.fuerza}}%</td></tr>`;
-                    }});
-                    document.getElementById('tabla_usa_extra').innerHTML = htmlU;
-
-                }} else if (info.tipo_juego === 'eurodreams') {{
+                if (info.tipo_juego === 'eurodreams') {{
                     document.getElementById('seccion_eurodreams').style.display = 'block';
                     const ed = info.ed_data;
                     document.getElementById('ed_sueno_val').innerText = ed.sueno_reina;
@@ -959,10 +890,7 @@ def index(request: Request):
                 const info = db[tabActual] || db['todas'];
                 let texto = "";
 
-                if (info.tipo_juego === 'florida_ny') {{
-                    const ud = info.usa_data;
-                    texto = `🇺🇸 *FLORIDA & NY NUMBERS (TITÁN)* 🇺🇸\\n🎯 *Pick 3 Directo:* [${{ud.pick3_directo}}]\\n💥 *Pick 4 Titán:* [${{ud.pick4_directo}}]\\n⚡ *Posición:* ${{ud.analisis_posicional}}\\n⚡ *SHNEYDER IA PRO RD*`;
-                }} else if (info.tipo_juego === 'eurodreams') {{
+                if (info.tipo_juego === 'eurodreams') {{
                     const ed = info.ed_data;
                     texto = `🇪🇺 *EURODREAMS (6/40)* 🇪🇺\\n🎯 *6 Números:* [${{ed.apuestas[0].combinacion}}]\\n💖 *Sueño:* [${{ed.sueno_reina}}]\\n⚡ *SHNEYDER IA PRO RD*`;
                 }} else if (info.tipo_juego === 'anguila_cascada') {{
@@ -991,9 +919,7 @@ def index(request: Request):
                 const info = db[tabActual] || db['todas'];
                 let ticket = `=================================\\n   🎫 TICKET SHNEYDER IA PRO RD\\n=================================\\nSALA: ${{info.nombre.toUpperCase()}}\\nFECHA: ${{new Date().toLocaleDateString()}}\\n---------------------------------\\n`;
 
-                if (info.tipo_juego === 'florida_ny') {{
-                    ticket += `PICK 3 DIRECTO: [${{info.usa_data.pick3_directo}}]\\nPICK 4 DIRECTO: [${{info.usa_data.pick4_directo}}]\\n`;
-                }} else if (info.tipo_juego === 'eurodreams') {{
+                if (info.tipo_juego === 'eurodreams') {{
                     ticket += `EURODREAMS: [${{info.ed_data.apuestas[0].combinacion}}]\\nSUEÑO: [${{info.ed_data.sueno_reina}}]\\n`;
                 }} else if (info.tipo_juego === 'anguila_cascada') {{
                     ticket += `10 AM: [${{info.anguila_data['10am'].fijo}}]  1 PM: [${{info.anguila_data['1pm'].fijo}}]\\n6 PM:  [${{info.anguila_data['6pm'].fijo}}]  9 PM: [${{info.anguila_data['9pm'].fijo}}]\\n`;
