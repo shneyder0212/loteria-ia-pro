@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Pro v8.5")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Pro v9.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
@@ -84,13 +84,13 @@ def generar_pronosticos_diarios(fecha_op, dia_nombre):
     rng = random.Random(seed_val)
 
     salas_nombres = [
-        "Gana Más (2:30 PM) / Nacional Noche (8:50 PM)",
+        "Gana Más / Nacional Noche",
         "Lotería Real (12:55 PM)",
         "Leidsa (8:55 PM)",
-        "La Primera (12:00 PM / 8:00 PM)",
+        "La Primera (12:00 / 8:00 PM)",
         "Anguila (10 AM / 1 PM / 6 PM)",
         "Loteka (7:55 PM)",
-        "La Suerte Dominicana (12:30 PM / 6:00 PM)"
+        "La Suerte (12:30 / 6:00 PM)"
     ]
 
     def gen_pool(cantidad=20):
@@ -269,16 +269,44 @@ def index(request: Request):
     datos_loterias = generar_pronosticos_diarios(fecha_op, dia_nombre)
     resultados_oficiales = obtener_resultados_oficiales(fecha_str)
 
+    # RADAR TÉRMICO CON LOTERÍAS ESPECIFICADAS POR FILA
     termometro = {
         "decenas_calientes": [
-            {"rango": datos_loterias["todas"]["dictamen"]["decena"].replace("Decena Fuerte [", "").replace("]", ""), "presion": 96.4, "estado": "🚨 CRÍTICA"},
-            {"rango": "70 - 79", "presion": 88.2, "estado": "🔥 ALTA"},
-            {"rango": "00 - 09", "presion": 81.5, "estado": "⚡ MEDIA ALTA"}
+            {
+                "rango": datos_loterias["todas"]["dictamen"]["decena"].replace("Decena Fuerte [", "").replace("]", ""),
+                "presion": 96.4,
+                "estado": "🚨 CRÍTICA",
+                "lot": datos_loterias["todas"]["tiro_fijo"]["lot_fuerte"]
+            },
+            {
+                "rango": "70 - 79",
+                "presion": 88.2,
+                "estado": "🔥 ALTA",
+                "lot": "Leidsa (8:55 PM)"
+            },
+            {
+                "rango": "00 - 09",
+                "presion": 81.5,
+                "estado": "⚡ MEDIA ALTA",
+                "lot": "Anguila / La Suerte"
+            }
         ],
         "terminales_fuertes": [
-            {"digito": datos_loterias["todas"]["tiro_fijo"]["num"][-1], "frecuencia": "Muy Alta (95.1%)"},
-            {"digito": datos_loterias["todas"]["tiro_fijo"]["virado"][-1], "frecuencia": "Alta (89.5%)"},
-            {"digito": "0", "frecuencia": "Alta (84.0%)"}
+            {
+                "digito": datos_loterias["todas"]["tiro_fijo"]["num"][-1],
+                "frecuencia": "Muy Alta (95.1%)",
+                "lot": "Lotería Real (12:55 PM)"
+            },
+            {
+                "digito": datos_loterias["todas"]["tiro_fijo"]["virado"][-1],
+                "frecuencia": "Alta (89.5%)",
+                "lot": "La Primera (12:00 / 8:00 PM)"
+            },
+            {
+                "digito": "0",
+                "frecuencia": "Alta (84.0%)",
+                "lot": "Loteka (7:55 PM)"
+            }
         ]
     }
 
@@ -328,7 +356,6 @@ def index(request: Request):
             .brand-date {{ font-size: 11px; color: #cbd5e1; font-weight: 600; }}
             .brand-clock {{ font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; letter-spacing: 1px; }}
 
-            /* PANEL FRANCOTIRADOR CON SALA DESTACADA */
             .sniper-card {{ 
                 background: linear-gradient(135deg, #1e1b4b, #0f172a); 
                 border: 2px solid #818cf8; 
@@ -361,9 +388,13 @@ def index(request: Request):
                 gap: 6px;
             }}
 
-            .termo-card {{ background: #111c30; border: 1px solid #f97316; border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; }}
-            .termo-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; font-size: 11.5px; }}
-            .termo-box {{ background: #18263e; padding: 8px; border-radius: 8px; border: 1px solid #283e60; }}
+            /* RADAR TÉRMICO CON LOTERÍA */
+            .termo-card {{ background: #111c30; border: 1px solid #f97316; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
+            .termo-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; font-size: 11px; }}
+            .termo-box {{ background: #18263e; padding: 10px; border-radius: 8px; border: 1px solid #283e60; }}
+            .termo-row {{ margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); }}
+            .termo-row:last-child {{ margin-bottom: 0; padding-bottom: 0; border-bottom: none; }}
+            .termo-lot {{ font-size: 9.5px; color: #38bdf8; margin-top: 2px; font-weight: 600; display: block; }}
 
             .pizarra-card {{ background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
             .pizarra-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 10px; }}
@@ -438,7 +469,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Pro v8.5 - Sala Fuerte Integrada</p>
+                    <p>Titan Pro v9.0 - Radar con Foco de Sala</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -446,7 +477,7 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- PANEL FRANCOTIRADOR CON LOTERÍA ESPECIFICADA -->
+            <!-- PANEL FRANCOTIRADOR -->
             <div class="sniper-card">
                 <div class="sniper-grid">
                     <div class="sniper-item">
@@ -466,14 +497,13 @@ def index(request: Request):
                         <span class="sniper-badge" id="s_fuerza">--%</span>
                     </div>
                 </div>
-                <!-- ETIQUETA DE SALA RECOMENDADA -->
                 <div class="sniper-lot-box">
                     <span style="color:#facc15;font-weight:900;">📍 LOTERÍA FUERTE:</span>
                     <span style="color:#38bdf8;font-weight:bold;" id="s_lot_fuerte">--</span>
                 </div>
             </div>
 
-            <!-- RADAR DE PRESIÓN -->
+            <!-- RADAR TÉRMICO CON LOTERÍAS ESPECIFICADAS -->
             <div class="termo-card">
                 <div style="font-size:13px;font-weight:bold;color:#f97316;display:flex;justify-content:space-between;align-items:center;">
                     <span>🌡️ RADAR TÉRMICO DIARIO</span>
@@ -613,12 +643,32 @@ def index(request: Request):
             function cargarTermometro() {{
                 let html = `
                     <div class="termo-box">
-                        <b style="color:#fb923c;">🔥 DECENAS EN RUPTURA:</b><br>
-                        ${{termometro.decenas_calientes.map(d => `<div style="display:flex;justify-content:space-between;margin-top:3px;"><span>[${{d.rango}}]</span> <span style="color:#fca5a5;font-weight:bold;">${{d.presion}}% ${{d.estado}}</span></div>`).join('')}}
+                        <b style="color:#fb923c;font-size:11.5px;">🔥 DECENAS EN RUPTURA:</b>
+                        <div style="margin-top:6px;">
+                            ${{termometro.decenas_calientes.map(d => `
+                                <div class="termo-row">
+                                    <div style="display:flex;justify-content:space-between;">
+                                        <span>[${{d.rango}}]</span>
+                                        <span style="color:#fca5a5;font-weight:bold;">${{d.presion}}% ${{d.estado}}</span>
+                                    </div>
+                                    <span class="termo-lot">📍 Foco: ${{d.lot}}</span>
+                                </div>
+                            `).join('')}}
+                        </div>
                     </div>
                     <div class="termo-box">
-                        <b style="color:#38bdf8;">🎯 TERMINALES CLAVE:</b><br>
-                        ${{termometro.terminales_fuertes.map(t => `<div style="display:flex;justify-content:space-between;margin-top:3px;"><span>Termina en [${{t.digito}}]</span> <span style="color:#4ade80;font-weight:bold;">${{t.frecuencia}}</span></div>`).join('')}}
+                        <b style="color:#38bdf8;font-size:11.5px;">🎯 TERMINALES CLAVE:</b>
+                        <div style="margin-top:6px;">
+                            ${{termometro.terminales_fuertes.map(t => `
+                                <div class="termo-row">
+                                    <div style="display:flex;justify-content:space-between;">
+                                        <span>Termina en [${{t.digito}}]</span>
+                                        <span style="color:#4ade80;font-weight:bold;">${{t.frecuencia}}</span>
+                                    </div>
+                                    <span class="termo-lot">📍 Foco: ${{t.lot}}</span>
+                                </div>
+                            `).join('')}}
+                        </div>
                     </div>
                 `;
                 document.getElementById('termo_contenedor').innerHTML = html;
