@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v29.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v30.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
@@ -78,29 +78,38 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     jals = obtener_jalamatico(n1)
     n3 = jals[2] if len(jals) > 2 else jals[0]
 
+    # Cobertura lateral (+1 / -1)
+    n1_mas1 = f"{(int(n1) + 1) % 100:02d}"
+    n1_menos1 = f"{(int(n1) - 1) % 100:02d}"
+    n1_reves = n1[::-1] if n1 != n1[::-1] else "60"
+
+    p1 = f"{n1} - {n2}"
+    p2 = f"{n1} - {n3}"
+    p_reves = f"{n1_reves} - {n2}"
+    tripleta_reina = f"{n1} - {n2} - {n3}"
+
     todas_pool = [
         {"num": n1, "fuerza": 99.4, "tipo": "triple_factor", "lot": lot_fuerte_principal},
         {"num": n2, "fuerza": 97.8, "tipo": "pareja", "lot": lot_fuerte_principal},
         {"num": n3, "fuerza": 96.2, "tipo": "caliente", "lot": lot_fuerte_respaldo},
-        {"num": n1[::-1] if n1 != n1[::-1] else "60", "fuerza": 94.5, "tipo": "virado", "lot": lot_fuerte_respaldo},
-        {"num": jals[0], "fuerza": 93.1, "tipo": "fuerte", "lot": pool_salas[2] if len(pool_salas) > 2 else lot_fuerte_principal}
+        {"num": n1_reves, "fuerza": 94.5, "tipo": "virado", "lot": lot_fuerte_respaldo},
+        {"num": n1_mas1, "fuerza": 93.8, "tipo": "fuerte", "lot": lot_fuerte_principal},
+        {"num": n1_menos1, "fuerza": 93.2, "tipo": "fuerte", "lot": lot_fuerte_respaldo},
+        {"num": jals[0], "fuerza": 92.5, "tipo": "fuerte", "lot": pool_salas[2] if len(pool_salas) > 2 else lot_fuerte_principal}
     ]
 
-    otros_nums = [f"{n:02d}" for n in range(100) if f"{n:02d}" not in [n1, n2, n3, n1[::-1], jals[0]]]
+    otros_nums = [f"{n:02d}" for n in range(100) if f"{n:02d}" not in [n1, n2, n3, n1_reves, n1_mas1, n1_menos1, jals[0]]]
     rng.shuffle(otros_nums)
-    for i, num_extra in enumerate(otros_nums[:15]):
-        fuerza = round(91.0 - (i * 2.8), 1)
+    for i, num_extra in enumerate(otros_nums[:13]):
+        fuerza = round(90.5 - (i * 2.8), 1)
         todas_pool.append({"num": num_extra, "fuerza": fuerza, "tipo": rng.choice(["caliente", "atrasado", "fuerte"]), "lot": rng.choice(pool_salas)})
-
-    p1 = f"{n1} - {n2}"
-    p2 = f"{n1} - {n3}"
-    tripleta_reina = f"{n1} - {n2} - {n3}"
 
     super_pales = [
         {"cruse": f"{n1} (Tarde) × {n2} (Noche)", "salas": "Real 12:55 PM × Leidsa 8:55 PM", "fuerza": 98.8},
-        {"cruse": f"{n3} (Tarde) × {n1[::-1]} (Noche)", "salas": "Gana Más 2:30 PM × Nacional Noche 8:50 PM", "fuerza": 96.4}
+        {"cruse": f"{n3} (Tarde) × {n1_reves} (Noche)", "salas": "Gana Más 2:30 PM × Nacional Noche 8:50 PM", "fuerza": 96.4}
     ]
 
+    # --- KINO TV LEIDSA ---
     kino_duenos = [f"{n:02d}" for n in sorted(rng.sample(range(1, 81), 10))]
     def gen_bloque_kino(cant):
         return " - ".join([f"{n:02d}" for n in sorted(rng.sample(range(1, 81), cant))])
@@ -113,6 +122,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"bloque": gen_bloque_kino(7), "paridad": "4 Impares / 3 Pares", "fuerza": 99.1, "ia_origen": "IA-07 Optimizador Genético"}
     ]
 
+    # --- LA PRIMITIVA ---
     def gen_primitiva_optima():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 50), 6))
@@ -131,6 +141,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"combinacion": " - ".join([f"{n:02d}" for n in prim_nums2]), "reintegro": str(rng.randint(0, 9)), "fuerza": 96.5, "tipo": "IA-09 Algoritmo Delta"}
     ]
 
+    # --- EUROMILLONES ---
     def gen_euro_valida():
         for _ in range(500):
             comb = sorted(rng.sample(range(1, 51), 5))
@@ -141,6 +152,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     euro_nums = gen_euro_valida()
     euro_e1, euro_e2 = f"{rng.randint(1, 6):02d}", f"{rng.randint(7, 12):02d}"
 
+    # --- EURODREAMS ---
     def gen_eurodreams():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 41), 6))
@@ -160,6 +172,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         ]
     }
 
+    # --- ANGUILA CASCADA 4X ---
     anguila_cascada_data = {
         "10am": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 98.1, "estado": "Tanda Apertura"},
         "1pm": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 97.5, "estado": "Cascada Mediodía"},
@@ -171,24 +184,27 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         "todas": {
             "nombre": "Todas las Loterías (Consenso Cuántico RD)",
             "tipo_juego": "quiniela",
-            "fase": "Recalibración Vespertina (Tiro de Gracia)" if es_tarde_noche else "Matriz Matutina",
-            "tiro_fijo": {"num": n1, "virado": n1[::-1] if n1 != n1[::-1] else "60", "fuerza": 99.4, "palé_titan": p1, "lot_fuerte": lot_fuerte_principal},
+            "es_tarde_noche": es_tarde_noche,
+            "fase": "⚡ TIRO DE GRACIA (NOCHE)" if es_tarde_noche else "🌅 MATRIZ MATUTINA (TARDE)",
+            "tiro_fijo": {"num": n1, "virado": n1_reves, "fuerza": 99.4, "palé_titan": p1, "lot_fuerte": lot_fuerte_principal},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
             "jugada_maestra": {
                 "numeros_3": [n1, n2, n3],
                 "pale_1": p1,
                 "pale_2": p2,
+                "pale_reves": p_reves,
                 "tripleta": tripleta_reina,
                 "lot_fuerte": lot_fuerte_principal,
                 "lot_respaldo": lot_fuerte_respaldo
             },
             "super_pales": super_pales,
             "dictamen": {
-                "flujo": "ANCLAJE ESTRICTO 100% ACOPLADO",
+                "flujo": "ANCLAJE ESTRICTO + COBERTURA ±1",
                 "decena": f"Decena Fuerte [{decena_elegida_nombre}]",
                 "terminal": f"Terminales {terminal_1}, {terminal_2} y {(terminal_1+2)%10}",
                 "pareja": "ALTA (Gemelos y Espejos en Tensión)",
                 "digito_fuerte": f"Dígitos {n1[0]} y {n1[1]}",
-                "presion": f"🎯 Tiro Forzado en Decena [{decena_elegida_nombre}]",
+                "presion": f"🎯 Foco Directo: {lot_fuerte_principal}",
                 "dia_tendencia": f"{dia_nombre}: Concentración Salidora"
             },
             "sueltos": todas_pool
@@ -313,7 +329,7 @@ def verificar_anti_ddos(client_ip: str) -> bool:
 
 @app.get("/ping")
 def ping():
-    return {"status": "ok", "motor": "Titan Quantum v29.0"}
+    return {"status": "ok", "motor": "Titan Quantum v30.0"}
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
@@ -361,10 +377,10 @@ def index(request: Request):
     historial_auditoria = [
         {
             "fecha": fecha_str,
-            "sala": "Triple Pasarela Residencial Activa",
+            "sala": "Clúster 15 IAs Activo",
             "tipo": f"⚡ HORA RD: {hora_rd.strftime('%I:%M %p')}",
             "premio": f"Anclaje Estricto ({dia_nombre})",
-            "detalle": "Sincronización Multi-Vía sin Bloqueos de Red"
+            "detalle": f"Fase: {datos_loterias['todas']['fase']} | Cobertura ±1 y Revés Activa"
         }
     ]
 
@@ -373,6 +389,11 @@ def index(request: Request):
     auditoria_json = json.dumps(historial_auditoria)
     premios_json = json.dumps(pizarra_inicial)
     termometro_json = json.dumps(termometro)
+
+    es_tarde_noche = datos_loterias["todas"]["es_tarde_noche"]
+    banner_color = "linear-gradient(135deg, #7f1d1d, #450a0a)" if es_tarde_noche else "linear-gradient(135deg, #1e3a8a, #0f172a)"
+    banner_borde = "#ef4444" if es_tarde_noche else "#38bdf8"
+    banner_txt = "🚨 RECALIBRACIÓN VESPERTINA: TIRO DE GRACIA (NOCHE)" if es_tarde_noche else "🌅 MATRIZ MATUTINA Y MEDIODÍA (TARDE)"
 
     return f"""
     <!DOCTYPE html>
@@ -403,9 +424,9 @@ def index(request: Request):
             .brand-date {{ font-size: 11px; color: #cbd5e1; font-weight: 600; }}
             .brand-clock {{ font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; letter-spacing: 1px; }}
 
-            .cluster-card {{
-                background: linear-gradient(135deg, #022c22, #0f172a);
-                border: 1px solid #22c55e;
+            .banner-fase {{
+                background: {banner_color};
+                border: 2px solid {banner_borde};
                 border-radius: 10px;
                 padding: 8px 12px;
                 margin-bottom: 12px;
@@ -413,9 +434,9 @@ def index(request: Request):
                 justify-content: space-between;
                 align-items: center;
                 font-size: 11px;
+                font-weight: 900;
+                color: #fff;
             }}
-            .cluster-tag {{ background: #22c55e; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px; font-size: 10px; }}
-            .btn-sync {{ background: #38bdf8; color: #000; border: none; border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 10px; cursor: pointer; }}
 
             .bingo-alert {{
                 background: linear-gradient(135deg, #064e3b, #022c22);
@@ -458,6 +479,28 @@ def index(request: Request):
                 justify-content: center;
                 align-items: center;
                 gap: 6px;
+            }}
+
+            /* TARJETA ESTRATEGIA DE HORARIOS */
+            .matriz-card {{
+                background: linear-gradient(135deg, #1e1b4b, #111827);
+                border: 1px solid #c084fc;
+                border-radius: 12px;
+                padding: 10px;
+                margin-bottom: 12px;
+                font-size: 11.5px;
+            }}
+            .matriz-grid {{
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                margin-top: 6px;
+            }}
+            .matriz-box {{
+                background: #0f172a;
+                border: 1px solid #334155;
+                border-radius: 8px;
+                padding: 8px;
             }}
 
             .termo-card {{ background: #111c30; border: 1px solid #f97316; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
@@ -539,6 +582,15 @@ def index(request: Request):
             .jf-balls {{ display: flex; gap: 6px; }}
             .jf-ball {{ background: #facc15; color: #0f172a; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 6px; }}
 
+            .cobertura-box {{
+                background: rgba(56, 189, 248, 0.1);
+                border: 1px dashed #38bdf8;
+                border-radius: 8px;
+                padding: 8px;
+                margin-top: 8px;
+                font-size: 11.5px;
+            }}
+
             .card {{ background: #131d31; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid #233249; }}
             h2 {{ font-size: 14px; margin-top: 0; padding-bottom: 6px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }}
             .table-container {{ max-height: 420px; overflow-y: auto; }}
@@ -562,7 +614,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v29.0 - Multi-Pasarela Activa</p>
+                    <p>Titan Quantum v30.0 - Suite Total</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -570,14 +622,10 @@ def index(request: Request):
                 </div>
             </div>
 
-            <div class="cluster-card">
-                <div>
-                    <span class="cluster-tag">TRIPLE PASARELA RESIDENCIAL</span>
-                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">RD + Kino Leidsa + Primitiva + Euromillones + EuroDreams + Anguila</span>
-                </div>
-                <div>
-                    <button class="btn-sync" onclick="sincronizarResultadosEnVivo()">🔄 ACTUALIZAR AHORA</button>
-                </div>
+            <!-- BANNER DE FASE DINÁMICO (6:00 PM TIRO DE GRACIA) -->
+            <div class="banner-fase">
+                <span>{banner_txt}</span>
+                <button class="btn-sync" onclick="sincronizarResultadosEnVivo()">🔄 ACTUALIZAR</button>
             </div>
 
             <div class="bingo-alert" id="panel_bingazos">
@@ -610,6 +658,26 @@ def index(request: Request):
                 <div class="sniper-lot-box">
                     <span style="color:#facc15;font-weight:900;">📍 LOTERÍA FUERTE:</span>
                     <span style="color:#38bdf8;font-weight:bold;" id="s_lot_fuerte">--</span>
+                </div>
+            </div>
+
+            <!-- MATRIZ DE HORARIOS Y SALAS DE MAYOR RETORNO -->
+            <div class="matriz-card">
+                <div style="color:#c084fc; font-weight:900; margin-bottom:4px; display:flex; justify-content:space-between;">
+                    <span>📊 MATRIZ ESTRATÉGICA DE SALAS Y HORARIOS</span>
+                    <span style="color:#94a3b8; font-size:10px;">Alta Liquidez</span>
+                </div>
+                <div class="matriz-grid">
+                    <div class="matriz-box">
+                        <b style="color:#38bdf8;">🌅 TANDA MEDIODÍA (12:00 - 2:30 PM)</b>
+                        <div style="color:#cbd5e1; font-size:10.5px; margin-top:2px;">Foco: <b>La Primera / Real / Gana Más</b></div>
+                        <div style="color:#4ade80; font-size:10px; margin-top:2px;">🎯 Tiro Directo Fuerte & Quiniela</div>
+                    </div>
+                    <div class="matriz-box">
+                        <b style="color:#f472b6;">🌙 TANDA NOCHE (7:55 - 8:55 PM)</b>
+                        <div style="color:#cbd5e1; font-size:10.5px; margin-top:2px;">Foco: <b>Leidsa / Nacional Noche / Loteka</b></div>
+                        <div style="color:#fbbf24; font-size:10px; margin-top:2px;">⚡ Super Palé Cruzado (Tarde × Noche)</div>
+                    </div>
                 </div>
             </div>
 
@@ -695,6 +763,15 @@ def index(request: Request):
                     <div class="jf-row" style="margin-bottom:0;">
                         <b style="color:#a5b4fc;">🏆 1 TRIPLETA:</b>
                         <span style="color:#f472b6;font-weight:900;font-size:13px;" id="jf_tripleta_txt">--</span>
+                    </div>
+
+                    <!-- COBERTURA LATERAL (+1 / -1 Y REVÉS EN PALÉ) -->
+                    <div class="cobertura-box">
+                        <b style="color:#38bdf8;">🛡️ COBERTURA LATERAL BLINDADA:</b>
+                        <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:11px;">
+                            <span>Lateral +1 / -1: <b style="color:#facc15;" id="cov_mas_menos">-- / --</b></span>
+                            <span>Palé Revés: <b style="color:#4ade80;" id="cov_pale_reves">--</b></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1059,7 +1136,7 @@ def index(request: Request):
 
                     let htmlE = "";
                     ed.apuestas_euro.forEach((a, i) => {{
-                        htmlE += `<tr><td>0${{i+1}}</td><td style="color:#60a5fa;font-weight:bold;font-size:15px;">${{a.numeros}}</td><td><span style="color:#facc15;font-weight:900;">⭐ ${{a.estrellas}}</span></td><td style="font-size:10px;color:#38bdf8;">${{a.tipo}}</td><td style="font-weight:bold;color:#4ade80;">${{a.fuerza}}%</td></tr>`;
+                        htmlE += `<tr><td>0${{i+1}}</td><td style="color:#60a5fa;font-weight:bold;font-size:15px;">${{a.numeros}}</td><td><span style="color:#facc15;font-weight:900;">⭐ ${{a.estrellas}}</span></td><td style="font-size:10px;">${{a.tipo}}</td><td style="font-weight:bold;color:#4ade80;">${{a.fuerza}}%</td></tr>`;
                     }});
                     document.getElementById('tabla_euromillones').innerHTML = htmlE;
 
@@ -1111,6 +1188,11 @@ def index(request: Request):
                         document.getElementById('jf_tripleta_txt').innerText = `[${{jm.tripleta}}]`;
                         document.getElementById('jf_lot_txt').innerText = jm.lot_fuerte;
                         document.getElementById('jf_respaldo_txt').innerText = jm.lot_respaldo;
+
+                        if (info.cobertura_lateral) {{
+                            document.getElementById('cov_mas_menos').innerText = `[+1: ${{info.cobertura_lateral.mas1}}]  /  [-1: ${{info.cobertura_lateral.menos1}}]`;
+                            document.getElementById('cov_pale_reves').innerText = `[${{info.cobertura_lateral.pale_reves}}]`;
+                        }}
                     }}
 
                     if (info.sueltos) {{
@@ -1140,7 +1222,6 @@ def index(request: Request):
                 }}
             }}
 
-            // --- LECTURA DIRECTA CON TRIPLE PASARELA RESIDENCIAL ---
             async function sincronizarResultadosEnVivo() {{
                 const txtStatus = document.getElementById('txt_sync_status');
                 if (txtStatus) txtStatus.innerText = "⏳ Sincronizando en vivo...";
@@ -1212,12 +1293,9 @@ def index(request: Request):
 
                         if (txtStatus) txtStatus.innerText = "● Auto-Sincronizado (" + capturas + " salas)";
                         return;
-                    }} catch (e) {{
-                        // Fallback a localStorage
-                    }}
+                    }} catch (e) {{}}
                 }}
 
-                // Recuperación de memoria si hay corte puntual
                 const guardado = localStorage.getItem("shneyder_premios_rd");
                 if (guardado) {{
                     premios = JSON.parse(guardado);
@@ -1248,7 +1326,8 @@ def index(request: Request):
                     texto = `🐍 *ANGUILA CASCADA 4X* 🐍\\n📍 *10 AM:* [${{ad['10am'].fijo}}] (Palé: ${{ad['10am'].pale}})\\n📍 *1 PM:* [${{ad['1pm'].fijo}}] (Palé: ${{ad['1pm'].pale}})\\n📍 *6 PM:* [${{ad['6pm'].fijo}}] (Palé: ${{ad['6pm'].pale}})\\n📍 *9 PM:* [${{ad['9pm'].fijo}}] (Palé: ${{ad['9pm'].pale}})\\n⚡ *SHNEYDER IA PRO RD*`;
                 }} else {{
                     let jm = info.jugada_maestra;
-                    texto = `⚡ *JUGADA TITÁN SHNEYDER IA PRO RD* ⚡\\n📍 *Lotería Fuerte:* ${{jm.lot_fuerte}}\\n🛡️ *Cobertura:* ${{jm.lot_respaldo}}\\n🎯 *3 Números Directos:* [${{jm.numeros_3[0]}}] - [${{jm.numeros_3[1]}}] - [${{jm.numeros_3[2]}}]\\n💥 *2 Palés Maestros:* [${{jm.pale_1}}] / [${{jm.pale_2}}]\\n🏆 *1 Tripleta Reina:* [${{jm.tripleta}}]\\n⚡ *Super Palé Cruzado:* [${{info.super_pales[0].cruse}}]`;
+                    let cov = info.cobertura_lateral;
+                    texto = `⚡ *JUGADA TITÁN SHNEYDER IA PRO RD* ⚡\\n📍 *Lotería Fuerte:* ${{jm.lot_fuerte}}\\n🛡️ *Cobertura:* ${{jm.lot_respaldo}}\\n🎯 *3 Números Directos:* [${{jm.numeros_3[0]}}] - [${{jm.numeros_3[1]}}] - [${{jm.numeros_3[2]}}]\\n💥 *Palés:* [${{jm.pale_1}}] / [${{jm.pale_2}}] / [${{cov.pale_reves}}]\\n🛡️ *Laterales:* [+1: ${{cov.mas1}}] / [-1: ${{cov.menos1}}]\\n🏆 *Tripleta Reina:* [${{jm.tripleta}}]\\n⚡ *Super Palé:* [${{info.super_pales[0].cruse}}]`;
                 }}
 
                 navigator.clipboard.writeText(texto).then(() => {{
@@ -1275,7 +1354,8 @@ def index(request: Request):
                     ticket += `SALA: ANGUILA CASCADA\\n10 AM: [${{info.anguila_data['10am'].fijo}}]  1 PM: [${{info.anguila_data['1pm'].fijo}}]\\n6 PM:  [${{info.anguila_data['6pm'].fijo}}]  9 PM: [${{info.anguila_data['9pm'].fijo}}]\\n`;
                 }} else {{
                     let jm = info.jugada_maestra;
-                    ticket += `📍 SALA: ${{jm.lot_fuerte.toUpperCase()}}\\n🛡️ COBERTURA: ${{jm.lot_respaldo.toUpperCase()}}\\n3 DIRECTOS: [${{jm.numeros_3[0]}}]  [${{jm.numeros_3[1]}}]  [${{jm.numeros_3[2]}}]\\n2 PALÉS: [${{jm.pale_1}}] / [${{jm.pale_2}}]\\nTRIPLETA: [${{jm.tripleta}}]\\nSUPER PALÉ: [${{info.super_pales[0].cruse}}]\\n`;
+                    let cov = info.cobertura_lateral;
+                    ticket += `📍 SALA: ${{jm.lot_fuerte.toUpperCase()}}\\n🛡️ COBERTURA: ${{jm.lot_respaldo.toUpperCase()}}\\n3 DIRECTOS: [${{jm.numeros_3[0]}}]  [${{jm.numeros_3[1]}}]  [${{jm.numeros_3[2]}}]\\nPALÉS: [${{jm.pale_1}}] / [${{jm.pale_2}}] / [${{cov.pale_reves}}]\\nLATERALES: [+1: ${{cov.mas1}}] / [-1: ${{cov.menos1}}]\\nTRIPLETA: [${{jm.tripleta}}]\\nSUPER PALÉ: [${{info.super_pales[0].cruse}}]\\n`;
                 }}
                 ticket += `=================================`;
 
@@ -1305,7 +1385,6 @@ def index(request: Request):
             actualizarRelojCabecera();
             actualizarVista();
 
-            // Auto-sync inmediato
             sincronizarResultadosEnVivo();
             setInterval(sincronizarResultadosEnVivo, 60000);
         </script>
