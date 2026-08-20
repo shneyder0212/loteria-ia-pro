@@ -4,18 +4,18 @@ import time
 import random
 import threading
 import re
+import ssl
 import urllib.request
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum Blindado v18.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v20.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
-# ALMACÉN ÚNICAMENTE DE RESULTADOS OFICIALES CONFIRMADOS
 RESULTADOS_OFICIALES_REALES = {}
 
 ESTADO_MOTOR = {
@@ -24,7 +24,7 @@ ESTADO_MOTOR = {
     "estado_ia": "Iniciando...",
     "fase_dia": "Mañana / Mediodía",
     "eficiencia_global": "98.4%",
-    "scraper_status": "Scraper 100% Real (Sin Simulación)"
+    "scraper_log": "Esperando primer ciclo..."
 }
 
 def init_db():
@@ -45,7 +45,6 @@ def init_db():
 init_db()
 
 def obtener_fechas_rd():
-    # Conversión estricta de hora UTC a Hora Santo Domingo (UTC-4)
     ahora_utc = datetime.utcnow()
     hora_rd = ahora_utc - timedelta(hours=4)
     fecha_str = hora_rd.strftime("%d/%m/%Y")
@@ -66,12 +65,10 @@ TABLA_JALADERA = {
 def obtener_jalamatico(num_str):
     return TABLA_JALADERA.get(num_str, [num_str[::-1], f"{(int(num_str)+10)%100:02d}", f"{(int(num_str)+50)%100:02d}"])
 
-# EXTRACCIÓN ESTRICTAMENTE REAL (SIN FALLBACK DE NÚMEROS INVENTADOS)
-def extraer_resultados_oficiales_reales():
+def ejecutar_scraper_profundo():
     global RESULTADOS_OFICIALES_REALES
-    hora_rd, fecha_str, _ = obtener_fechas_rd()
+    _, fecha_str, _ = obtener_fechas_rd()
 
-    # Plantilla base: Todo comienza en Pendiente con '--'
     pizarra = {
         "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 94%"},
         "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Fidelidad 96%"},
@@ -90,69 +87,78 @@ def extraer_resultados_oficiales_reales():
         "eurodreams_esp": {"nombre": "EuroDreams (Europa)", "premios": ["--", "--", "--", "--", "--", "--"], "sueno": "-", "estado": "Sorteo Lunes/Jueves 21:00h", "volatilidad": "🟢 Gaussiana 95%"}
     }
 
-    # Conservar resultados oficiales capturados previamente en la sesión del día
     for k in pizarra:
         if k in RESULTADOS_OFICIALES_REALES and RESULTADOS_OFICIALES_REALES[k]["estado"] == "Oficial RD":
             pizarra[k] = RESULTADOS_OFICIALES_REALES[k]
 
-    # Fuente 1: LoteriasDominicanas.com
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
+    }
+
+    capturas = 0
     try:
-        req = urllib.request.Request(
-            "https://loteriasdominicanas.com/",
-            headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-        )
-        with urllib.request.urlopen(req, timeout=8) as resp:
+        req = urllib.request.Request("https://loteriasdominicanas.com/", headers=headers)
+        with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
             html = resp.read().decode('utf-8', errors='ignore')
-            bloques = re.findall(r'<div[^>]*class="[^"]*game-block[^"]*"[^>]*>(.*?)</div>\s*</div>', html, re.DOTALL)
-            for b in bloques:
-                bolos = re.findall(r'<span[^>]*class="[^"]*score[^"]*"[^>]*>(\d+)</span>', b)
+            patron_juegos = re.findall(r'(<div[^>]*class="[^"]*game-[^"]*"[^>]*>.*?</div>\s*</div>)', html, re.DOTALL)
+            for bloque in patron_juegos:
+                bolos = re.findall(r'<span[^>]*class="[^"]*score[^"]*"[^>]*>\s*(\d+)\s*</span>', bloque)
                 if len(bolos) >= 3:
                     trio = [bolos[0].zfill(2), bolos[1].zfill(2), bolos[2].zfill(2)]
-                    bl = b.lower()
-                    if "gana más" in bl or "gana-mas" in bl:
-                        pizarra["gana_mas"]["premios"] = trio; pizarra["gana_mas"]["estado"] = "Oficial RD"
-                    elif "real" in bl:
-                        pizarra["real"]["premios"] = trio; pizarra["real"]["estado"] = "Oficial RD"
-                    elif "primera" in bl and "12" in bl:
-                        pizarra["primera_dia"]["premios"] = trio; pizarra["primera_dia"]["estado"] = "Oficial RD"
-                    elif "primera" in bl and ("8" in bl or "noche" in bl):
-                        pizarra["primera_noche"]["premios"] = trio; pizarra["primera_noche"]["estado"] = "Oficial RD"
-                    elif "leidsa" in bl:
-                        pizarra["leidsa"]["premios"] = trio; pizarra["leidsa"]["estado"] = "Oficial RD"
-                    elif "nacional" in bl and ("noche" in bl or "8:50" in bl):
-                        pizarra["nacional_noche"]["premios"] = trio; pizarra["nacional_noche"]["estado"] = "Oficial RD"
-                    elif "loteka" in bl:
-                        pizarra["loteka"]["premios"] = trio; pizarra["loteka"]["estado"] = "Oficial RD"
-                    elif "lotedom" in bl:
-                        pizarra["lotedom"]["premios"] = trio; pizarra["lotedom"]["estado"] = "Oficial RD"
-                    elif "suerte" in bl and "12" in bl:
-                        pizarra["suerte_dia"]["premios"] = trio; pizarra["suerte_dia"]["estado"] = "Oficial RD"
-                    elif "suerte" in bl and "6" in bl:
-                        pizarra["suerte_tarde"]["premios"] = trio; pizarra["suerte_tarde"]["estado"] = "Oficial RD"
-                    elif "anguila" in bl and "10" in bl:
-                        pizarra["anguila_10am"]["premios"] = trio; pizarra["anguila_10am"]["estado"] = "Oficial RD"
-                    elif "anguila" in bl and ("1" in bl or "13" in bl):
-                        pizarra["anguila_1pm"]["premios"] = trio; pizarra["anguila_1pm"]["estado"] = "Oficial RD"
-                    elif "anguila" in bl and ("6" in bl or "18" in bl):
-                        pizarra["anguila_6pm"]["premios"] = trio; pizarra["anguila_6pm"]["estado"] = "Oficial RD"
-                    elif "anguila" in bl and ("9" in bl or "21" in bl):
-                        pizarra["anguila_9pm"]["premios"] = trio; pizarra["anguila_9pm"]["estado"] = "Oficial RD"
-    except Exception:
-        pass
+                    bl = bloque.lower()
+                    if ("gana más" in bl or "gana-mas" in bl) and pizarra["gana_mas"]["premios"][0] == "--":
+                        pizarra["gana_mas"]["premios"] = trio; pizarra["gana_mas"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "real" in bl and pizarra["real"]["premios"][0] == "--":
+                        pizarra["real"]["premios"] = trio; pizarra["real"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "primera" in bl and ("12" in bl or "día" in bl or "dia" in bl) and pizarra["primera_dia"]["premios"][0] == "--":
+                        pizarra["primera_dia"]["premios"] = trio; pizarra["primera_dia"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "primera" in bl and ("noche" in bl or "8" in bl or "20" in bl) and pizarra["primera_noche"]["premios"][0] == "--":
+                        pizarra["primera_noche"]["premios"] = trio; pizarra["primera_noche"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "leidsa" in bl and pizarra["leidsa"]["premios"][0] == "--":
+                        pizarra["leidsa"]["premios"] = trio; pizarra["leidsa"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "nacional" in bl and ("noche" in bl or "8:50" in bl) and pizarra["nacional_noche"]["premios"][0] == "--":
+                        pizarra["nacional_noche"]["premios"] = trio; pizarra["nacional_noche"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "loteka" in bl and pizarra["loteka"]["premios"][0] == "--":
+                        pizarra["loteka"]["premios"] = trio; pizarra["loteka"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "lotedom" in bl and pizarra["lotedom"]["premios"][0] == "--":
+                        pizarra["lotedom"]["premios"] = trio; pizarra["lotedom"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "suerte" in bl and ("12" in bl or "día" in bl or "dia" in bl) and pizarra["suerte_dia"]["premios"][0] == "--":
+                        pizarra["suerte_dia"]["premios"] = trio; pizarra["suerte_dia"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "suerte" in bl and ("6" in bl or "18" in bl or "tarde" in bl) and pizarra["suerte_tarde"]["premios"][0] == "--":
+                        pizarra["suerte_tarde"]["premios"] = trio; pizarra["suerte_tarde"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "anguila" in bl and "10" in bl and pizarra["anguila_10am"]["premios"][0] == "--":
+                        pizarra["anguila_10am"]["premios"] = trio; pizarra["anguila_10am"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "anguila" in bl and ("1" in bl or "13" in bl) and pizarra["anguila_1pm"]["premios"][0] == "--":
+                        pizarra["anguila_1pm"]["premios"] = trio; pizarra["anguila_1pm"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "anguila" in bl and ("6" in bl or "18" in bl) and pizarra["anguila_6pm"]["premios"][0] == "--":
+                        pizarra["anguila_6pm"]["premios"] = trio; pizarra["anguila_6pm"]["estado"] = "Oficial RD"; capturas += 1
+                    elif "anguila" in bl and ("9" in bl or "21" in bl) and pizarra["anguila_9pm"]["premios"][0] == "--":
+                        pizarra["anguila_9pm"]["premios"] = trio; pizarra["anguila_9pm"]["estado"] = "Oficial RD"; capturas += 1
+    except Exception as e:
+        ESTADO_MOTOR["scraper_log"] = f"F1 error: {str(e)[:30]}"
 
     RESULTADOS_OFICIALES_REALES = pizarra
+    ESTADO_MOTOR["scraper_log"] = f"Última captura: {capturas} salas oficializadas"
 
-# PRONÓSTICOS DEL CLÚSTER DE 15 IAs
 def cluster_universal_15_ia(hora_rd, dia_nombre):
     seed_base = int(hora_rd.strftime("%Y%m%d"))
     es_tarde_noche = hora_rd.hour >= 18
     seed_val = seed_base + (999 if es_tarde_noche else 111)
     rng = random.Random(seed_val)
 
-    salas_nombres = [
-        "Gana Más / Nacional Noche", "Lotería Real (12:55 PM)", "Leidsa (8:55 PM)",
-        "La Primera (12:00 / 8:00 PM)", "Anguila (10 AM / 1 PM / 6 PM)", "Loteka (7:55 PM)", "La Suerte"
-    ]
+    # Salas según la tanda horaria
+    salas_tarde = ["Lotería Real (12:55 PM)", "Gana Más (2:30 PM)", "La Primera Día (12:00 PM)", "La Suerte Día (12:30 PM)"]
+    salas_noche = ["Leidsa (8:55 PM)", "Nacional Noche (8:50 PM)", "Loteka (7:55 PM)", "La Primera Noche (8:00 PM)"]
+    
+    pool_salas = salas_noche if es_tarde_noche else salas_tarde
+    lot_fuerte_principal = pool_salas[0]
+    lot_fuerte_respaldo = pool_salas[1]
 
     numeros_rd = list(range(100))
     rng.shuffle(numeros_rd)
@@ -160,7 +166,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     for i, n in enumerate(numeros_rd[:20]):
         fuerza = max(25.0, min(99.8, round(99.6 - (i * 3.6) + rng.uniform(-0.6, 0.6), 1)))
         tipo = "triple_factor" if i == 0 else ("virado" if i == 1 else rng.choice(["caliente", "atrasado", "fuerte", "pareja"]))
-        todas_pool.append({"num": f"{n:02d}", "fuerza": fuerza, "tipo": tipo, "lot": rng.choice(salas_nombres)})
+        todas_pool.append({"num": f"{n:02d}", "fuerza": fuerza, "tipo": tipo, "lot": rng.choice(pool_salas)})
 
     n1 = todas_pool[0]["num"]
     jals = obtener_jalamatico(n1)
@@ -206,8 +212,15 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
             "nombre": "Todas las Loterías (Consenso Cuántico RD)",
             "tipo_juego": "quiniela",
             "fase": "Recalibración Vespertina (Tiro de Gracia)" if es_tarde_noche else "Matriz Matutina",
-            "tiro_fijo": {"num": n1, "virado": n1[::-1] if n1 != n1[::-1] else jals[1], "fuerza": todas_pool[0]["fuerza"], "palé_titan": f"{n1} - {n2}", "lot_fuerte": todas_pool[0]["lot"]},
-            "jugada_maestra": {"numeros_3": [n1, n2, n3], "pale_1": f"{n1} - {n2}", "pale_2": f"{n1} - {n3}", "tripleta": f"{n1} - {n2} - {n3}", "lot_fuerte": todas_pool[0]["lot"]},
+            "tiro_fijo": {"num": n1, "virado": n1[::-1] if n1 != n1[::-1] else jals[1], "fuerza": todas_pool[0]["fuerza"], "palé_titan": f"{n1} - {n2}", "lot_fuerte": lot_fuerte_principal},
+            "jugada_maestra": {
+                "numeros_3": [n1, n2, n3],
+                "pale_1": f"{n1} - {n2}",
+                "pale_2": f"{n1} - {n3}",
+                "tripleta": f"{n1} - {n2} - {n3}",
+                "lot_fuerte": lot_fuerte_principal,
+                "lot_respaldo": lot_fuerte_respaldo
+            },
             "super_pales": super_pales,
             "dictamen": {
                 "flujo": "CLÚSTER UNIVERSAL 15 IAs ACTIVO",
@@ -215,7 +228,7 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
                 "terminal": f"Terminales {n1[-1]}, {n2[-1]} y {n3[-1]}",
                 "pareja": "ALTA (Gemelos y Espejos en Tensión)",
                 "digito_fuerte": f"Dígitos {n1[0]} y {n1[1]}",
-                "presion": "🚨 RUPTURA CRÍTICA: IA-01 a IA-15 calibrando",
+                "presion": f"🎯 Foco Directo: {lot_fuerte_principal}",
                 "dia_tendencia": f"{dia_nombre}: Rotación activa"
             },
             "sueltos": todas_pool
@@ -256,7 +269,7 @@ def motor_segundo_plano():
     while True:
         try:
             hora_rd, _, _ = obtener_fechas_rd()
-            extraer_resultados_oficiales_reales()
+            ejecutar_scraper_profundo()
             
             ESTADO_MOTOR["ultima_actualizacion"] = hora_rd.strftime("%H:%M:%S")
             ESTADO_MOTOR["ciclos_completados"] += 1
@@ -304,9 +317,14 @@ def ping():
         "status": "ok",
         "motor": ESTADO_MOTOR["estado_ia"],
         "ciclos": ESTADO_MOTOR["ciclos_completados"],
-        "scraper": ESTADO_MOTOR["scraper_status"],
+        "scraper_log": ESTADO_MOTOR["scraper_log"],
         "eficiencia": ESTADO_MOTOR["eficiencia_global"]
     }
+
+@app.get("/api/forzar_scraping")
+def forzar_scraping():
+    ejecutar_scraper_profundo()
+    return JSONResponse({"status": "ok", "resultados": RESULTADOS_OFICIALES_REALES})
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
@@ -316,8 +334,11 @@ def index(request: Request):
 
     hora_rd, fecha_str, dia_nombre = obtener_fechas_rd()
 
+    if not RESULTADOS_OFICIALES_REALES:
+        ejecutar_scraper_profundo()
+
     datos_loterias = cluster_universal_15_ia(hora_rd, dia_nombre)
-    resultados_oficiales = RESULTADOS_OFICIALES_REALES if RESULTADOS_OFICIALES_REALES else {}
+    resultados_oficiales = RESULTADOS_OFICIALES_REALES
 
     pronosticos_set = {datos_loterias["todas"]["tiro_fijo"]["num"], datos_loterias["todas"]["tiro_fijo"]["virado"]}
     if "jugada_maestra" in datos_loterias["todas"]:
@@ -348,8 +369,8 @@ def index(request: Request):
             "fecha": fecha_str,
             "sala": "Scraper Real RD 24/7",
             "tipo": f"⚡ HORA RD: {hora_rd.strftime('%I:%M %p')}",
-            "premio": f"Verificación Estricta ({dia_nombre})",
-            "detalle": "Pendientes en '--' hasta captura oficial confirmada"
+            "premio": f"Verificación Directa ({dia_nombre})",
+            "detalle": ESTADO_MOTOR["scraper_log"]
         }
     ]
 
@@ -402,6 +423,7 @@ def index(request: Request):
                 font-size: 11px;
             }}
             .cluster-tag {{ background: #22c55e; color: #000; font-weight: 900; padding: 2px 6px; border-radius: 4px; font-size: 10px; }}
+            .btn-sync {{ background: #38bdf8; color: #000; border: none; border-radius: 6px; padding: 4px 8px; font-weight: bold; font-size: 10px; cursor: pointer; }}
 
             .bingo-alert {{
                 background: linear-gradient(135deg, #064e3b, #022c22);
@@ -490,6 +512,7 @@ def index(request: Request):
             .dictamen-val {{ color: #f8fafc; font-weight: bold; }}
             .presion-alert {{ background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 8px; border-radius: 8px; margin-top: 8px; font-size: 11px; font-weight: bold; text-align: center; }}
 
+            /* JUGADA FORMADA CON LOTERÍA EXPLICITA */
             .jugada-formada-box {{
                 background: linear-gradient(135deg, #1e1b4b, #172554);
                 border: 2px solid #facc15;
@@ -509,6 +532,14 @@ def index(request: Request):
                 justify-content: space-between;
                 border-bottom: 1px solid rgba(250, 204, 21, 0.3);
                 padding-bottom: 4px;
+            }}
+            .jf-lot-box {{
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid #38bdf8;
+                border-radius: 6px;
+                padding: 6px 8px;
+                margin-bottom: 8px;
+                font-size: 11.5px;
             }}
             .jf-row {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; }}
             .jf-balls {{ display: flex; gap: 6px; }}
@@ -533,7 +564,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v18.0 - Scraper Estrictamente Oficial</p>
+                    <p>Titan Quantum v20.0 - Loterías Exactas</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -543,10 +574,12 @@ def index(request: Request):
 
             <div class="cluster-card">
                 <div>
-                    <span class="cluster-tag">SCRAPER OFICIAL RD</span>
-                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">Captura 100% Real Directa | Sin Números Simulados</span>
+                    <span class="cluster-tag">SCRAPER REAL RD</span>
+                    <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">Captura Automática de Premios</span>
                 </div>
-                <div style="color:#4ade80;font-weight:bold;font-size:10.5px;">● Conexión Real</div>
+                <div>
+                    <button class="btn-sync" onclick="forzarSincronizacion()">🔄 SINCRONIZAR AHORA</button>
+                </div>
             </div>
 
             <div class="bingo-alert" id="panel_bingazos">
@@ -623,6 +656,7 @@ def index(request: Request):
                 <button class="btn-ticket" onclick="generarTicket()">🎫 TICKET DE BANCA</button>
             </div>
 
+            <!-- DICTAMEN CON JUGADA FORMADA Y SALAS ESPECÍFICAS -->
             <div class="dictamen-box">
                 <h3>⚡ DICTAMEN DEL TITÁN <span id="dictamen_sala" style="font-size:10px;color:#94a3b8;"></span></h3>
                 <div class="dictamen-item"><b>Flujo:</b> <span class="dictamen-val" id="d_flujo">--</span></div>
@@ -638,6 +672,18 @@ def index(request: Request):
                         <span>⚡ JUGADA FORMADA (CONSENSO CUÁNTICO)</span>
                         <span style="font-size:10px;color:#4ade80;">DIRECTA</span>
                     </div>
+                    
+                    <div class="jf-lot-box">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                            <span style="color:#facc15;font-weight:900;">📍 LOTERÍA PRINCIPAL:</span>
+                            <span style="color:#38bdf8;font-weight:bold;" id="jf_lot_txt">--</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;">
+                            <span style="color:#94a3b8;font-weight:bold;">🛡️ COBERTURA:</span>
+                            <span style="color:#4ade80;font-weight:bold;" id="jf_respaldo_txt">--</span>
+                        </div>
+                    </div>
+
                     <div class="jf-row">
                         <b style="color:#a5b4fc;">🎯 3 NÚMEROS:</b>
                         <div class="jf-balls" id="jf_numeros_container"></div>
@@ -724,12 +770,12 @@ def index(request: Request):
         </div>
 
         <script>
-            const db = {datos_json};
-            const suenos = {suenos_json};
-            const auditoria = {auditoria_json};
-            const premios = {premios_json};
-            const termometro = {termometro_json};
-            const bingazos = {bingazos_json};
+            let db = {datos_json};
+            let suenos = {suenos_json};
+            let auditoria = {auditoria_json};
+            let premios = {premios_json};
+            let termometro = {termometro_json};
+            let bingazos = {bingazos_json};
             let tabActual = 'todas';
 
             function renderBadge(tipo) {{
@@ -915,6 +961,8 @@ def index(request: Request):
                         document.getElementById('jf_numeros_container').innerHTML = htmlB;
                         document.getElementById('jf_pales_txt').innerText = `[${{jm.pale_1}}]  /  [${{jm.pale_2}}]`;
                         document.getElementById('jf_tripleta_txt').innerText = `[${{jm.tripleta}}]`;
+                        document.getElementById('jf_lot_txt').innerText = jm.lot_fuerte;
+                        document.getElementById('jf_respaldo_txt').innerText = jm.lot_respaldo;
                     }}
 
                     if (info.sueltos) {{
@@ -944,6 +992,27 @@ def index(request: Request):
                 }}
             }}
 
+            function forzarSincronizacion() {{
+                const t = document.getElementById('toast');
+                t.innerText = "🔄 Conectando con tómbolas oficiales...";
+                t.style.display = 'block';
+
+                fetch('/api/forzar_scraping')
+                    .then(r => r.json())
+                    .then(data => {{
+                        if (data.status === 'ok') {{
+                            premios = data.resultados;
+                            cargarPizarraPremios();
+                            t.innerText = "✅ ¡Premios Oficiales Actualizados!";
+                            setTimeout(() => {{ t.style.display = 'none'; }}, 2500);
+                        }}
+                    }})
+                    .catch(() => {{
+                        t.innerText = "⚠️ Error de conexión con la fuente oficial.";
+                        setTimeout(() => {{ t.style.display = 'none'; }}, 2500);
+                    }});
+            }}
+
             function copiarWhatsApp() {{
                 const info = db[tabActual] || db['todas'];
                 let texto = "";
@@ -955,14 +1024,8 @@ def index(request: Request):
                     const ad = info.anguila_data;
                     texto = `🐍 *ANGUILA CASCADA 4X* 🐍\\n📍 *10 AM:* [${{ad['10am'].fijo}}] (Palé: ${{ad['10am'].pale}})\\n📍 *1 PM:* [${{ad['1pm'].fijo}}] (Palé: ${{ad['1pm'].pale}})\\n📍 *6 PM:* [${{ad['6pm'].fijo}}] (Palé: ${{ad['6pm'].pale}})\\n📍 *9 PM:* [${{ad['9pm'].fijo}}] (Palé: ${{ad['9pm'].pale}})\\n⚡ *SHNEYDER IA PRO RD*`;
                 }} else {{
-                    let n1 = info.sueltos[0].num, n2 = info.sueltos[1].num, n3 = info.sueltos[2].num;
-                    let lotFuerte = info.tiro_fijo ? info.tiro_fijo.lot_fuerte : info.nombre;
-                    if (info.jugada_maestra) {{
-                        n1 = info.jugada_maestra.numeros_3[0];
-                        n2 = info.jugada_maestra.numeros_3[1];
-                        n3 = info.jugada_maestra.numeros_3[2];
-                    }}
-                    texto = `⚡ *JUGADA TITÁN SHNEYDER IA PRO RD* ⚡\\n📍 *Lotería Sugerida:* ${{lotFuerte}}\\n🎯 *3 Números Directos:* [${{n1}}] - [${{n2}}] - [${{n3}}]\\n💥 *2 Palés Maestros:* [${{n1}} - ${{n2}}] / [${{n1}} - ${{n3}}]\\n🏆 *1 Tripleta Reina:* [${{n1}} - ${{n2}} - ${{n3}}]\\n⚡ *Super Palé Cruzado:* [${{info.super_pales[0].cruse}}]`;
+                    let jm = info.jugada_maestra;
+                    texto = `⚡ *JUGADA TITÁN SHNEYDER IA PRO RD* ⚡\\n📍 *Lotería Fuerte:* ${{jm.lot_fuerte}}\\n🛡️ *Cobertura:* ${{jm.lot_respaldo}}\\n🎯 *3 Números Directos:* [${{jm.numeros_3[0]}}] - [${{jm.numeros_3[1]}}] - [${{jm.numeros_3[2]}}]\\n💥 *2 Palés Maestros:* [${{jm.pale_1}}] / [${{jm.pale_2}}]\\n🏆 *1 Tripleta Reina:* [${{jm.tripleta}}]\\n⚡ *Super Palé Cruzado:* [${{info.super_pales[0].cruse}}]`;
                 }}
 
                 navigator.clipboard.writeText(texto).then(() => {{
@@ -975,21 +1038,15 @@ def index(request: Request):
 
             function generarTicket() {{
                 const info = db[tabActual] || db['todas'];
-                let ticket = `=================================\\n   🎫 TICKET SHNEYDER IA PRO RD\\n=================================\\nSALA: ${{info.nombre.toUpperCase()}}\\nFECHA: ${{new Date().toLocaleDateString()}}\\n---------------------------------\\n`;
+                let jm = info.jugada_maestra;
+                let ticket = `=================================\\n   🎫 TICKET SHNEYDER IA PRO RD\\n=================================\\nFECHA: ${{new Date().toLocaleDateString()}}\\n📍 SALA PRINCIPAL: ${{jm.lot_fuerte.toUpperCase()}}\\n🛡️ COBERTURA: ${{jm.lot_respaldo.toUpperCase()}}\\n---------------------------------\\n`;
 
                 if (info.tipo_juego === 'eurodreams') {{
                     ticket += `EURODREAMS: [${{info.ed_data.apuestas[0].combinacion}}]\\nSUEÑO: [${{info.ed_data.sueno_reina}}]\\n`;
                 }} else if (info.tipo_juego === 'anguila_cascada') {{
                     ticket += `10 AM: [${{info.anguila_data['10am'].fijo}}]  1 PM: [${{info.anguila_data['1pm'].fijo}}]\\n6 PM:  [${{info.anguila_data['6pm'].fijo}}]  9 PM: [${{info.anguila_data['9pm'].fijo}}]\\n`;
                 }} else {{
-                    let n1 = info.sueltos[0].num, n2 = info.sueltos[1].num, n3 = info.sueltos[2].num;
-                    let lotFuerte = info.tiro_fijo ? info.tiro_fijo.lot_fuerte : info.nombre;
-                    if (info.jugada_maestra) {{
-                        n1 = info.jugada_maestra.numeros_3[0];
-                        n2 = info.jugada_maestra.numeros_3[1];
-                        n3 = info.jugada_maestra.numeros_3[2];
-                    }}
-                    ticket += `SALA: ${{lotFuerte.toUpperCase()}}\\n3 DIRECTOS: [${{n1}}]  [${{n2}}]  [${{n3}}]\\n2 PALÉS: [${{n1}} - ${{n2}}] / [${{n1}} - ${{n3}}]\\nTRIPLETA: [${{n1}} - ${{n2}} - ${{n3}}]\\nSUPER PALÉ: [${{info.super_pales[0].cruse}}]\\n`;
+                    ticket += `3 DIRECTOS: [${{jm.numeros_3[0]}}]  [${{jm.numeros_3[1]}}]  [${{jm.numeros_3[2]}}]\\n2 PALÉS: [${{jm.pale_1}}] / [${{jm.pale_2}}]\\nTRIPLETA: [${{jm.tripleta}}]\\nSUPER PALÉ: [${{info.super_pales[0].cruse}}]\\n`;
                 }}
                 ticket += `=================================`;
 
