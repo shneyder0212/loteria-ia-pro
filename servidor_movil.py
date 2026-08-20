@@ -7,13 +7,12 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Pro 24/7")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Pro v8.5")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
-# ESTADO GLOBAL EN MEMORIA (Alimentado continuamente por el motor)
 ESTADO_MOTOR = {
     "ultima_actualizacion": "--:--:--",
     "ciclos_completados": 0,
@@ -28,9 +27,7 @@ def obtener_fecha_operativa():
     fecha_op = ahora - timedelta(hours=4)
     return ahora, fecha_op
 
-# MOTOR DE FONDO CONTINUO (Bucle 24/7 cada 5 minutos)
 def motor_segundo_plano():
-    print("🚀 MOTOR EN SEGUNDO PLANO INICIADO: Calibrando 24/7...")
     while True:
         try:
             ahora, fecha_op = obtener_fecha_operativa()
@@ -38,7 +35,6 @@ def motor_segundo_plano():
             ESTADO_MOTOR["ciclos_completados"] += 1
             ESTADO_MOTOR["estado_ia"] = f"Matriz Activa (Ciclo #{ESTADO_MOTOR['ciclos_completados']})"
             
-            # Sincronización con SQLite
             conn = sqlite3.connect(DB_PATH)
             cur = conn.cursor()
             cur.execute("""
@@ -53,13 +49,10 @@ def motor_segundo_plano():
                         (ahora.strftime("%Y-%m-%d %H:%M:%S"), ESTADO_MOTOR["ciclos_completados"], "ACTIVO 24/7"))
             conn.commit()
             conn.close()
-            
         except Exception as e:
-            print(f"Error en motor de fondo: {e}")
-        
-        time.sleep(300)  # Espera 5 minutos (300 segundos) y vuelve a procesar
+            pass
+        time.sleep(300)
 
-# Arrancar el hilo de fondo al iniciar la app
 hilo_ia = threading.Thread(target=motor_segundo_plano, daemon=True)
 hilo_ia.start()
 
@@ -90,12 +83,21 @@ def generar_pronosticos_diarios(fecha_op, dia_nombre):
     seed_val = int(fecha_op.strftime("%Y%m%d"))
     rng = random.Random(seed_val)
 
+    salas_nombres = [
+        "Gana Más (2:30 PM) / Nacional Noche (8:50 PM)",
+        "Lotería Real (12:55 PM)",
+        "Leidsa (8:55 PM)",
+        "La Primera (12:00 PM / 8:00 PM)",
+        "Anguila (10 AM / 1 PM / 6 PM)",
+        "Loteka (7:55 PM)",
+        "La Suerte Dominicana (12:30 PM / 6:00 PM)"
+    ]
+
     def gen_pool(cantidad=20):
         numeros = list(range(100))
         rng.shuffle(numeros)
         pool = []
         tipos = ["triple_factor", "virado", "caliente", "atrasado", "fuerte", "pareja"]
-        salas_nombres = ["Gana Más / Nacional", "Leidsa", "Real 12:55pm", "Loteka", "La Primera", "Anguila 6PM", "La Suerte"]
         for i, n in enumerate(numeros[:cantidad]):
             fuerza = round(99.0 - (i * 3.8) + rng.uniform(-1.0, 1.0), 1)
             fuerza = max(20.0, min(99.4, fuerza))
@@ -125,12 +127,19 @@ def generar_pronosticos_diarios(fecha_op, dia_nombre):
         "todas": {
             "nombre": "Todas las Loterías (Consenso General)",
             "tipo_juego": "quiniela",
-            "tiro_fijo": {"num": n1, "virado": tf_vir, "fuerza": todas_pool[0]["fuerza"], "palé_titan": p1},
+            "tiro_fijo": {
+                "num": n1,
+                "virado": tf_vir,
+                "fuerza": todas_pool[0]["fuerza"],
+                "palé_titan": p1,
+                "lot_fuerte": todas_pool[0]["lot"]
+            },
             "jugada_maestra": {
                 "numeros_3": [n1, n2, n3],
                 "pale_1": p1,
                 "pale_2": p2,
-                "tripleta": tripleta_reina
+                "tripleta": tripleta_reina,
+                "lot_fuerte": todas_pool[0]["lot"]
             },
             "dictamen": {
                 "flujo": "ALTO (Ciclo Dinámico 24/7)",
@@ -146,7 +155,7 @@ def generar_pronosticos_diarios(fecha_op, dia_nombre):
         "kino_leidsa": {
             "nombre": "VENTA ESPECIAL: KINO LEIDSA TV",
             "tipo_juego": "kino",
-            "tiro_fijo": {"num": f"{rng.randint(1, 80):02d}", "virado": "--", "fuerza": 97.4, "palé_titan": "Bloque 5 Activo"},
+            "tiro_fijo": {"num": f"{rng.randint(1, 80):02d}", "virado": "--", "fuerza": 97.4, "palé_titan": "Bloque 5 Activo", "lot_fuerte": "Kino TV Leidsa (8:55 PM)"},
             "kino_data": {
                 "estado_tombola": "🔥 TÓMBOLA ACTIVA: Calibración dinámica ejecutada",
                 "paridad_optima": "⚖️ RATIO DE PARIDAD: 10 Pares / 10 Impares",
@@ -173,7 +182,7 @@ def generar_pronosticos_diarios(fecha_op, dia_nombre):
         "primitiva_esp": {
             "nombre": "🇪🇸 LA PRIMITIVA (ESPAÑA)",
             "tipo_juego": "primitiva",
-            "tiro_fijo": {"num": f"{rng.randint(1, 49):02d}", "virado": "--", "fuerza": 96.5, "palé_titan": "Reintegro Clave"},
+            "tiro_fijo": {"num": f"{rng.randint(1, 49):02d}", "virado": "--", "fuerza": 96.5, "palé_titan": "Reintegro Clave", "lot_fuerte": "Loterías del Estado (Jueves / Sábados)"},
             "primitiva_data": {
                 "reintegro": str(rng.randint(0, 9)),
                 "reintegro_fuerza": 94.8,
@@ -198,7 +207,7 @@ def generar_pronosticos_diarios(fecha_op, dia_nombre):
         "euromillones": {
             "nombre": "🇪🇺 EUROMILLONES (EUROPA)",
             "tipo_juego": "euromillones",
-            "tiro_fijo": {"num": f"{rng.randint(1, 50):02d}", "virado": "--", "fuerza": 98.2, "palé_titan": "Estrellas Fijas"},
+            "tiro_fijo": {"num": f"{rng.randint(1, 50):02d}", "virado": "--", "fuerza": 98.2, "palé_titan": "Estrellas Fijas", "lot_fuerte": "Euromillones (Martes / Viernes)"},
             "euro_data": {
                 "estrellas_fijas": [f"{n:02d}" for n in sorted(rng.sample(range(1, 13), 2))],
                 "estrellas_reserva": [f"{n:02d}" for n in sorted(rng.sample(range(1, 13), 2))],
@@ -243,7 +252,6 @@ def verificar_anti_ddos(client_ip: str) -> bool:
     PETICIONES_IP[client_ip].append(ahora)
     return True
 
-# RUTA RÁPIDA DE PING EXTERNO
 @app.get("/ping")
 def ping():
     return {"status": "ok", "motor_24_7": ESTADO_MOTOR["estado_ia"], "ciclos": ESTADO_MOTOR["ciclos_completados"]}
@@ -280,7 +288,7 @@ def index(request: Request):
             "sala": "Motor Titan 24/7",
             "tipo": f"⚡ MOTOR EN VIVO (Ciclo #{ESTADO_MOTOR['ciclos_completados']})",
             "premio": f"Jugada Formada Activa ({dia_nombre})",
-            "detalle": f"Última calibración: {ESTADO_MOTOR['ultima_actualizacion']} | Corte 04:00 AM ESP"
+            "detalle": f"Lotería Fuerte: {datos_loterias['todas']['tiro_fijo']['lot_fuerte']}"
         }
     ]
 
@@ -320,20 +328,38 @@ def index(request: Request):
             .brand-date {{ font-size: 11px; color: #cbd5e1; font-weight: 600; }}
             .brand-clock {{ font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; letter-spacing: 1px; }}
 
+            /* PANEL FRANCOTIRADOR CON SALA DESTACADA */
             .sniper-card {{ 
                 background: linear-gradient(135deg, #1e1b4b, #0f172a); 
                 border: 2px solid #818cf8; 
                 border-radius: 12px; 
-                padding: 12px 14px; 
+                padding: 14px; 
                 margin-bottom: 12px; 
+                box-shadow: 0 4px 12px rgba(129,140,248,0.25);
+            }}
+            .sniper-grid {{
                 display: flex; 
                 justify-content: space-around; 
                 align-items: center; 
                 text-align: center;
+                margin-bottom: 10px;
             }}
             .sniper-item b {{ font-size: 10px; color: #a5b4fc; text-transform: uppercase; display: block; }}
-            .sniper-num {{ font-size: 24px; font-weight: 900; color: #38bdf8; }}
-            .sniper-badge {{ font-size: 11px; font-weight: bold; color: #4ade80; }}
+            .sniper-num {{ font-size: 26px; font-weight: 900; color: #38bdf8; }}
+            .sniper-badge {{ font-size: 13px; font-weight: bold; color: #4ade80; }}
+
+            .sniper-lot-box {{
+                background: rgba(15, 23, 42, 0.8);
+                border: 1px solid #38bdf8;
+                border-radius: 8px;
+                padding: 6px 10px;
+                text-align: center;
+                font-size: 12px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 6px;
+            }}
 
             .termo-card {{ background: #111c30; border: 1px solid #f97316; border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; }}
             .termo-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; font-size: 11.5px; }}
@@ -412,7 +438,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Pro 24/7 - Background Engine Activo</p>
+                    <p>Titan Pro v8.5 - Sala Fuerte Integrada</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -420,23 +446,30 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- PANEL FRANCOTIRADOR -->
+            <!-- PANEL FRANCOTIRADOR CON LOTERÍA ESPECIFICADA -->
             <div class="sniper-card">
-                <div class="sniper-item">
-                    <b>🎯 TIRO DIRECTO</b>
-                    <span class="sniper-num" id="s_fijo">--</span>
+                <div class="sniper-grid">
+                    <div class="sniper-item">
+                        <b>🎯 TIRO DIRECTO</b>
+                        <span class="sniper-num" id="s_fijo">--</span>
+                    </div>
+                    <div class="sniper-item">
+                        <b>🛡️ REVÉS OBLIGADO</b>
+                        <span class="sniper-num" style="color:#f59e0b;" id="s_virado">--</span>
+                    </div>
+                    <div class="sniper-item">
+                        <b>💥 PALÉ TITÁN</b>
+                        <span class="sniper-num" style="color:#4ade80; font-size:18px;" id="s_pale">--</span>
+                    </div>
+                    <div class="sniper-item">
+                        <b>⚡ PROBABILIDAD</b>
+                        <span class="sniper-badge" id="s_fuerza">--%</span>
+                    </div>
                 </div>
-                <div class="sniper-item">
-                    <b>🛡️ REVÉS OBLIGADO</b>
-                    <span class="sniper-num" style="color:#f59e0b;" id="s_virado">--</span>
-                </div>
-                <div class="sniper-item">
-                    <b>💥 PALÉ TITÁN</b>
-                    <span class="sniper-num" style="color:#4ade80; font-size:18px;" id="s_pale">--</span>
-                </div>
-                <div class="sniper-item">
-                    <b>⚡ PROBABILIDAD</b>
-                    <span class="sniper-badge" id="s_fuerza">--%</span>
+                <!-- ETIQUETA DE SALA RECOMENDADA -->
+                <div class="sniper-lot-box">
+                    <span style="color:#facc15;font-weight:900;">📍 LOTERÍA FUERTE:</span>
+                    <span style="color:#38bdf8;font-weight:bold;" id="s_lot_fuerte">--</span>
                 </div>
             </div>
 
@@ -637,6 +670,7 @@ def index(request: Request):
                     document.getElementById('s_virado').innerText = info.tiro_fijo.virado;
                     document.getElementById('s_pale').innerText = info.tiro_fijo.palé_titan;
                     document.getElementById('s_fuerza').innerText = info.tiro_fijo.fuerza + "%";
+                    document.getElementById('s_lot_fuerte').innerText = info.tiro_fijo.lot_fuerte || info.nombre;
                 }}
 
                 if (info.dictamen) {{
@@ -714,6 +748,7 @@ def index(request: Request):
             function copiarWhatsApp() {{
                 const info = db[tabActual] || db['todas'];
                 let n1 = info.sueltos[0].num, n2 = info.sueltos[1].num, n3 = info.sueltos[2].num;
+                let lotFuerte = info.tiro_fijo ? info.tiro_fijo.lot_fuerte : info.nombre;
                 if (info.jugada_maestra) {{
                     n1 = info.jugada_maestra.numeros_3[0];
                     n2 = info.jugada_maestra.numeros_3[1];
@@ -721,7 +756,7 @@ def index(request: Request):
                 }}
 
                 let texto = `⚡ *JUGADA FORMADA SHNEYDER IA PRO RD* ⚡\\n` +
-                            `📍 *${{info.nombre}}*\\n` +
+                            `📍 *Lotería Sugerida:* ${{lotFuerte}}\\n` +
                             `🎯 *3 Números Directos:* [${{n1}}] - [${{n2}}] - [${{n3}}]\\n` +
                             `💥 *2 Palés Maestros:* [${{n1}} - ${{n2}}] / [${{n1}} - ${{n3}}]\\n` +
                             `🏆 *1 Tripleta Reina:* [${{n1}} - ${{n2}} - ${{n3}}]\\n` +
@@ -738,6 +773,7 @@ def index(request: Request):
             function generarTicket() {{
                 const info = db[tabActual] || db['todas'];
                 let n1 = info.sueltos[0].num, n2 = info.sueltos[1].num, n3 = info.sueltos[2].num;
+                let lotFuerte = info.tiro_fijo ? info.tiro_fijo.lot_fuerte : info.nombre;
                 if (info.jugada_maestra) {{
                     n1 = info.jugada_maestra.numeros_3[0];
                     n2 = info.jugada_maestra.numeros_3[1];
@@ -747,7 +783,7 @@ def index(request: Request):
                 let ticket = `=================================\\n` +
                              `   🎫 TICKET SHNEYDER IA PRO RD\\n` +
                              `=================================\\n` +
-                             `SALA: ${{info.nombre.toUpperCase()}}\\n` +
+                             `SALA SUGERIDA: ${{lotFuerte.toUpperCase()}}\\n` +
                              `FECHA: ${{new Date().toLocaleDateString()}}\\n` +
                              `---------------------------------\\n` +
                              `3 NÚMEROS DIRECTOS:\\n` +
