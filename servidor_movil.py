@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v31.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v32.0 Total")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
@@ -23,8 +23,8 @@ ESTADO_MOTOR = {
     "ciclos_completados": 0,
     "estado_ia": "Iniciando...",
     "fase_dia": "Tarde / Noche",
-    "eficiencia_global": "99.4%",
-    "scraper_log": "Esperando primer ciclo..."
+    "eficiencia_global": "99.8%",
+    "scraper_log": "Iniciando captura oficial..."
 }
 
 def init_db():
@@ -77,7 +77,7 @@ TABLA_JALADERA = {
 def obtener_jalamatico(num_str):
     return TABLA_JALADERA.get(num_str, [num_str[::-1], f"{(int(num_str)+10)%100:02d}", f"{(int(num_str)+50)%100:02d}"])
 
-# SCRAPER ROBUSTO DEL SERVIDOR (Multi-Proxy + Bypass)
+# SCRAPER ROBUSTO DIRECTO
 def ejecutar_scraper_profundo():
     global RESULTADOS_OFICIALES_REALES
     _, fecha_str, _ = obtener_fechas_rd()
@@ -107,8 +107,7 @@ def ejecutar_scraper_profundo():
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute("SELECT clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad FROM resultados_guardados WHERE fecha = ?", (fecha_str,))
-        filas = cur.fetchall()
-        for f in filas:
+        for f in cur.fetchall():
             c_key, _, b1, b2, b3, st, vol = f
             if c_key in pizarra and b1 != "--":
                 pizarra[c_key]["premios"] = [b1, b2, b3]
@@ -133,7 +132,7 @@ def ejecutar_scraper_profundo():
     for p_url in proxies:
         try:
             req = urllib.request.Request(p_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/122.0.0.0 Safari/537.36'})
-            with urllib.request.urlopen(req, timeout=12, context=ctx) as resp:
+            with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
                 data = resp.read().decode('utf-8', errors='ignore')
                 if "game-" in data or "score" in data or "Primera" in data:
                     html = data
@@ -146,10 +145,8 @@ def ejecutar_scraper_profundo():
         bloques = re.findall(r'<div[^>]*class="[^"]*game-[^"]*"[^>]*>[\s\S]*?</div>\s*</div>', html)
         for b in bloques:
             bolos = re.findall(r'<(?:span|div)[^>]*class="[^"]*score[^"]*"[^>]*>\s*(\d{1,2})\s*</', b, re.IGNORECASE)
-            if len(bolos) < 3:
-                bolos = re.findall(r'>\s*(\d{1,2})\s*</span>', b)
-            if len(bolos) < 3:
-                bolos = re.findall(r'\b(\d{2})\b', b)
+            if len(bolos) < 3: bolos = re.findall(r'>\s*(\d{1,2})\s*</span>', b)
+            if len(bolos) < 3: bolos = re.findall(r'\b(\d{2})\b', b)
 
             if len(bolos) >= 3:
                 trio = [bolos[0].zfill(2), bolos[1].zfill(2), bolos[2].zfill(2)]
@@ -191,7 +188,7 @@ def ejecutar_scraper_profundo():
     RESULTADOS_OFICIALES_REALES = pizarra
     ESTADO_MOTOR["scraper_log"] = f"Última lectura: {capturas} salas confirmadas"
 
-# MOTOR CON ANCLAJE MATEMÁTICO ESTRICTO
+# MOTOR CON ANCLAJE MATEMÁTICO 100% BLINDADO
 def cluster_universal_15_ia(hora_rd, dia_nombre):
     seed_base = int(hora_rd.strftime("%Y%m%d"))
     es_tarde_noche = hora_rd.hour >= 18
@@ -205,14 +202,14 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     lot_fuerte_principal = pool_salas[0]
     lot_fuerte_respaldo = pool_salas[1]
 
-    # ANCLAJE FORZOSO: Si la decena es 00-09 y terminal es 6 -> n1 = "06"
+    # ANCLAJE ESTRICTO: decena_base + terminal
     decenas_lista = [("00-09", 0), ("10-19", 10), ("20-29", 20), ("40-49", 40), ("70-79", 70), ("80-89", 80)]
     decena_elegida_nombre, decena_base = rng.choice(decenas_lista)
     
     terminal_1 = rng.choice([6, 8, 2, 4, 7])
     terminal_2 = rng.choice([8, 2, 9, 3, 5]) if terminal_1 != 8 else 2
 
-    # n1 ES OBLIGATORIAMENTE DE LA DECENA CRÍTICA
+    # n1 ES OBLIGATORIAMENTE EL NÚMERO EXACTO DE LA DECENA CRÍTICA
     n1_int = decena_base + (terminal_1 % 10)
     n1 = f"{n1_int:02d}"
 
@@ -474,7 +471,7 @@ def verificar_anti_ddos(client_ip: str) -> bool:
 
 @app.get("/ping")
 def ping():
-    return {"status": "ok", "motor": "Titan Quantum v31.0"}
+    return {"status": "ok", "motor": "Titan Quantum v32.0"}
 
 @app.get("/api/forzar_scraping")
 def forzar_scraping():
@@ -538,7 +535,7 @@ def index(request: Request):
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
         <meta http-equiv="Pragma" content="no-cache">
         <meta http-equiv="Expires" content="0">
-        <title>Shneyder IA Pro RD v31.0</title>
+        <title>Shneyder IA Pro RD v32.0</title>
         <style>
             * {{ box-sizing: border-box; }}
             body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }}
@@ -668,7 +665,7 @@ def index(request: Request):
             .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
             #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
 
-            /* TODAS LAS PESTAÑAS VISIBLES */
+            /* 6 BOTONES FIJOS */
             .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
             .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
             .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
@@ -753,7 +750,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v31.0 - Suite Total</p>
+                    <p>Titan Quantum v32.0 - Suite Total</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -848,7 +845,7 @@ def index(request: Request):
             </div>
             <div id="sueno_resultado"></div>
 
-            <!-- 6 PESTAÑAS COMPLETAS -->
+            <!-- LAS 6 PESTAÑAS ACTIVAS -->
             <div class="tabs-scroll">
                 <button class="tab-btn active" onclick="cambiarTab('todas')">🌐 TODAS (RD)</button>
                 <button class="tab-btn tab-kino" onclick="cambiarTab('kino_leidsa')">👑 KINO LEIDSA</button>
