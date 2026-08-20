@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v33.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v34.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
@@ -66,7 +66,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     lot_fuerte_principal = pool_salas[0]
     lot_fuerte_respaldo = pool_salas[1]
 
-    # ANCLAJE ESTRICTO MATEMÁTICO (Evita el error del 26 fuera de rango)
     decenas_lista = [("00-09", 0), ("10-19", 10), ("20-29", 20), ("40-49", 40), ("70-79", 70), ("80-89", 80)]
     decena_elegida_nombre, decena_base = rng.choice(decenas_lista)
     
@@ -112,7 +111,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"cruse": f"{n3} (Tarde) × {n1_reves} (Noche)", "salas": "Gana Más 2:30 PM × Nacional Noche 8:50 PM", "fuerza": 96.4}
     ]
 
-    # KINO LEIDSA TV (1 AL 80)
     kino_duenos = [f"{n:02d}" for n in sorted(rng.sample(range(1, 81), 10))]
     def gen_kino(cant): return " - ".join([f"{n:02d}" for n in sorted(rng.sample(range(1, 81), cant))])
     kino_bloques_5 = [
@@ -121,7 +119,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     ]
     kino_bloques_7 = [{"bloque": gen_kino(7), "paridad": "4 Impares / 3 Pares", "fuerza": 99.1, "ia_origen": "IA-07 Optimizador Genético"}]
 
-    # LA PRIMITIVA (6/49)
     def gen_prim():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 50), 6))
@@ -137,7 +134,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"combinacion": " - ".join([f"{n:02d}" for n in prim_nums2]), "reintegro": str(rng.randint(0, 9)), "fuerza": 96.5, "tipo": "IA-09 Algoritmo Delta"}
     ]
 
-    # EUROMILLONES (5/50 + 2 ESTRELLAS)
     def gen_euro():
         for _ in range(500):
             comb = sorted(rng.sample(range(1, 51), 5))
@@ -146,7 +142,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     euro_nums = gen_euro()
     euro_e1, euro_e2 = f"{rng.randint(1, 6):02d}", f"{rng.randint(7, 12):02d}"
 
-    # EURODREAMS (6/40 + SUEÑO)
     def gen_ed():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 41), 6))
@@ -162,7 +157,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         "apuestas": [{"combinacion": " - ".join([f"{n:02d}" for n in ed_nums1]), "sueno": ed_sueno, "fuerza": 98.9, "tipo": "IA Gaussiana 6/40 (Suma 95-155)"}]
     }
 
-    # ANGUILA CASCADA 4X
     anguila_cascada_data = {
         "10am": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 98.1, "estado": "Tanda Apertura"},
         "1pm": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 97.5, "estado": "Cascada Mediodía"},
@@ -387,7 +381,8 @@ def index(request: Request):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>Shneyder IA Pro RD v33.0</title>
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+        <title>Shneyder IA Pro RD v32.0</title>
         <style>
             * {{ box-sizing: border-box; }}
             body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }}
@@ -400,7 +395,6 @@ def index(request: Request):
             }}
             .brand-left h1 {{ font-size: 20px; color: #38bdf8; margin: 0; font-weight: 900; }}
             .brand-left p {{ font-size: 10px; color: #94a3b8; margin: 3px 0 0 0; text-transform: uppercase; }}
-            .brand-right {{ text-align: right; }}
             .brand-clock {{ font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; }}
 
             .banner-fase {{
@@ -436,13 +430,11 @@ def index(request: Request):
             .termo-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; font-size: 11px; }}
             .termo-box {{ background: #18263e; padding: 10px; border-radius: 8px; border: 1px solid #283e60; }}
             .termo-row {{ margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); }}
-            .termo-lot {{ font-size: 9.5px; color: #38bdf8; margin-top: 2px; font-weight: 600; display: block; }}
 
             .pizarra-card {{ background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
             .pizarra-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 10px; }}
             .lot-prize-card {{ background: #182234; border: 1px solid #28384e; border-radius: 8px; padding: 8px 10px; }}
             .lot-prize-name {{ font-size: 12px; font-weight: bold; color: #38bdf8; margin-bottom: 4px; display: flex; justify-content: space-between; }}
-            .lot-semaforo {{ font-size: 10px; font-weight: bold; margin-bottom: 6px; }}
             .lot-balls-row {{ display: flex; gap: 8px; align-items: center; }}
             .prize-ball {{ width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; color: #000; }}
             .ball-1ra {{ background: #22c55e; }} .ball-2da {{ background: #38bdf8; }} .ball-3ra {{ background: #facc15; }}
@@ -456,6 +448,7 @@ def index(request: Request):
             .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
             #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
 
+            /* 6 PESTAÑAS COMPLETAS */
             .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
             .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
             .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
@@ -509,18 +502,16 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v33.0 - Modo Banca Activo</p>
+                    <p>Titan Quantum v32.0</p>
                 </div>
                 <div class="brand-right">
-                    <div class="brand-date">{dia_nombre} {fecha_str}</div>
                     <div class="brand-clock" id="live_time">--:--:--</div>
                 </div>
             </div>
 
-            <!-- PANEL DE INGRESO MANUAL INSTANTÁNEO -->
             <div class="banca-panel">
                 <div style="color:#4ade80; font-weight:900; font-size:12px; display:flex; justify-content:space-between;">
-                    <span>⚡ MODO BANCA: REGISTRO MANUAL DE BOLOS</span>
+                    <span>⚡ REGISTRO MANUAL DE BOLOS</span>
                     <span style="font-size:10px; color:#fff;">1 Toque</span>
                 </div>
                 <form action="/api/guardar_manual" method="POST" class="banca-form">
@@ -583,14 +574,12 @@ def index(request: Request):
                 </div>
                 <div class="matriz-grid">
                     <div class="matriz-box">
-                        <b style="color:#38bdf8;">🌅 TANDA MEDIODÍA (12:00 - 2:30 PM)</b>
+                        <b style="color:#38bdf8;">🌅 TANDA MEDIODÍA</b>
                         <div style="color:#cbd5e1; font-size:10.5px; margin-top:2px;">Foco: <b>La Primera / Real / Gana Más</b></div>
-                        <div style="color:#4ade80; font-size:10px; margin-top:2px;">🎯 Tiro Directo Fuerte & Quiniela</div>
                     </div>
                     <div class="matriz-box">
-                        <b style="color:#f472b6;">🌙 TANDA NOCHE (7:55 - 8:55 PM)</b>
-                        <div style="color:#cbd5e1; font-size:10.5px; margin-top:2px;">Foco: <b>Leidsa / Nacional Noche / Loteka</b></div>
-                        <div style="color:#fbbf24; font-size:10px; margin-top:2px;">⚡ Super Palé Cruzado (Tarde × Noche)</div>
+                        <b style="color:#f472b6;">🌙 TANDA NOCHE</b>
+                        <div style="color:#cbd5e1; font-size:10.5px; margin-top:2px;">Foco: <b>Leidsa / Nacional / Loteka</b></div>
                     </div>
                 </div>
             </div>
@@ -606,7 +595,7 @@ def index(request: Request):
             <div class="pizarra-card">
                 <div style="font-size:14px;font-weight:900;color:#38bdf8;display:flex;justify-content:space-between;align-items:center;">
                     <span>🏆 NÚMEROS PREMIADOS (OFICIALES RD)</span>
-                    <span style="font-size:11px;color:#4ade80;">● Modo Banca Activo</span>
+                    <span style="font-size:11px;color:#4ade80;">● Sincronizado</span>
                 </div>
                 <div class="pizarra-grid" id="pizarra_contenedor"></div>
             </div>
@@ -620,11 +609,12 @@ def index(request: Request):
             </div>
 
             <div class="search-box">
-                <input type="text" id="input_sueno" class="search-input" placeholder="Escribe tu sueño o cábala (ej. dinero, boda, agua)...">
+                <input type="text" id="input_sueno" class="search-input" placeholder="Escribe tu sueño o cábala...">
                 <button class="search-btn" onclick="buscarSueno()">🔮 CONSULTAR</button>
             </div>
             <div id="sueno_resultado"></div>
 
+            <!-- 6 PESTAÑAS COMPLETAS -->
             <div class="tabs-scroll">
                 <button class="tab-btn active" onclick="cambiarTab('todas')">🌐 TODAS (RD)</button>
                 <button class="tab-btn tab-kino" onclick="cambiarTab('kino_leidsa')">👑 KINO LEIDSA</button>
@@ -692,25 +682,23 @@ def index(request: Request):
             <!-- VISTA KINO LEIDSA TV -->
             <div id="seccion_kino" style="display:none;">
                 <div class="card" style="border: 2px solid #eab308; background:#18181b;">
-                    <h2 style="color: #facc15;">👑 LOS 10 DUEÑOS DEL KINO (IA-06 BAYESIANA DEL MES)</h2>
+                    <h2 style="color: #facc15;">👑 LOS 10 DUEÑOS DEL KINO (IA-06 BAYESIANA)</h2>
                     <div class="balls-container" id="kino_duenos_container"></div>
                     <div style="background:#27272a;padding:8px;border-radius:8px;font-size:11px;margin-top:8px;text-align:center;" id="kino_estado_txt"></div>
                     <div style="background:#27272a;color:#38bdf8;padding:8px;border-radius:8px;font-size:11px;margin-top:5px;text-align:center;" id="kino_paridad_txt"></div>
                     <div style="background:rgba(239,68,68,0.15);color:#fca5a5;padding:8px;border-radius:8px;font-size:11px;margin-top:5px;text-align:center;font-weight:bold;" id="kino_muerta_txt"></div>
                 </div>
-
                 <div class="card" style="border: 1px solid #eab308;">
-                    <h2 style="color: #facc15;">🎯 JUGADAS DE COBERTURA: BLOQUES DE 5</h2>
+                    <h2 style="color: #facc15;">🎯 BLOQUES DE 5</h2>
                     <table>
-                        <thead><tr><th>#</th><th>BLOQUE RECOMENDADO</th><th>PARIDAD</th><th>ORIGEN IA</th><th>FUERZA</th></tr></thead>
+                        <thead><tr><th>#</th><th>BLOQUE</th><th>PARIDAD</th><th>IA</th><th>FUERZA</th></tr></thead>
                         <tbody id="tabla_kino_5"></tbody>
                     </table>
                 </div>
-
                 <div class="card" style="border: 1px solid #eab308;">
-                    <h2 style="color: #facc15;">🏆 JUGADAS DE IMPACTO: BLOQUES DE 7</h2>
+                    <h2 style="color: #facc15;">🏆 BLOQUES DE 7</h2>
                     <table>
-                        <thead><tr><th>#</th><th>BLOQUE RECOMENDADO</th><th>PARIDAD</th><th>ORIGEN IA</th><th>FUERZA</th></tr></thead>
+                        <thead><tr><th>#</th><th>BLOQUE</th><th>PARIDAD</th><th>IA</th><th>FUERZA</th></tr></thead>
                         <tbody id="tabla_kino_7"></tbody>
                     </table>
                 </div>
@@ -719,19 +707,17 @@ def index(request: Request):
             <!-- VISTA LA PRIMITIVA -->
             <div id="seccion_primitiva" style="display:none;">
                 <div class="card" style="border: 2px solid #ef4444; background:#18181b;">
-                    <h2 style="color: #f87171;">🇪🇸 NÚMEROS BASE & RADAR DEL REINTEGRO (IA-01 / IA-10)</h2>
+                    <h2 style="color: #f87171;">🇪🇸 LA PRIMITIVA (ESPAÑA)</h2>
                     <div class="balls-container" id="primitiva_base_container"></div>
                     <div style="display:flex; justify-content:space-around; margin-top:10px; background:#27272a; padding:10px; border-radius:8px;">
-                        <div><b>REINTEGRO IA:</b> <span style="background:#ef4444; color:#fff; padding:3px 8px; border-radius:50%; font-weight:bold;" id="prim_reintegro">--</span></div>
+                        <div><b>REINTEGRO:</b> <span style="background:#ef4444; color:#fff; padding:3px 8px; border-radius:50%; font-weight:bold;" id="prim_reintegro">--</span></div>
                         <div><b>COMPLEMENTARIO:</b> <span style="background:#3b82f6; color:#fff; padding:3px 8px; border-radius:50%; font-weight:bold;" id="prim_comp">--</span></div>
                     </div>
-                    <div style="background:#27272a;color:#94a3b8;padding:8px;border-radius:8px;font-size:11px;margin-top:8px;text-align:center;" id="prim_cuadrantes"></div>
                 </div>
-
                 <div class="card" style="border: 1px solid #ef4444;">
-                    <h2 style="color: #f87171;">🎯 APUESTAS REDUCIDAS (15 IAs + SUMA GAUSSIANA)</h2>
+                    <h2 style="color: #f87171;">🎯 APUESTAS REDUCIDAS</h2>
                     <table>
-                        <thead><tr><th>#</th><th>COMBINACIÓN (6 NÚMEROS)</th><th>R</th><th>SUB-MOTOR</th><th>FUERZA</th></tr></thead>
+                        <thead><tr><th>#</th><th>COMBINACIÓN</th><th>R</th><th>MOTOR</th><th>FUERZA</th></tr></thead>
                         <tbody id="tabla_primitiva"></tbody>
                     </table>
                 </div>
@@ -740,19 +726,16 @@ def index(request: Request):
             <!-- VISTA EUROMILLONES -->
             <div id="seccion_euromillones" style="display:none;">
                 <div class="card" style="border: 2px solid #3b82f6; background:#18181b;">
-                    <h2 style="color: #60a5fa;">🇪🇺 RED DE AFINIDAD & ESTRELLAS FIJAS</h2>
+                    <h2 style="color: #60a5fa;">🇪🇺 EUROMILLONES (EUROPA)</h2>
                     <div class="balls-container" id="euro_base_container"></div>
                     <div style="display:flex; justify-content:space-around; align-items:center; margin-top:10px; background:#27272a; padding:10px; border-radius:8px;">
-                        <div><b>ESTRELLAS MAESTRAS:</b> <span class="ball-star" style="display:inline-flex; width:28px; height:28px; font-size:12px;" id="euro_e1">--</span> <span class="ball-star" style="display:inline-flex; width:28px; height:28px; font-size:12px;" id="euro_e2">--</span></div>
-                        <div><b>FUERZA PAR:</b> <span style="color:#4ade80; font-weight:bold;" id="euro_fuerza_estrellas">99.1%</span></div>
+                        <div><b>ESTRELLAS:</b> <span class="ball-star" style="display:inline-flex; width:28px; height:28px; font-size:12px;" id="euro_e1">--</span> <span class="ball-star" style="display:inline-flex; width:28px; height:28px; font-size:12px;" id="euro_e2">--</span></div>
                     </div>
-                    <div style="background:#27272a;color:#94a3b8;padding:8px;border-radius:8px;font-size:11px;margin-top:8px;text-align:center;" id="euro_distribucion"></div>
                 </div>
-
                 <div class="card" style="border: 1px solid #3b82f6;">
-                    <h2 style="color: #60a5fa;">🏆 COMBINACIONES TITÁN (15 IAs - SUMAS 90-160)</h2>
+                    <h2 style="color: #60a5fa;">🏆 COMBINACIONES</h2>
                     <table>
-                        <thead><tr><th>#</th><th>5 NÚMEROS</th><th>ESTRELLAS</th><th>TIPO</th><th>FUERZA</th></tr></thead>
+                        <thead><tr><th>#</th><th>NÚMEROS</th><th>ESTRELLAS</th><th>TIPO</th><th>FUERZA</th></tr></thead>
                         <tbody id="tabla_euromillones"></tbody>
                     </table>
                 </div>
@@ -761,54 +744,49 @@ def index(request: Request):
             <!-- VISTA EURODREAMS -->
             <div id="seccion_eurodreams" style="display:none;">
                 <div class="card" style="border: 2px solid #8b5cf6; background:#18181b;">
-                    <h2 style="color: #c084fc;">🇪🇺 RED GAUSSIANA EURODREAMS (6/40 + SUEÑO)</h2>
+                    <h2 style="color: #c084fc;">🇪🇺 EURODREAMS (6/40)</h2>
                     <div class="balls-container" id="ed_base_container"></div>
                     <div style="display:flex; justify-content:space-around; align-items:center; margin-top:10px; background:#27272a; padding:10px; border-radius:8px;">
-                        <div><b>SUEÑO REINA:</b> <span class="ball-sueno" style="display:inline-flex; width:28px; height:28px; font-size:13px;" id="ed_sueno_val">-</span></div>
-                        <div><b>FUERZA SUEÑO:</b> <span style="color:#4ade80; font-weight:bold;" id="ed_fuerza_sueno">97.4%</span></div>
+                        <div><b>SUEÑO:</b> <span class="ball-sueno" style="display:inline-flex; width:28px; height:28px; font-size:13px;" id="ed_sueno_val">-</span></div>
                     </div>
                 </div>
-
                 <div class="card" style="border: 1px solid #8b5cf6;">
-                    <h2 style="color: #c084fc;">🏆 APUESTAS REDUCIDAS 6/40 (SUMAS 95-155)</h2>
+                    <h2 style="color: #c084fc;">🏆 APUESTAS</h2>
                     <table>
-                        <thead><tr><th>#</th><th>COMBINACIÓN (6 NÚMEROS)</th><th>SUEÑO</th><th>ESTRATEGIA</th><th>FUERZA</th></tr></thead>
+                        <thead><tr><th>#</th><th>COMBINACIÓN</th><th>SUEÑO</th><th>ESTRATEGIA</th><th>FUERZA</th></tr></thead>
                         <tbody id="tabla_eurodreams"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- VISTA ANGUILA CASCADA 4X -->
+            <!-- VISTA ANGUILA CASCADA -->
             <div id="seccion_anguila" style="display:none;">
                 <div class="card" style="border: 2px solid #10b981; background:#18181b;">
-                    <h2 style="color: #34d399;">🐍 MATRIZ CASCADA 4X (10 AM / 1 PM / 6 PM / 9 PM)</h2>
+                    <h2 style="color: #34d399;">🐍 ANGUILA CASCADA 4X</h2>
                     <table>
-                        <thead><tr><th>TANDA</th><th>ESTADO</th><th>TIRO DIRECTO</th><th>PALÉ CASCADA</th><th>FUERZA</th></tr></thead>
+                        <thead><tr><th>TANDA</th><th>ESTADO</th><th>TIRO</th><th>PALÉ</th><th>FUERZA</th></tr></thead>
                         <tbody id="tabla_anguila_cascada"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- TABLAS QUINIELAS TRADICIONALES -->
             <div id="seccion_tradicional">
                 <div class="card" style="border: 2px solid #f59e0b; background: linear-gradient(135deg, #1c1917, #0c0a09);">
-                    <h2 style="color: #fbbf24;">⚡ SUPER PALÉ CRUZADO INTELIGENTE (PAGO RD$ 3,000 × 1)</h2>
+                    <h2 style="color: #fbbf24;">⚡ SUPER PALÉ CRUZADO</h2>
                     <table>
-                        <thead><tr><th>#</th><th>CRUCE TARDE × NOCHE</th><th>SALAS VINCULADAS</th><th>FUERZA</th></tr></thead>
+                        <thead><tr><th>#</th><th>CRUCE</th><th>SALAS</th><th>FUERZA</th></tr></thead>
                         <tbody id="tabla_super_pales"></tbody>
                     </table>
                 </div>
-
-                <div class="card" style="border: 2px solid #22c55e;">
-                    <h2 style="color: #4ade80;">⭐ TOP 5 LÍNEAS ÉLITE DEL DÍA</h2>
+                <div class="card" style="border: 1px solid #22c55e;">
+                    <h2 style="color: #4ade80;">⭐ TOP 5 LÍNEAS</h2>
                     <table>
                         <thead><tr><th>#</th><th>NÚMERO</th><th>FUERZA</th><th>ESTADO</th><th>SALA</th></tr></thead>
                         <tbody id="tabla_top5"></tbody>
                     </table>
                 </div>
-
                 <div class="card">
-                    <h2 style="color: #38bdf8;">📊 TOP 20 NÚMEROS SUELTOS</h2>
+                    <h2 style="color: #38bdf8;">📊 TOP 20 NÚMEROS</h2>
                     <div class="table-container">
                         <table>
                             <thead><tr><th>#</th><th>NÚMERO</th><th>FUERZA</th><th>ESTADO</th><th>SALA</th></tr></thead>
@@ -816,9 +794,8 @@ def index(request: Request):
                         </table>
                     </div>
                 </div>
-
                 <div class="card">
-                    <h2 style="color: #facc15;">🎯 PALÉS DIRECTOS RECOMENDADOS</h2>
+                    <h2 style="color: #facc15;">🎯 PALÉS RECOMENDADOS</h2>
                     <div class="table-container">
                         <table>
                             <thead><tr><th>#</th><th>PALÉ</th><th>FUERZA</th><th>SALA</th></tr></thead>
@@ -840,11 +817,8 @@ def index(request: Request):
             let tabActual = 'todas';
 
             function renderBadge(tipo) {{
-                if (tipo === "triple_factor") return "<span style='background:#facc15;color:#000;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:900;'>👑 3X FACTOR</span>";
-                if (tipo === "virado") return "<span style='background:#f59e0b;color:#000;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>🛡️ VIRADO</span>";
-                if (tipo === "caliente") return "<span style='background:#ef4444;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>🔥 RACHA</span>";
-                if (tipo === "atrasado") return "<span style='background:#8b5cf6;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>⏳ ATRASADO</span>";
-                if (tipo === "pareja") return "<span style='background:#ec4899;color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>👥 PAREJA</span>";
+                if (tipo === "triple_factor") return "<span style='background:#facc15;color:#000;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:900;'>👑 3X</span>";
+                if (tipo === "virado") return "<span style='background:#f59e0b;color:#000;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>🛡️ REV</span>";
                 return "<span style='background:#22c55e;color:#000;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;'>⭐ ÉLITE</span>";
             }}
 
@@ -856,60 +830,18 @@ def index(request: Request):
                 document.getElementById('live_time').innerText = horas + ":" + minutos + ":" + segundos;
             }}
 
-            function cargarBingazos() {{
-                const pronosticos_set = new Set([db.todas.tiro_fijo.num, db.todas.tiro_fijo.virado, ...db.todas.jugada_maestra.numeros_3]);
-                let bingazos_detectados = [];
-
-                for (let k in premios) {{
-                    const lot = premios[k];
-                    if (lot.estado === "Oficial RD") {{
-                        lot.premios.slice(0, 3).forEach((bolo, i) => {{
-                            if (bolo !== "--" && pronosticos_set.has(bolo)) {{
-                                bingazos_detectados.push({{ lot: lot.nombre, bolo: bolo, lugar: ["1ra", "2da", "3ra"][i] }});
-                            }}
-                        }});
-                    }}
-                }}
-
-                if (bingazos_detectados.length > 0) {{
-                    const p = document.getElementById('panel_bingazos');
-                    p.style.display = 'block';
-                    let html = "";
-                    bingazos_detectados.forEach(b => {{
-                        html += `<div style="margin-top:3px;">🔥 <b>${{b.lot}}:</b> Bolo <span style="background:#22c55e;color:#000;padding:1px 6px;border-radius:4px;font-weight:900;">${{b.bolo}}</span> en ${{b.lugar}} (¡Acierto Confirmado!)</div>`;
-                    }});
-                    document.getElementById('bingazos_lista').innerHTML = html;
-                }}
-            }}
-
             function cargarTermometro() {{
                 let html = `
                     <div class="termo-box">
-                        <b style="color:#fb923c;font-size:11.5px;">🔥 DECENAS EN RUPTURA:</b>
+                        <b style="color:#fb923c;font-size:11.5px;">🔥 DECENAS:</b>
                         <div style="margin-top:6px;">
-                            ${{termometro.decenas_calientes.map(d => `
-                                <div class="termo-row">
-                                    <div style="display:flex;justify-content:space-between;">
-                                        <span>[${{d.rango}}]</span>
-                                        <span style="color:#fca5a5;font-weight:bold;">${{d.presion}}% ${{d.estado}}</span>
-                                    </div>
-                                    <span class="termo-lot">📍 Foco: ${{d.lot}}</span>
-                                </div>
-                            `).join('')}}
+                            ${{termometro.decenas_calientes.map(d => `<div class="termo-row"><span>[${{d.rango}}]</span> <b style="color:#fca5a5;">${{d.presion}}%</b></div>`).join('')}}
                         </div>
                     </div>
                     <div class="termo-box">
-                        <b style="color:#38bdf8;font-size:11.5px;">🎯 TERMINALES CLAVE:</b>
+                        <b style="color:#38bdf8;font-size:11.5px;">🎯 TERMINALES:</b>
                         <div style="margin-top:6px;">
-                            ${{termometro.terminales_fuertes.map(t => `
-                                <div class="termo-row">
-                                    <div style="display:flex;justify-content:space-between;">
-                                        <span>Termina en [${{t.digito}}]</span>
-                                        <span style="color:#4ade80;font-weight:bold;">${{t.frecuencia}}</span>
-                                    </div>
-                                    <span class="termo-lot">📍 Foco: ${{t.lot}}</span>
-                                </div>
-                            `).join('')}}
+                            ${{termometro.terminales_fuertes.map(t => `<div class="termo-row"><span>Termina [${{t.digito}}]</span> <b style="color:#4ade80;">${{t.frecuencia}}</b></div>`).join('')}}
                         </div>
                     </div>
                 `;
@@ -920,19 +852,12 @@ def index(request: Request):
                 let html = "";
                 for (let k in premios) {{
                     const lot = premios[k];
-                    let isAnguila = lot.nombre.includes("Anguila");
-                    let volColor = "#4ade80";
-                    if (lot.volatilidad && lot.volatilidad.includes("🔴")) volColor = "#f87171";
-                    else if (lot.volatilidad && lot.volatilidad.includes("🟡")) volColor = "#facc15";
-
                     let estColor = lot.estado === 'Oficial RD' ? '#4ade80' : '#94a3b8';
-
                     html += `<div class="lot-prize-card">
                         <div class="lot-prize-name">
-                            <span>${{isAnguila ? '🐍' : '🇩🇴'}} ${{lot.nombre}}</span>
+                            <span>🇩🇴 ${{lot.nombre}}</span>
                             <span style="font-size:10px;color:${{estColor}};">${{lot.estado}}</span>
                         </div>
-                        <div class="lot-semaforo" style="color:${{volColor}};">${{lot.volatilidad || '🟢 Normal'}}</div>
                         <div class="lot-balls-row">
                             <div class="prize-ball ball-1ra">${{lot.premios[0] || '--'}}</div>
                             <div class="prize-ball ball-2da">${{lot.premios[1] || '--'}}</div>
@@ -946,12 +871,7 @@ def index(request: Request):
             function cargarAuditoria() {{
                 let html = "";
                 auditoria.forEach(item => {{
-                    html += `<div class="auditor-item">
-                        <span style="color:#94a3b8;font-size:10px;">📅 ${{item.fecha}}</span> | 
-                        <b style="color:#38bdf8;">${{item.tipo}}:</b> 
-                        <span style="color:#4ade80;font-weight:bold;">${{item.premio}}</span>
-                        <div style="font-size:10px;color:#64748b;margin-left:10px;">↳ ${{item.detalle}}</div>
-                    </div>`;
+                    html += `<div class="auditor-item"><b style="color:#38bdf8;">${{item.tipo}}:</b> <span style="color:#4ade80;">${{item.premio}}</span></div>`;
                 }});
                 document.getElementById('contenedor_auditoria').innerHTML = html;
             }}
@@ -1006,13 +926,13 @@ def index(request: Request):
 
                     let htmlK5 = "";
                     kd.bloques_5.forEach((b, i) => {{
-                        htmlK5 += `<tr><td>0${{i+1}}</td><td style="color:#facc15;font-weight:bold;font-size:15px;">${{b.bloque}}</td><td style="font-size:11px;color:#94a3b8;">${{b.paridad}}</td><td style="font-size:10px;color:#38bdf8;">${{b.ia_origen}}</td><td style="font-weight:bold;color:#4ade80;">${{b.fuerza}}%</td></tr>`;
+                        htmlK5 += `<tr><td>0${{i+1}}</td><td style="color:#facc15;font-weight:bold;">${{b.bloque}}</td><td>${{b.paridad}}</td><td>${{b.ia_origen}}</td><td style="color:#4ade80;">${{b.fuerza}}%</td></tr>`;
                     }});
                     document.getElementById('tabla_kino_5').innerHTML = htmlK5;
 
                     let htmlK7 = "";
                     kd.bloques_7.forEach((b, i) => {{
-                        htmlK7 += `<tr><td>0${{i+1}}</td><td style="color:#f472b6;font-weight:bold;font-size:15px;">${{b.bloque}}</td><td style="font-size:11px;color:#94a3b8;">${{b.paridad}}</td><td style="font-size:10px;color:#38bdf8;">${{b.ia_origen}}</td><td style="font-weight:bold;color:#4ade80;">${{b.fuerza}}%</td></tr>`;
+                        htmlK7 += `<tr><td>0${{i+1}}</td><td style="color:#f472b6;font-weight:bold;">${{b.bloque}}</td><td>${{b.paridad}}</td><td>${{b.ia_origen}}</td><td style="color:#4ade80;">${{b.fuerza}}%</td></tr>`;
                     }});
                     document.getElementById('tabla_kino_7').innerHTML = htmlK7;
 
@@ -1021,15 +941,13 @@ def index(request: Request):
                     const pd = info.primitiva_data;
                     document.getElementById('prim_reintegro').innerText = pd.reintegro;
                     document.getElementById('prim_comp').innerText = pd.complementario;
-                    document.getElementById('prim_cuadrantes').innerText = "📐 " + pd.cuadrantes;
-
                     let htmlPBase = "";
                     pd.numeros_base.forEach(b => {{ htmlPBase += `<div class="ball-primitiva">${{b}}</div>`; }});
                     document.getElementById('primitiva_base_container').innerHTML = htmlPBase;
 
                     let htmlP = "";
                     pd.apuestas_6.forEach((a, i) => {{
-                        htmlP += `<tr><td>0${{i+1}}</td><td style="color:#f87171;font-weight:bold;font-size:15px;">${{a.combinacion}}</td><td><span style="background:#ef4444;color:#fff;padding:2px 6px;border-radius:50%;font-weight:bold;">${{a.reintegro}}</span></td><td style="font-size:10px;color:#38bdf8;">${{a.tipo}}</td><td style="font-weight:bold;color:#4ade80;">${{a.fuerza}}%</td></tr>`;
+                        htmlP += `<tr><td>0${{i+1}}</td><td style="color:#f87171;font-weight:bold;">${{a.combinacion}}</td><td>${{a.reintegro}}</td><td>${{a.tipo}}</td><td style="color:#4ade80;">${{a.fuerza}}%</td></tr>`;
                     }});
                     document.getElementById('tabla_primitiva').innerHTML = htmlP;
 
@@ -1038,9 +956,6 @@ def index(request: Request):
                     const ed = info.euro_data;
                     document.getElementById('euro_e1').innerText = ed.estrellas_fijas[0];
                     document.getElementById('euro_e2').innerText = ed.estrellas_fijas[1];
-                    document.getElementById('euro_fuerza_estrellas').innerText = ed.fuerza_estrellas + "%";
-                    document.getElementById('euro_distribucion').innerText = "📐 " + ed.distribucion;
-
                     let htmlEBase = "";
                     ed.red_afinidad.forEach(b => {{
                         htmlEBase += b.includes('*') ? `<div class="ball-star">${{b.replace('*','')}}</div>` : `<div class="ball-euro">${{b}}</div>`;
@@ -1049,7 +964,7 @@ def index(request: Request):
 
                     let htmlE = "";
                     ed.apuestas_euro.forEach((a, i) => {{
-                        htmlE += `<tr><td>0${{i+1}}</td><td style="color:#60a5fa;font-weight:bold;font-size:15px;">${{a.numeros}}</td><td><span style="color:#facc15;font-weight:900;">⭐ ${{a.estrellas}}</span></td><td style="font-size:10px;">${{a.tipo}}</td><td style="font-weight:bold;color:#4ade80;">${{a.fuerza}}%</td></tr>`;
+                        htmlE += `<tr><td>0${{i+1}}</td><td style="color:#60a5fa;font-weight:bold;">${{a.numeros}}</td><td>⭐ ${{a.estrellas}}</td><td>${{a.tipo}}</td><td style="color:#4ade80;">${{a.fuerza}}%</td></tr>`;
                     }});
                     document.getElementById('tabla_euromillones').innerHTML = htmlE;
 
@@ -1057,15 +972,13 @@ def index(request: Request):
                     document.getElementById('seccion_eurodreams').style.display = 'block';
                     const ed = info.ed_data;
                     document.getElementById('ed_sueno_val').innerText = ed.sueno_reina;
-                    document.getElementById('ed_fuerza_sueno').innerText = ed.fuerza_sueno + "%";
-
                     let htmlB = "";
                     ed.numeros_base.forEach(b => {{ htmlB += `<div class="ball-dream">${{b}}</div>`; }});
                     document.getElementById('ed_base_container').innerHTML = htmlB;
 
                     let htmlED = "";
                     ed.apuestas.forEach((a, i) => {{
-                        htmlED += `<tr><td>0${{i+1}}</td><td style="color:#c084fc;font-weight:bold;font-size:15px;">${{a.combinacion}}</td><td><span class="ball-sueno" style="display:inline-flex;width:24px;height:24px;font-size:11px;">${{a.sueno}}</span></td><td style="font-size:10px;">${{a.tipo}}</td><td style="font-weight:bold;color:#4ade80;">${{a.fuerza}}%</td></tr>`;
+                        htmlED += `<tr><td>0${{i+1}}</td><td style="color:#c084fc;font-weight:bold;">${{a.combinacion}}</td><td>${{a.sueno}}</td><td>${{a.tipo}}</td><td style="color:#4ade80;">${{a.fuerza}}%</td></tr>`;
                     }});
                     document.getElementById('tabla_eurodreams').innerHTML = htmlED;
 
@@ -1073,10 +986,10 @@ def index(request: Request):
                     document.getElementById('seccion_anguila').style.display = 'block';
                     const ad = info.anguila_data;
                     let htmlA = `
-                        <tr><td>10:00 AM</td><td style="color:#34d399;font-weight:bold;">${{ad['10am'].estado}}</td><td style="color:#4ade80;font-weight:bold;font-size:16px;">${{ad['10am'].fijo}}</td><td style="color:#facc15;font-weight:bold;">${{ad['10am'].pale}}</td><td style="color:#4ade80;font-weight:bold;">${{ad['10am'].fuerza}}%</td></tr>
-                        <tr><td>01:00 PM</td><td style="color:#34d399;font-weight:bold;">${{ad['1pm'].estado}}</td><td style="color:#4ade80;font-weight:bold;font-size:16px;">${{ad['1pm'].fijo}}</td><td style="color:#facc15;font-weight:bold;">${{ad['1pm'].pale}}</td><td style="color:#4ade80;font-weight:bold;">${{ad['1pm'].fuerza}}%</td></tr>
-                        <tr><td>06:00 PM</td><td style="color:#34d399;font-weight:bold;">${{ad['6pm'].estado}}</td><td style="color:#4ade80;font-weight:bold;font-size:16px;">${{ad['6pm'].fijo}}</td><td style="color:#facc15;font-weight:bold;">${{ad['6pm'].pale}}</td><td style="color:#4ade80;font-weight:bold;">${{ad['6pm'].fuerza}}%</td></tr>
-                        <tr><td>09:00 PM</td><td style="color:#f472b6;font-weight:bold;">${{ad['9pm'].estado}}</td><td style="color:#4ade80;font-weight:bold;font-size:16px;">${{ad['9pm'].fijo}}</td><td style="color:#facc15;font-weight:bold;">${{ad['9pm'].pale}}</td><td style="color:#4ade80;font-weight:bold;">${{ad['9pm'].fuerza}}%</td></tr>
+                        <tr><td>10:00 AM</td><td>${{ad['10am'].estado}}</td><td style="color:#4ade80;font-weight:bold;">${{ad['10am'].fijo}}</td><td>${{ad['10am'].pale}}</td><td>${{ad['10am'].fuerza}}%</td></tr>
+                        <tr><td>01:00 PM</td><td>${{ad['1pm'].estado}}</td><td style="color:#4ade80;font-weight:bold;">${{ad['1pm'].fijo}}</td><td>${{ad['1pm'].pale}}</td><td>${{ad['1pm'].fuerza}}%</td></tr>
+                        <tr><td>06:00 PM</td><td>${{ad['6pm'].estado}}</td><td style="color:#4ade80;font-weight:bold;">${{ad['6pm'].fijo}}</td><td>${{ad['6pm'].pale}}</td><td>${{ad['6pm'].fuerza}}%</td></tr>
+                        <tr><td>09:00 PM</td><td>${{ad['9pm'].estado}}</td><td style="color:#4ade80;font-weight:bold;">${{ad['9pm'].fijo}}</td><td>${{ad['9pm'].pale}}</td><td>${{ad['9pm'].fuerza}}%</td></tr>
                     `;
                     document.getElementById('tabla_anguila_cascada').innerHTML = htmlA;
 
@@ -1087,7 +1000,7 @@ def index(request: Request):
                     if (info.super_pales) {{
                         let htmlSP = "";
                         info.super_pales.forEach((sp, i) => {{
-                            htmlSP += `<tr><td>0${{i+1}}</td><td style="color:#fbbf24;font-weight:bold;font-size:14px;">${{sp.cruse}}</td><td style="font-size:10.5px;color:#94a3b8;">${{sp.salas}}</td><td style="color:#4ade80;font-weight:bold;">${{sp.fuerza}}%</td></tr>`;
+                            htmlSP += `<tr><td>0${{i+1}}</td><td style="color:#fbbf24;font-weight:bold;">${{sp.cruse}}</td><td>${{sp.salas}}</td><td style="color:#4ade80;">${{sp.fuerza}}%</td></tr>`;
                         }});
                         document.getElementById('tabla_super_pales').innerHTML = htmlSP;
                     }}
@@ -1099,7 +1012,7 @@ def index(request: Request):
                         document.getElementById('jf_numeros_container').innerHTML = htmlB;
                         document.getElementById('jf_pales_txt').innerText = `[${{jm.pale_1}}]  /  [${{jm.pale_2}}]`;
                         document.getElementById('jf_tripleta_txt').innerText = `[${{jm.tripleta}}]`;
-                        document.getElementById('jf_lot_txt')->innerText = jm.lot_fuerte;
+                        document.getElementById('jf_lot_txt').innerText =jm.lot_fuerte;
                         document.getElementById('jf_respaldo_txt').innerText = jm.lot_respaldo;
 
                         if (info.cobertura_lateral) {{
@@ -1111,13 +1024,13 @@ def index(request: Request):
                     if (info.sueltos) {{
                         let htmlTop5 = "";
                         info.sueltos.slice(0, 5).forEach((item, i) => {{
-                            htmlTop5 += `<tr><td>#${{i+1}}</td><td style="color:#4ade80;font-size:18px;font-weight:bold;">${{item.num}}</td><td style="font-weight:bold;">${{item.fuerza}}%</td><td>${{renderBadge(item.tipo)}}</td><td style="font-size:10px;">${{item.lot}}</td></tr>`;
+                            htmlTop5 += `<tr><td>#${{i+1}}</td><td style="color:#4ade80;font-size:16px;font-weight:bold;">${{item.num}}</td><td>${{item.fuerza}}%</td><td>${{renderBadge(item.tipo)}}</td><td>${{item.lot}}</td></tr>`;
                         }});
                         document.getElementById('tabla_top5').innerHTML = htmlTop5;
 
                         let htmlSueltos = "";
                         info.sueltos.forEach((item, i) => {{
-                            htmlSueltos += `<tr><td>#${{String(i+1).padStart(2, '0')}}</td><td style="color:#38bdf8;font-size:16px;font-weight:bold;">${{item.num}}</td><td>${{item.fuerza}}%</td><td>${{renderBadge(item.tipo)}}</td><td style="font-size:10px;">${{item.lot}}</td></tr>`;
+                            htmlSueltos += `<tr><td>#${{String(i+1).padStart(2, '0')}}</td><td style="color:#38bdf8;font-size:15px;font-weight:bold;">${{item.num}}</td><td>${{item.fuerza}}%</td><td>${{renderBadge(item.tipo)}}</td><td>${{item.lot}}</td></tr>`;
                         }});
                         document.getElementById('tabla_sueltos').innerHTML = htmlSueltos;
 
@@ -1126,7 +1039,7 @@ def index(request: Request):
                         for (let i = 0; i < Math.min(info.sueltos.length, 5); i++) {{
                             for (let j = i + 1; j < Math.min(info.sueltos.length, 5); j++) {{
                                 let f = ((info.sueltos[i].fuerza + info.sueltos[j].fuerza) / 2).toFixed(1);
-                                htmlPales += `<tr><td>${{String(countP).padStart(2, '0')}}</td><td style="color:#facc15;font-weight:bold;font-size:15px;">${{info.sueltos[i].num}} - ${{info.sueltos[j].num}}</td><td style="font-weight:bold;">${{f}}%</td><td style="font-size:10px;">${{info.sueltos[i].lot}}</td></tr>`;
+                                htmlPales += `<tr><td>${{String(countP).padStart(2, '0')}}</td><td style="color:#facc15;font-weight:bold;">${{info.sueltos[i].num}} - ${{info.sueltos[j].num}}</td><td>${{f}}%</td><td>${{info.sueltos[i].lot}}</td></tr>`;
                                 countP++;
                             }}
                         }}
@@ -1137,35 +1050,17 @@ def index(request: Request):
 
             function copiarWhatsApp() {{
                 const info = db[tabActual] || db['todas'];
-                let texto = "";
-                if (info.tipo_juego === 'kino') {{
-                    const kd = info.kino_data;
-                    texto = `👑 *KINO LEIDSA TV* 👑\\n⭐ *Dueños:* ${{kd.duenos.join(', ')}}\\n🎯 *Bloque 5:* [${{kd.bloques_5[0].bloque}}]\\n⚡ *SHNEYDER IA PRO RD*`;
-                }} else {{
-                    let jm = info.jugada_maestra;
-                    let cov = info.cobertura_lateral;
-                    texto = `⚡ *JUGADA TITÁN SHNEYDER IA PRO RD* ⚡\\n📍 *Sala:* ${{jm.lot_fuerte}}\\n🎯 *Directos:* [${{jm.numeros_3[0]}}] - [${{jm.numeros_3[1]}}] - [${{jm.numeros_3[2]}}]\\n💥 *Palés:* [${{jm.pale_1}}] / [${{cov.pale_reves}}]\\n🛡️ *Laterales:* [+1: ${{cov.mas1}}] / [-1: ${{cov.menos1}}]`;
-                }}
+                let texto = `⚡ *JUGADA TITÁN SHNEYDER IA PRO RD* ⚡\\n🎯 *Directos:* [${{info.jugada_maestra.numeros_3.join(' - ')}}]\\n💥 *Palés:* [${{info.jugada_maestra.pale_1}}]`;
                 navigator.clipboard.writeText(texto).then(() => {{
                     const t = document.getElementById('toast');
-                    t.innerText = "¡Copiado para WhatsApp! 📱";
+                    t.innerText = "¡Copiado!";
                     t.style.display = 'block';
-                    setTimeout(() => {{ t.style.display = 'none'; }}, 2500);
+                    setTimeout(() => {{ t.style.display = 'none'; }}, 2000);
                 }});
             }}
 
             function generarTicket() {{
-                const info = db[tabActual] || db['todas'];
-                let ticket = `=================================\\n   🎫 TICKET SHNEYDER IA PRO RD\\n=================================\\n`;
-                let jm = info.jugada_maestra;
-                let cov = info.cobertura_lateral;
-                ticket += `SALA: ${{jm.lot_fuerte.toUpperCase()}}\\n3 DIRECTOS: [${{jm.numeros_3[0]}}]  [${{jm.numeros_3[1]}}]  [${{jm.numeros_3[2]}}]\\nPALÉS: [${{jm.pale_1}}] / [${{cov.pale_reves}}]\\n=================================`;
-                navigator.clipboard.writeText(ticket).then(() => {{
-                    const t = document.getElementById('toast');
-                    t.innerText = "¡Ticket Copiado! 🎫";
-                    t.style.display = 'block';
-                    setTimeout(() => {{ t.style.display = 'none'; }}, 2500);
-                }});
+                 copiarWhatsApp();
             }}
 
             function buscarSueno() {{
@@ -1175,7 +1070,7 @@ def index(request: Request):
                 let match = suenos[input];
                 if (match) {{
                     res.style.display = 'block';
-                    res.innerHTML = `🔮 <b>CÁBALA:</b> "${{input.toUpperCase()}}"<br>🎯 <b>Bolo:</b> <span style="color:#4ade80;font-size:16px;font-weight:bold;">${{match.num}}</span> | Fuerza IA: ${{match.fuerza}}%`;
+                    res.innerHTML = `🔮 <b>CÁBALA:</b> "${{input.toUpperCase()}}"<br>🎯 <b>Bolo:</b> <span style="color:#4ade80;font-size:16px;font-weight:bold;">${{match.num}}</span>`;
                 }}
             }}
 
