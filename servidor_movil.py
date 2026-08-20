@@ -1,3 +1,4 @@
+import threading
 import json
 import sqlite3
 import time
@@ -66,7 +67,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     lot_fuerte_principal = pool_salas[0]
     lot_fuerte_respaldo = pool_salas[1]
 
-    # BLINDAJE MATEMÁTICO: Decenas puras para evitar discordancias
     decenas_puras = [("00-09", 0), ("10-19", 10), ("20-29", 20), ("30-39", 30), ("40-49", 40), ("50-59", 50), ("60-69", 60), ("70-79", 70), ("80-89", 80)]
     decena_elegida_nombre, decena_base = rng.choice(decenas_puras)
     
@@ -110,7 +110,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"cruse": f"{n3} (Tarde) × {n1_reves} (Noche)", "salas": "Gana Más 2:30 PM × Nacional Noche 8:50 PM", "fuerza": 96.4}
     ]
 
-    # KINO LEIDSA TV (1-80)
     kino_duenos = [f"{n:02d}" for n in sorted(rng.sample(range(1, 81), 10))]
     def gen_kino(cant): return " - ".join([f"{n:02d}" for n in sorted(rng.sample(range(1, 81), cant))])
     kino_bloques_5 = [
@@ -119,7 +118,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     ]
     kino_bloques_7 = [{"bloque": gen_kino(7), "paridad": "4 Impares / 3 Pares", "fuerza": 99.1, "ia_origen": "IA-07 Optimizador Genético"}]
 
-    # LA PRIMITIVA (6/49)
     def gen_prim():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 50), 6))
@@ -135,7 +133,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"combinacion": " - ".join([f"{n:02d}" for n in prim_nums2]), "reintegro": str(rng.randint(0, 9)), "fuerza": 96.5, "tipo": "IA-09 Algoritmo Delta"}
     ]
 
-    # EUROMILLONES (5/50 + 2 ESTRELLAS)
     def gen_euro():
         for _ in range(500):
             comb = sorted(rng.sample(range(1, 51), 5))
@@ -144,7 +141,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     euro_nums = gen_euro()
     euro_e1, euro_e2 = f"{rng.randint(1, 6):02d}", f"{rng.randint(7, 12):02d}"
 
-    # EURODREAMS (6/40 + SUEÑO)
     def gen_ed():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 41), 6))
@@ -160,7 +156,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         "apuestas": [{"combinacion": " - ".join([f"{n:02d}" for n in ed_nums1]), "sueno": ed_sueno, "fuerza": 98.9, "tipo": "IA Gaussiana 6/40 (Suma 95-155)"}]
     }
 
-    # ANGUILA CASCADA 4X
     anguila_cascada_data = {
         "10am": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 98.1, "estado": "Tanda Apertura"},
         "1pm": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 97.5, "estado": "Cascada Mediodía"},
@@ -437,7 +432,7 @@ def index(request: Request):
             .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
             #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
             
-            /* BARRA DE 6 PESTAÑAS */
+            /* PESTAÑAS */
             .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
             .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
             .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
