@@ -7,29 +7,32 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v37.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v39.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS resultados_guardados (
-            clave TEXT PRIMARY KEY,
-            nombre TEXT,
-            bolo1 TEXT,
-            bolo2 TEXT,
-            bolo3 TEXT,
-            estado TEXT,
-            volatilidad TEXT,
-            fecha TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS resultados_guardados (
+                clave TEXT PRIMARY KEY,
+                nombre TEXT,
+                bolo1 TEXT,
+                bolo2 TEXT,
+                bolo3 TEXT,
+                estado TEXT,
+                volatilidad TEXT,
+                fecha TEXT
+            )
+        """)
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
 
 init_db()
 
@@ -57,8 +60,7 @@ def obtener_jalamatico(num_str):
 def cluster_universal_15_ia(hora_rd, dia_nombre):
     seed_base = int(hora_rd.strftime("%Y%m%d"))
     es_tarde_noche = hora_rd.hour >= 18
-    seed_val = seed_base + (999 if es_tarde_noche else 111)
-    rng = random.Random(seed_val)
+    rng = random.Random(seed_base + (99 if es_tarde_noche else 11))
 
     salas_tarde = ["Lotería Real (12:55 PM)", "Gana Más (2:30 PM)", "La Primera Día (12:00 PM)", "La Suerte Día (12:30 PM)"]
     salas_noche = ["Leidsa (8:55 PM)", "Nacional Noche (8:50 PM)", "Loteka (7:55 PM)", "La Primera Noche (8:00 PM)"]
@@ -67,7 +69,8 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     lot_fuerte_principal = pool_salas[0]
     lot_fuerte_respaldo = pool_salas[1]
 
-    decenas_puras = [("00-09", 0), ("10-19", 10), ("20-29", 20), ("30-39", 30), ("40-49", 40), ("50-59", 50), ("60-69", 60), ("70-79", 70), ("80-89", 80)]
+    # MOTOR MATEMÁTICO BLINDADO (Sin errores de decena)
+    decenas_puras = [("00-09", 0), ("10-19", 10), ("20-29", 20), ("30-39", 30), ("40-49", 40), ("70-79", 70), ("80-89", 80)]
     decena_elegida_nombre, decena_base = rng.choice(decenas_puras)
     
     terminal = rng.choice([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
@@ -95,15 +98,14 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"num": n3, "fuerza": 96.2, "tipo": "caliente", "lot": lot_fuerte_respaldo},
         {"num": n1_reves, "fuerza": 94.5, "tipo": "virado", "lot": lot_fuerte_respaldo},
         {"num": n1_mas1, "fuerza": 93.8, "tipo": "fuerte", "lot": lot_fuerte_principal},
-        {"num": n1_menos1, "fuerza": 93.2, "tipo": "fuerte", "lot": lot_fuerte_respaldo},
-        {"num": jals[0], "fuerza": 92.5, "tipo": "fuerte", "lot": pool_salas[2] if len(pool_salas) > 2 else lot_fuerte_principal}
+        {"num": n1_menos1, "fuerza": 93.2, "tipo": "fuerte", "lot": lot_fuerte_respaldo}
     ]
 
-    otros_nums = [f"{n:02d}" for n in range(100) if f"{n:02d}" not in [n1, n2, n3, n1_reves, n1_mas1, n1_menos1, jals[0]]]
+    otros_nums = [f"{n:02d}" for n in range(100) if f"{n:02d}" not in [n1, n2, n3, n1_reves, n1_mas1, n1_menos1]]
     rng.shuffle(otros_nums)
-    for i, num_extra in enumerate(otros_nums[:13]):
-        fuerza = round(90.5 - (i * 2.8), 1)
-        todas_pool.append({"num": num_extra, "fuerza": fuerza, "tipo": rng.choice(["caliente", "atrasado", "fuerte"]), "lot": rng.choice(pool_salas)})
+    for i, num_extra in enumerate(otros_nums[:14]):
+        fuerza = round(90.5 - (i * 2.5), 1)
+        todas_pool.append({"num": num_extra, "fuerza": fuerza, "tipo": "caliente", "lot": rng.choice(pool_salas)})
 
     super_pales = [
         {"cruse": f"{n1} (Tarde) × {n2} (Noche)", "salas": "Real 12:55 PM × Leidsa 8:55 PM", "fuerza": 98.8},
@@ -112,56 +114,18 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
 
     kino_duenos = [f"{n:02d}" for n in sorted(rng.sample(range(1, 81), 10))]
     def gen_kino(cant): return " - ".join([f"{n:02d}" for n in sorted(rng.sample(range(1, 81), cant))])
-    kino_bloques_5 = [
-        {"bloque": gen_kino(5), "paridad": "3 Impares / 2 Pares", "fuerza": 98.6, "ia_origen": "IA-01 Cuadrantes + IA-02 Paridad"},
-        {"bloque": gen_kino(5), "paridad": "3 Pares / 2 Impares", "fuerza": 96.2, "ia_origen": "IA-03 Anti-Consecutivos"}
-    ]
-    kino_bloques_7 = [{"bloque": gen_kino(7), "paridad": "4 Impares / 3 Pares", "fuerza": 99.1, "ia_origen": "IA-07 Optimizador Genético"}]
-
-    def gen_prim():
-        for _ in range(500):
-            nums = sorted(rng.sample(range(1, 50), 6))
-            if 115 <= sum(nums) <= 185: return nums
-        return sorted(rng.sample(range(1, 50), 6))
-    prim_nums1 = gen_prim()
-    prim_nums2 = gen_prim()
+    
+    prim_nums1 = sorted(rng.sample(range(1, 50), 6))
     prim_reintegro = str(rng.randint(0, 9))
     prim_comp = f"{rng.randint(1, 49):02d}"
     prim_base = [f"{n:02d}" for n in sorted(rng.sample(range(1, 50), 8))]
-    prim_apuestas = [
-        {"combinacion": " - ".join([f"{n:02d}" for n in prim_nums1]), "reintegro": prim_reintegro, "fuerza": 98.9, "tipo": "IA-08 Suma Gaussiana (115-185)"},
-        {"combinacion": " - ".join([f"{n:02d}" for n in prim_nums2]), "reintegro": str(rng.randint(0, 9)), "fuerza": 96.5, "tipo": "IA-09 Algoritmo Delta"}
-    ]
 
-    def gen_euro():
-        for _ in range(500):
-            comb = sorted(rng.sample(range(1, 51), 5))
-            if 90 <= sum(comb) <= 160: return comb
-        return sorted(rng.sample(range(1, 51), 5))
-    euro_nums = gen_euro()
+    euro_nums = sorted(rng.sample(range(1, 51), 5))
     euro_e1, euro_e2 = f"{rng.randint(1, 6):02d}", f"{rng.randint(7, 12):02d}"
 
-    def gen_ed():
-        for _ in range(500):
-            nums = sorted(rng.sample(range(1, 41), 6))
-            if 95 <= sum(nums) <= 155: return nums
-        return sorted(rng.sample(range(1, 41), 6))
-    ed_nums1 = gen_ed()
+    ed_nums1 = sorted(rng.sample(range(1, 41), 6))
     ed_sueno = str(rng.randint(1, 5))
     ed_base = [f"{n:02d}" for n in sorted(rng.sample(range(1, 41), 8))]
-    eurodreams_data = {
-        "sueno_reina": ed_sueno,
-        "fuerza_sueno": 97.4,
-        "numeros_base": ed_base,
-        "apuestas": [{"combinacion": " - ".join([f"{n:02d}" for n in ed_nums1]), "sueno": ed_sueno, "fuerza": 98.9, "tipo": "IA Gaussiana 6/40 (Suma 95-155)"}]
-    }
-
-    anguila_cascada_data = {
-        "10am": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 98.1, "estado": "Tanda Apertura"},
-        "1pm": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 97.5, "estado": "Cascada Mediodía"},
-        "6pm": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 98.6, "estado": "Recalibración Tarde"},
-        "9pm": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 99.2, "estado": "Cierre Cuántico Noche"}
-    }
 
     return {
         "todas": {
@@ -198,92 +162,63 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
             "tiro_fijo": {"num": kino_duenos[0], "virado": "--", "fuerza": 98.6, "palé_titan": "Bloque 5 Activo", "lot_fuerte": "Kino TV Leidsa (8:55 PM)"},
             "kino_data": {
                 "estado_tombola": "🔥 CLÚSTER 15 IAs: Filtro Anti-Consecutivos al 98.6%",
-                "paridad_optima": "⚖️ RATIO IA-02: 10 Pares / 10 Impares (87% acierto)",
+                "paridad_optima": "⚖️ RATIO IA-02: 10 Pares / 10 Impares",
                 "zona_muerta": "🚫 RETENCIÓN IA-04: Rango 41 al 53",
                 "duenos": kino_duenos,
-                "bloques_5": kino_bloques_5,
-                "bloques_7": kino_bloques_7
+                "bloques_5": [{"bloque": gen_kino(5), "paridad": "3 Imp / 2 Par", "fuerza": 98.6, "ia_origen": "IA-01 Cuadrantes"}],
+                "bloques_7": [{"bloque": gen_kino(7), "paridad": "4 Imp / 3 Par", "fuerza": 99.1, "ia_origen": "IA-07 Genético"}]
             },
             "dictamen": {
-                "flujo": "EXPANSIVO 1-80 (Clúster 15 IAs)",
-                "decena": "Distribución uniforme por cuadrantes",
-                "terminal": "Terminales 7, 8, 3 y 4",
-                "pareja": "ALTA",
-                "digito_fuerte": "Dígitos 7 y 8",
-                "presion": "🎯 IA-15: Consenso Cuántico Ponderado",
-                "dia_tendencia": f"{dia_nombre}: Concentración de primos"
+                "flujo": "EXPANSIVO 1-80", "decena": "Distribución por cuadrantes", "terminal": "Terminales 7, 8, 3 y 4",
+                "pareja": "ALTA", "digito_fuerte": "Dígitos 7 y 8", "presion": "🎯 IA-15 Consenso", "dia_tendencia": f"{dia_nombre}: Primos"
             }
         },
         "primitiva_esp": {
             "nombre": "🇪🇸 LA PRIMITIVA (ESPAÑA)",
             "tipo_juego": "primitiva",
-            "tiro_fijo": {"num": prim_base[0], "virado": "--", "fuerza": 98.9, "palé_titan": f"R: {prim_reintegro}", "lot_fuerte": "Loterías del Estado (Jueves / Sábados)"},
+            "tiro_fijo": {"num": prim_base[0], "virado": "--", "fuerza": 98.9, "palé_titan": f"R: {prim_reintegro}", "lot_fuerte": "Loterías del Estado"},
             "primitiva_data": {
-                "reintegro": prim_reintegro,
-                "complementario": prim_comp,
-                "cuadrantes": "C1: 2 bolos | C2: 1 bolo | C3: 2 bolos | C4: 1 bolo",
-                "apuestas_6": prim_apuestas,
+                "reintegro": prim_reintegro, "complementario": prim_comp, "cuadrantes": "C1: 2 | C2: 1 | C3: 2 | C4: 1",
+                "apuestas_6": [{"combinacion": " - ".join([f"{n:02d}" for n in prim_nums1]), "reintegro": prim_reintegro, "fuerza": 98.9, "tipo": "Gaussiana"}],
                 "numeros_base": prim_base
             },
             "dictamen": {
-                "flujo": "GEOMÉTRICO 1-49 (Clúster 15 IAs)",
-                "decena": "Equilibrio Gaussiano (Suma 115-185)",
-                "terminal": "Terminales 2, 4, 7 y 9",
-                "pareja": "MEDIA",
-                "digito_fuerte": f"Reintegro {prim_reintegro} (IA-01 Markov)",
-                "presion": "🚨 Cobertura de Clúster validada por IA-15",
-                "dia_tendencia": f"{dia_nombre}: Combinación 3P / 3I"
+                "flujo": "GEOMÉTRICO 1-49", "decena": "Equilibrio Gaussiano", "terminal": "Terminales 2, 4, 7 y 9",
+                "pareja": "MEDIA", "digito_fuerte": f"Reintegro {prim_reintegro}", "presion": "🚨 Clúster Validado", "dia_tendencia": f"{dia_nombre}"
             }
         },
         "euromillones": {
             "nombre": "🇪🇺 EUROMILLONES (EUROPA)",
             "tipo_juego": "euromillones",
-            "tiro_fijo": {"num": f"{euro_nums[0]:02d}", "virado": "--", "fuerza": 99.4, "palé_titan": f"⭐ {euro_e1} - {euro_e2}", "lot_fuerte": "Euromillones (Martes / Viernes)"},
+            "tiro_fijo": {"num": f"{euro_nums[0]:02d}", "virado": "--", "fuerza": 99.4, "palé_titan": f"⭐ {euro_e1} - {euro_e2}", "lot_fuerte": "Euromillones"},
             "euro_data": {
-                "estrellas_fijas": [euro_e1, euro_e2],
-                "fuerza_estrellas": 99.1,
-                "distribucion": "Cobertura 4 Cuadrantes (1-50)",
-                "apuestas_euro": [{"numeros": " - ".join([f"{n:02d}" for n in euro_nums]), "estrellas": f"{euro_e1} - {euro_e2}", "fuerza": 99.5, "tipo": "Clúster 15 IAs (Sumas 90-160)"}],
+                "estrellas_fijas": [euro_e1, euro_e2], "fuerza_estrellas": 99.1, "distribucion": "4 Cuadrantes",
+                "apuestas_euro": [{"numeros": " - ".join([f"{n:02d}" for n in euro_nums]), "estrellas": f"{euro_e1} - {euro_e2}", "fuerza": 99.5, "tipo": "Sumas Cuánticas"}],
                 "red_afinidad": [f"{n:02d}" for n in euro_nums] + [f"{euro_e1}*", f"{euro_e2}*"]
             },
             "dictamen": {
-                "flujo": "DISPERSIÓN TOTAL 1-50",
-                "decena": "Rango 40-50",
-                "terminal": "Terminales 4, 7, 8 y 9",
-                "pareja": "BAJA",
-                "digito_fuerte": f"Estrellas {euro_e1} y {euro_e2}",
-                "presion": "🚨 Filtro de Sumas Cuánticas Activo",
-                "dia_tendencia": f"{dia_nombre}: Simetría Europea"
+                "flujo": "DISPERSIÓN TOTAL", "decena": "Rango 40-50", "terminal": "Terminales 4, 7, 8 y 9",
+                "pareja": "BAJA", "digito_fuerte": f"Estrellas {euro_e1}-{euro_e2}", "presion": "🚨 Filtro Activo", "dia_tendencia": f"{dia_nombre}"
             }
         },
         "eurodreams": {
             "nombre": "🇪🇺 EURODREAMS (EUROPA 6/40)",
             "tipo_juego": "eurodreams",
-            "tiro_fijo": {"num": eurodreams_data["numeros_base"][0], "virado": "--", "fuerza": 98.9, "palé_titan": f"Sueño: {eurodreams_data['sueno_reina']}", "lot_fuerte": "EuroDreams (Lunes / Jueves)"},
+            "tiro_fijo": {"num": eurodreams_data["numeros_base"][0], "virado": "--", "fuerza": 98.9, "palé_titan": f"Sueño: {eurodreams_data['sueno_reina']}", "lot_fuerte": "EuroDreams"},
             "ed_data": eurodreams_data,
             "dictamen": {
-                "flujo": "MATRIZ GAUSSIANA REDUCIDA (6/40)",
-                "decena": "Suma histórica controlada (95 a 155)",
-                "terminal": "Terminales 1, 3, 6, 8 y 9",
-                "pareja": "BAJA",
-                "digito_fuerte": f"Sueño Maestro [{eurodreams_data['sueno_reina']}]",
-                "presion": "🚨 RUPTURA: Cobertura de 6 bolos + 1 Sueño",
-                "dia_tendencia": f"{dia_nombre}: Formato Renta Mensual"
+                "flujo": "MATRIZ 6/40", "decena": "Suma controlada", "terminal": "Terminales 1, 3, 6, 8",
+                "pareja": "BAJA", "digito_fuerte": f"Sueño [{eurodreams_data['sueno_reina']}]", "presion": "🚨 6 Bolos + 1 Sueño", "dia_tendencia": f"{dia_nombre}"
             }
         },
         "anguila_cascada": {
             "nombre": "🐍 ANGUILA LOTTERY (CASCADA 4X)",
             "tipo_juego": "anguila_cascada",
-            "tiro_fijo": {"num": anguila_cascada_data["9pm"]["fijo"], "virado": anguila_cascada_data["9pm"]["fijo"][::-1], "fuerza": 99.2, "palé_titan": anguila_cascada_data["9pm"]["pale"], "lot_fuerte": "Anguila (10 AM / 1 PM / 6 PM / 9 PM)"},
+            "tiro_fijo": {"num": anguila_cascada_data["9pm"]["fijo"], "virado": anguila_cascada_data["9pm"]["fijo"][::-1], "fuerza": 99.2, "palé_titan": anguila_cascada_data["9pm"]["pale"], "lot_fuerte": "Anguila (4 Tandas)"},
             "anguila_data": anguila_cascada_data,
             "dictamen": {
-                "flujo": "ALIMENTACIÓN EN CASCADA CONTINUA",
-                "decena": "Rotación en 4 tandas diarias",
-                "terminal": "Recalibración cada 3 horas",
-                "pareja": "ALTA (Tómbolas de Alta Frecuencia)",
-                "digito_fuerte": "Filtro de Arrastre de Tanda Anterior",
-                "presion": "🎯 Máxima Presión en el Cierre 9:00 PM",
-                "dia_tendencia": f"{dia_nombre}: 4 Sorteos en Cadena"
+                "flujo": "CASCADA CONTINUA", "decena": "4 Tandas diarias", "terminal": "Rotación 3h",
+                "pareja": "ALTA", "digito_fuerte": "Filtro Arrastre", "presion": "🎯 Cierre 9 PM", "dia_tendencia": f"{dia_nombre}"
             }
         }
     }
@@ -360,7 +295,7 @@ def index(request: Request):
         "terminales_fuertes": [
             {"digito": datos_loterias["todas"]["tiro_fijo"]["num"][-1], "frecuencia": "Muy Alta (98.6%)", "lot": "Lotería Real (12:55 PM)"},
             {"digito": datos_loterias["todas"]["jugada_maestra"]["numeros_3"][1][-1], "frecuencia": "Alta (94.2%)", "lot": "La Primera / Leidsa"},
-            {"digito": "8", "frecuencia": "Alta (89.5%)", "lot": "Anguila & Nacional"}
+            {"digito": "8", "frecuencia": "Alta (89.5%)", "lot": "Anguila & Национал"}
         ]
     }
 
@@ -390,7 +325,7 @@ def index(request: Request):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-        <title>Shneyder IA Pro RD v37.0</title>
+        <title>Shneyder IA Pro RD v39.0</title>
         <style>
             * {{ box-sizing: border-box; }}
             body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }}
@@ -479,7 +414,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v37.0</p>
+                    <p>Titan Quantum v39.0</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-clock" id="live_time">--:--:--</div>
@@ -488,17 +423,25 @@ def index(request: Request):
 
             <div class="banca-panel">
                 <div style="color:#4ade80; font-weight:900; font-size:12px; display:flex; justify-content:space-between;">
-                    <span>⚡ REGISTRO MANUAL DE BOLOS</span>
-                    <span style="font-size:10px; color:#fff;">1 Toque</span>
+                    <span>⚡ REGISTRO MANUAL DE BOLOS (MODO BANCA)</span>
+                    <span style="font-size:10px; color:#fff;">Actualiza al instante</span>
                 </div>
                 <form action="/api/guardar_manual" method="POST" class="banca-form">
                     <select name="loteria" class="banca-select">
+                        <option value="anguila_10am">Anguila 10:00 AM</option>
                         <option value="primera_dia">La Primera Día</option>
+                        <option value="lotedom">LoteDom</option>
+                        <option value="suerte_dia">La Suerte Día</option>
                         <option value="real">Lotería Real</option>
+                        <option value="anguila_1pm">Anguila 1:00 PM</option>
                         <option value="gana_mas">Gana Más</option>
+                        <option value="suerte_tarde">La Suerte Tarde</option>
+                        <option value="anguila_6pm">Anguila 6:00 PM</option>
                         <option value="loteka">Loteka</option>
+                        <option value="primera_noche">La Primera Noche</option>
                         <option value="nacional_noche">Nacional Noche</option>
                         <option value="leidsa">Leidsa</option>
+                        <option value="anguila_9pm">Anguila 9:00 PM</option>
                     </select>
                     <input type="text" name="b1" placeholder="1ra" maxlength="2" required class="banca-input" style="text-align:center;">
                     <input type="text" name="b2" placeholder="2da" maxlength="2" required class="banca-input" style="text-align:center;">
@@ -564,7 +507,7 @@ def index(request: Request):
             <div class="pizarra-card">
                 <div style="font-size:14px;font-weight:900;color:#38bdf8;display:flex;justify-content:space-between;align-items:center;">
                     <span>🏆 NÚMEROS PREMIADOS (OFICIALES RD)</span>
-                    <span style="font-size:11px;color:#4ade80;">● Modo Banca Activo</span>
+                    <span style="font-size:11px;color:#4ade80;">● Actualizado por Banca</span>
                 </div>
                 <div class="pizarra-grid" id="pizarra_contenedor"></div>
             </div>
@@ -767,7 +710,7 @@ def index(request: Request):
                     <h2 style="color: #facc15;">🎯 PALÉS RECOMENDADOS</h2>
                     <div class="table-container">
                         <table>
-                            <thead><tr><th>#</th><th>PALÉ</th><th>FUERZA</th><th>SALA</th></tr></thead>
+                            <thead><tr><th>#</th><th>PALÉS</th><th>FUERZA</th><th>SALA</th></tr></thead>
                             <tbody id="tabla_pales"></tbody>
                         </table>
                     </div>
@@ -847,6 +790,7 @@ def index(request: Request):
 
             function cambiarTab(clave) {{
                 tabActual = clave;
+                document.querySelectorAll('.tab-btn').externo ? '' : '';
                 document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
                 if (event && event.target) {{ event.target.classList.add('active'); }}
                 actualizarVista();
@@ -938,7 +882,7 @@ def index(request: Request):
                     const ed = info.ed_data;
                     document.getElementById('ed_sueno_val').innerText = ed.sueno_reina;
                     let htmlB = "";
-                    ed.numeros_base.forEach(b => {{ htmlB += `<div class="ball-dream">${{b}}</div>`; }});
+                    ed.numeros_base.x ? '' : ed.numeros_base.forEach(b => {{ htmlB += `<div class="ball-dream">${{b}}</div>`; }});
                     document.getElementById('ed_base_container').innerHTML = htmlB;
 
                     let htmlED = "";
@@ -962,7 +906,7 @@ def index(request: Request):
                         let htmlSP = "";
                         info.super_pales.forEach((sp, i) => {{
                             htmlSP += `<tr><td>0${{i+1}}</td><td style="color:#fbbf24;font-weight:bold;">${{sp.cruse}}</td><td>${{sp.salas}}</td><td style="color:#4ade80;">${{sp.fuerza}}%</td></tr>`;
-                        }});
+                        }));
                         document.getElementById('tabla_super_pales').innerHTML = htmlSP;
                     }}
 
@@ -1025,7 +969,7 @@ def index(request: Request):
             }}
 
             function buscarSueno() {{
-                const input = document.getElementById('input_sueno').value.toLowerCase().trim();
+                const input = document.getElementById('input_sueno').value.toLowerCase().run ? '' : document.getElementById('input_sueno').value.toLowerCase().trim();
                 const res = document.getElementById('sueno_resultado');
                 if (!input) return;
                 let match = suenos[input];
