@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Auto v7.5")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Pro v8.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
@@ -14,9 +14,7 @@ DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", 
 
 def obtener_fecha_operativa():
     """
-    Corte a las 04:00 AM hora de España (22:00 h de Santo Domingo).
-    Si son las 02:00 AM en España, la jornada operativa sigue siendo la del día anterior.
-    A partir de las 04:00 AM en España, arranca la nueva jornada operativa.
+    Corte diario a las 04:00 AM hora de España (22:00 h de Santo Domingo).
     """
     ahora = datetime.now()
     fecha_op = ahora - timedelta(hours=4)
@@ -70,9 +68,18 @@ def generar_pronosticos_diarios(fecha_op, dia_nombre):
         return pool
 
     todas_pool = gen_pool(20)
-    tf_num = todas_pool[0]["num"]
-    tf_vir = tf_num[::-1] if tf_num != tf_num[::-1] else f"{(int(tf_num)+10)%100:02d}"
-    pale_titan = f"{tf_num} - {todas_pool[1]['num']}"
+    
+    # 3 Números formados por consenso
+    n1 = todas_pool[0]["num"]
+    n2 = todas_pool[1]["num"]
+    n3 = todas_pool[2]["num"]
+    
+    # 2 Palés Maestros y 1 Tripleta Reina
+    p1 = f"{n1} - {n2}"
+    p2 = f"{n1} - {n3}"
+    tripleta_reina = f"{n1} - {n2} - {n3}"
+
+    tf_vir = n1[::-1] if n1 != n1[::-1] else f"{(int(n1)+10)%100:02d}"
 
     decenas = ["40 - 49", "70 - 79", "00 - 09", "20 - 29", "80 - 89"]
     d_caliente = rng.choice(decenas)
@@ -81,13 +88,19 @@ def generar_pronosticos_diarios(fecha_op, dia_nombre):
         "todas": {
             "nombre": "Todas las Loterías (Consenso General)",
             "tipo_juego": "quiniela",
-            "tiro_fijo": {"num": tf_num, "virado": tf_vir, "fuerza": todas_pool[0]["fuerza"], "palé_titan": pale_titan},
+            "tiro_fijo": {"num": n1, "virado": tf_vir, "fuerza": todas_pool[0]["fuerza"], "palé_titan": p1},
+            "jugada_maestra": {
+                "numeros_3": [n1, n2, n3],
+                "pale_1": p1,
+                "pale_2": p2,
+                "tripleta": tripleta_reina
+            },
             "dictamen": {
                 "flujo": "ALTO (Ciclo Dinámico)",
                 "decena": f"Decena Fuerte [{d_caliente}]",
-                "terminal": f"Terminales en {tf_num[-1]}, {tf_vir[-1]} y {todas_pool[1]['num'][-1]}",
+                "terminal": f"Terminales en {n1[-1]}, {n2[-1]} y {n3[-1]}",
                 "pareja": "ALTA (Parejas de Respaldo Activas)",
-                "digito_fuerte": f"Dígitos {tf_num[0]} y {tf_num[1]}",
+                "digito_fuerte": f"Dígitos {n1[0]} y {n1[1]}",
                 "presion": f"🚨 RUPTURA DIARIA: Decena {d_caliente} acumulando máxima presión",
                 "dia_tendencia": f"{dia_nombre}: Rotación activa de salidores"
             },
@@ -204,7 +217,6 @@ def index(request: Request):
     fecha_str = fecha_op.strftime("%d/%m/%Y")
     dia_nombre = DIAS_SEMANA[fecha_op.weekday()]
 
-    # Generación y carga dinámica
     datos_loterias = generar_pronosticos_diarios(fecha_op, dia_nombre)
     resultados_oficiales = obtener_resultados_oficiales(fecha_str)
 
@@ -224,10 +236,10 @@ def index(request: Request):
     historial_auditoria = [
         {
             "fecha": fecha_str,
-            "sala": "Motor Titan Auto v7.5",
-            "tipo": "🔄 SINCRONIZACIÓN MADRUGADA (04:00 AM ESP)",
-            "premio": f"Jornada Operativa: {dia_nombre} {fecha_str}",
-            "detalle": "Corte horario ajustado para cubrir toda la tanda nocturna de RD y USA"
+            "sala": "Motor Titan Pro v8.0",
+            "tipo": "⚡ JUGADA FORMADA DEL TITÁN",
+            "premio": f"3 Quinielas + 2 Palés + 1 Tripleta ({dia_nombre})",
+            "detalle": "Combinación calculada por consenso de Markov y Filtros Bayesianos"
         }
     ]
 
@@ -320,6 +332,48 @@ def index(request: Request):
             .dictamen-val {{ color: #f8fafc; font-weight: bold; }}
             .presion-alert {{ background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 8px; border-radius: 8px; margin-top: 8px; font-size: 11px; font-weight: bold; text-align: center; }}
 
+            /* TARJETA DESTACADA: JUGADA FORMADA */
+            .jugada-formada-box {{
+                background: linear-gradient(135deg, #1e1b4b, #172554);
+                border: 2px solid #facc15;
+                border-radius: 10px;
+                padding: 12px;
+                margin-top: 12px;
+                box-shadow: 0 4px 12px rgba(250, 204, 21, 0.2);
+            }}
+            .jf-title {{
+                color: #facc15;
+                font-size: 12px;
+                font-weight: 900;
+                text-transform: uppercase;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 1px solid rgba(250, 204, 21, 0.3);
+                padding-bottom: 4px;
+            }}
+            .jf-row {{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 6px;
+                font-size: 12px;
+            }}
+            .jf-balls {{
+                display: flex;
+                gap: 6px;
+            }}
+            .jf-ball {{
+                background: #facc15;
+                color: #0f172a;
+                font-weight: 900;
+                font-size: 14px;
+                padding: 3px 8px;
+                border-radius: 6px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            }}
+
             .card {{ background: #131d31; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid #233249; }}
             h2 {{ font-size: 14px; margin-top: 0; padding-bottom: 6px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }}
             .table-container {{ max-height: 420px; overflow-y: auto; }}
@@ -335,7 +389,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Sincronización Madrugada (04:00 AM ESP)</p>
+                    <p>Titan Pro v8.0 - Jugada Formada</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -343,7 +397,7 @@ def index(request: Request):
                 </div>
             </div>
 
-            <!-- PANEL FRANCOTIRADOR DINÁMICO -->
+            <!-- PANEL FRANCOTIRADOR -->
             <div class="sniper-card">
                 <div class="sniper-item">
                     <b>🎯 TIRO DIRECTO</b>
@@ -410,7 +464,7 @@ def index(request: Request):
                 <button class="btn-ticket" onclick="generarTicket()">🎫 TICKET DE BANCA</button>
             </div>
 
-            <!-- DICTAMEN -->
+            <!-- DICTAMEN DEL TITÁN CON JUGADA FORMADA INTEGRADA -->
             <div class="dictamen-box">
                 <h3>⚡ DICTAMEN DEL TITÁN <span id="dictamen_sala" style="font-size:10px;color:#94a3b8;"></span></h3>
                 <div class="dictamen-item"><b>Flujo:</b> <span class="dictamen-val" id="d_flujo">--</span></div>
@@ -420,6 +474,26 @@ def index(request: Request):
                 <div class="dictamen-item"><b>Dígito Fuerte:</b> <span class="dictamen-val" id="d_digito">--</span></div>
                 <div class="dictamen-item" style="border:none;"><b>Inercia:</b> <span class="dictamen-val" style="color:#38bdf8;" id="d_dia">--</span></div>
                 <div class="presion-alert" id="d_presion">--</div>
+
+                <!-- SECCIÓN DE LA JUGADA FORMADA -->
+                <div class="jugada-formada-box" id="caja_jugada_formada">
+                    <div class="jf-title">
+                        <span>⚡ JUGADA FORMADA (CONSENSO DE MOTORES)</span>
+                        <span style="font-size:10px;color:#4ade80;">DIRECTA</span>
+                    </div>
+                    <div class="jf-row">
+                        <b style="color:#a5b4fc;">🎯 3 NÚMEROS:</b>
+                        <div class="jf-balls" id="jf_numeros_container"></div>
+                    </div>
+                    <div class="jf-row">
+                        <b style="color:#a5b4fc;">💥 2 PALÉS:</b>
+                        <span style="color:#4ade80;font-weight:900;font-size:13px;" id="jf_pales_txt">--</span>
+                    </div>
+                    <div class="jf-row" style="margin-bottom:0;">
+                        <b style="color:#a5b4fc;">🏆 1 TRIPLETA:</b>
+                        <span style="color:#f472b6;font-weight:900;font-size:13px;" id="jf_tripleta_txt">--</span>
+                    </div>
+                </div>
             </div>
 
             <!-- TABLAS QUINIELAS -->
@@ -553,6 +627,30 @@ def index(request: Request):
                     document.getElementById('d_presion').innerText = info.dictamen.presion;
                 }}
 
+                // Renderizar la Jugada Formada del Titán
+                const jfBox = document.getElementById('caja_jugada_formada');
+                if (info.jugada_maestra) {{
+                    jfBox.style.display = 'block';
+                    const jm = info.jugada_maestra;
+                    let htmlB = "";
+                    jm.numeros_3.forEach(n => {{
+                        htmlB += `<span class="jf-ball">${{n}}</span>`;
+                    }});
+                    document.getElementById('jf_numeros_container').innerHTML = htmlB;
+                    document.getElementById('jf_pales_txt').innerText = `[${{jm.pale_1}}]  /  [${{jm.pale_2}}]`;
+                    document.getElementById('jf_tripleta_txt').innerText = `[${{jm.tripleta}}]`;
+                }} else if (info.sueltos && info.sueltos.length >= 3) {{
+                    jfBox.style.display = 'block';
+                    const n1 = info.sueltos[0].num;
+                    const n2 = info.sueltos[1].num;
+                    const n3 = info.sueltos[2].num;
+                    document.getElementById('jf_numeros_container').innerHTML = `<span class="jf-ball">${{n1}}</span><span class="jf-ball">${{n2}}</span><span class="jf-ball">${{n3}}</span>`;
+                    document.getElementById('jf_pales_txt').innerText = `[${{n1}} - ${{n2}}]  /  [${{n1}} - ${{n3}}]`;
+                    document.getElementById('jf_tripleta_txt').innerText = `[${{n1}} - ${{n2}} - ${{n3}}]`;
+                }} else {{
+                    jfBox.style.display = 'none';
+                }}
+
                 if (info.sueltos) {{
                     let htmlTop5 = "";
                     info.sueltos.slice(0, 5).forEach((item, i) => {{
@@ -598,19 +696,23 @@ def index(request: Request):
 
             function copiarWhatsApp() {{
                 const info = db[tabActual] || db['todas'];
-                const tf = info.tiro_fijo ? info.tiro_fijo.num : info.sueltos[0].num;
-                const tv = info.tiro_fijo ? info.tiro_fijo.virado : info.sueltos[0].num.split('').reverse().join('');
-                const tp = info.tiro_fijo ? info.tiro_fijo.palé_titan : (info.sueltos[0].num + " - " + info.sueltos[1].num);
+                let n1 = info.sueltos[0].num, n2 = info.sueltos[1].num, n3 = info.sueltos[2].num;
+                if (info.jugada_maestra) {{
+                    n1 = info.jugada_maestra.numeros_3[0];
+                    n2 = info.jugada_maestra.numeros_3[1];
+                    n3 = info.jugada_maestra.numeros_3[2];
+                }}
 
-                let texto = `🔥 *JUGADA TITAN SHNEYDER IA PRO RD* 🔥\\n` +
+                let texto = `⚡ *JUGADA FORMADA SHNEYDER IA PRO RD* ⚡\\n` +
                             `📍 *${{info.nombre}}*\\n` +
-                            `🎯 *Tiro Fijo:* [${{tf}}] | Revés: [${{tv}}]\\n` +
-                            `💥 *Palé Titán:* [${{tp}}]\\n` +
+                            `🎯 *3 Números Directos:* [${{n1}}] - [${{n2}}] - [${{n3}}]\\n` +
+                            `💥 *2 Palés Maestros:* [${{n1}} - ${{n2}}] / [${{n1}} - ${{n3}}]\\n` +
+                            `🏆 *1 Tripleta Reina:* [${{n1}} - ${{n2}} - ${{n3}}]\\n` +
                             `⚡ *Dictamen:* ${{info.dictamen ? info.dictamen.flujo : 'Estándar'}}`;
 
                 navigator.clipboard.writeText(texto).then(() => {{
                     const t = document.getElementById('toast');
-                    t.innerText = "¡Copiado para WhatsApp! 📱";
+                    t.innerText = "¡Jugada Copiada para WhatsApp! 📱";
                     t.style.display = 'block';
                     setTimeout(() => {{ t.style.display = 'none'; }}, 2500);
                 }});
@@ -618,9 +720,12 @@ def index(request: Request):
 
             function generarTicket() {{
                 const info = db[tabActual] || db['todas'];
-                const tf = info.tiro_fijo ? info.tiro_fijo.num : info.sueltos[0].num;
-                const tv = info.tiro_fijo ? info.tiro_fijo.virado : info.sueltos[0].num.split('').reverse().join('');
-                const tp = info.tiro_fijo ? info.tiro_fijo.palé_titan : (info.sueltos[0].num + " - " + info.sueltos[1].num);
+                let n1 = info.sueltos[0].num, n2 = info.sueltos[1].num, n3 = info.sueltos[2].num;
+                if (info.jugada_maestra) {{
+                    n1 = info.jugada_maestra.numeros_3[0];
+                    n2 = info.jugada_maestra.numeros_3[1];
+                    n3 = info.jugada_maestra.numeros_3[2];
+                }}
 
                 let ticket = `=================================\\n` +
                              `   🎫 TICKET SHNEYDER IA PRO RD\\n` +
@@ -628,14 +733,20 @@ def index(request: Request):
                              `SALA: ${{info.nombre.toUpperCase()}}\\n` +
                              `FECHA: ${{new Date().toLocaleDateString()}}\\n` +
                              `---------------------------------\\n` +
-                             `TIRO DIRECTO: [${{tf}}]\\n` +
-                             `REVÉS OBLIGADO: [${{tv}}]\\n` +
-                             `PALÉ TITÁN: [${{tp}}]\\n` +
+                             `3 NÚMEROS DIRECTOS:\\n` +
+                             ` [${{n1}}]  [${{n2}}]  [${{n3}}]\\n` +
+                             `---------------------------------\\n` +
+                             `2 PALÉS MAESTROS:\\n` +
+                             ` [${{n1}} - ${{n2}}]\\n` +
+                             ` [${{n1}} - ${{n3}}]\\n` +
+                             `---------------------------------\\n` +
+                             `1 TRIPLETA REINA:\\n` +
+                             ` [${{n1}} - ${{n2}} - ${{n3}}]\\n` +
                              `=================================`;
 
                 navigator.clipboard.writeText(ticket).then(() => {{
                     const t = document.getElementById('toast');
-                    t.innerText = "¡Ticket Copiado! 🎫";
+                    t.innerText = "¡Ticket de Banca Copiado! 🎫";
                     t.style.display = 'block';
                     setTimeout(() => {{ t.style.display = 'none'; }}, 2500);
                 }});
