@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v28.0 (Todas las Salas)")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v29.0")
 DB_PATH = "loteria_master_ai.db"
 
 PETICIONES_IP = {}
@@ -101,7 +101,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"cruse": f"{n3} (Tarde) × {n1[::-1]} (Noche)", "salas": "Gana Más 2:30 PM × Nacional Noche 8:50 PM", "fuerza": 96.4}
     ]
 
-    # --- KINO TV LEIDSA ---
     kino_duenos = [f"{n:02d}" for n in sorted(rng.sample(range(1, 81), 10))]
     def gen_bloque_kino(cant):
         return " - ".join([f"{n:02d}" for n in sorted(rng.sample(range(1, 81), cant))])
@@ -114,7 +113,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"bloque": gen_bloque_kino(7), "paridad": "4 Impares / 3 Pares", "fuerza": 99.1, "ia_origen": "IA-07 Optimizador Genético"}
     ]
 
-    # --- LA PRIMITIVA (ESPAÑA 6/49) ---
     def gen_primitiva_optima():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 50), 6))
@@ -133,7 +131,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         {"combinacion": " - ".join([f"{n:02d}" for n in prim_nums2]), "reintegro": str(rng.randint(0, 9)), "fuerza": 96.5, "tipo": "IA-09 Algoritmo Delta"}
     ]
 
-    # --- EUROMILLONES (EUROPA 5/50 + 2 ESTRELLAS) ---
     def gen_euro_valida():
         for _ in range(500):
             comb = sorted(rng.sample(range(1, 51), 5))
@@ -144,7 +141,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
     euro_nums = gen_euro_valida()
     euro_e1, euro_e2 = f"{rng.randint(1, 6):02d}", f"{rng.randint(7, 12):02d}"
 
-    # --- EURODREAMS (EUROPA 6/40 + SUEÑO) ---
     def gen_eurodreams():
         for _ in range(500):
             nums = sorted(rng.sample(range(1, 41), 6))
@@ -164,7 +160,6 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         ]
     }
 
-    # --- ANGUILA CASCADA 4X ---
     anguila_cascada_data = {
         "10am": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 98.1, "estado": "Tanda Apertura"},
         "1pm": {"fijo": f"{rng.randint(0, 99):02d}", "pale": f"{rng.randint(0, 99):02d} - {rng.randint(0, 99):02d}", "fuerza": 97.5, "estado": "Cascada Mediodía"},
@@ -318,7 +313,7 @@ def verificar_anti_ddos(client_ip: str) -> bool:
 
 @app.get("/ping")
 def ping():
-    return {"status": "ok", "motor": "Titan Quantum v28.0"}
+    return {"status": "ok", "motor": "Titan Quantum v29.0"}
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
@@ -366,10 +361,10 @@ def index(request: Request):
     historial_auditoria = [
         {
             "fecha": fecha_str,
-            "sala": "Clúster Total 15 IAs Activo",
+            "sala": "Triple Pasarela Residencial Activa",
             "tipo": f"⚡ HORA RD: {hora_rd.strftime('%I:%M %p')}",
             "premio": f"Anclaje Estricto ({dia_nombre})",
-            "detalle": "RD + Kino Leidsa + Primitiva + Euromillones + EuroDreams + Anguila"
+            "detalle": "Sincronización Multi-Vía sin Bloqueos de Red"
         }
     ]
 
@@ -492,7 +487,6 @@ def index(request: Request):
             .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
             #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
 
-            /* TODAS LAS PESTAÑAS VISIBLES */
             .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
             .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
             .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
@@ -568,7 +562,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v28.0 - Suite Total</p>
+                    <p>Titan Quantum v29.0 - Multi-Pasarela Activa</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-date" id="live_date">{dia_nombre} {fecha_str}</div>
@@ -578,7 +572,7 @@ def index(request: Request):
 
             <div class="cluster-card">
                 <div>
-                    <span class="cluster-tag">CLÚSTER TOTAL 15 IAs</span>
+                    <span class="cluster-tag">TRIPLE PASARELA RESIDENCIAL</span>
                     <span style="color:#cbd5e1;margin-left:6px;font-size:10px;">RD + Kino Leidsa + Primitiva + Euromillones + EuroDreams + Anguila</span>
                 </div>
                 <div>
@@ -649,7 +643,6 @@ def index(request: Request):
             </div>
             <div id="sueno_resultado"></div>
 
-            <!-- TODAS LAS PESTAÑAS -->
             <div class="tabs-scroll">
                 <button class="tab-btn active" onclick="cambiarTab('todas')">🌐 TODAS (RD)</button>
                 <button class="tab-btn tab-kino" onclick="cambiarTab('kino_leidsa')">👑 KINO LEIDSA</button>
@@ -1066,7 +1059,7 @@ def index(request: Request):
 
                     let htmlE = "";
                     ed.apuestas_euro.forEach((a, i) => {{
-                        htmlE += `<tr><td>0${{i+1}}</td><td style="color:#60a5fa;font-weight:bold;font-size:15px;">${{a.numeros}}</td><td><span style="color:#facc15;font-weight:900;">⭐ ${{a.estrellas}}</span></td><td style="font-size:10px;">${{a.tipo}}</td><td style="font-weight:bold;color:#4ade80;">${{a.fuerza}}%</td></tr>`;
+                        htmlE += `<tr><td>0${{i+1}}</td><td style="color:#60a5fa;font-weight:bold;font-size:15px;">${{a.numeros}}</td><td><span style="color:#facc15;font-weight:900;">⭐ ${{a.estrellas}}</span></td><td style="font-size:10px;color:#38bdf8;">${{a.tipo}}</td><td style="font-weight:bold;color:#4ade80;">${{a.fuerza}}%</td></tr>`;
                     }});
                     document.getElementById('tabla_euromillones').innerHTML = htmlE;
 
@@ -1147,65 +1140,91 @@ def index(request: Request):
                 }}
             }}
 
+            // --- LECTURA DIRECTA CON TRIPLE PASARELA RESIDENCIAL ---
             async function sincronizarResultadosEnVivo() {{
                 const txtStatus = document.getElementById('txt_sync_status');
                 if (txtStatus) txtStatus.innerText = "⏳ Sincronizando en vivo...";
 
-                try {{
-                    const url = "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://loteriasdominicanas.com/?t=" + Date.now());
-                    const resp = await fetch(url);
-                    const html = await resp.text();
+                const pasarelas = [
+                    "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://loteriasdominicanas.com/?t=" + Date.now()),
+                    "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent("https://loteriasdominicanas.com/?t=" + Date.now()),
+                    "https://corsproxy.io/?" + encodeURIComponent("https://loteriasdominicanas.com/?t=" + Date.now())
+                ];
 
-                    const doc = new DOMParser().parseFromString(html, "text/html");
-                    const bloques = doc.querySelectorAll(".game-block");
+                let html = "";
 
-                    let capturas = 0;
-
-                    bloques.forEach(b => {{
-                        const scores = Array.from(b.querySelectorAll(".score")).map(el => el.innerText.trim().padStart(2, '0'));
-                        if (scores.length >= 3) {{
-                            const trio = scores.slice(0, 3);
-                            const textoBloque = b.innerText.toLowerCase();
-
-                            function setPremio(clave) {{
-                                if (premios[clave]) {{
-                                    premios[clave].premios = trio;
-                                    premios[clave].estado = "Oficial RD";
-                                    capturas++;
-                                }}
+                for (let endpoint of pasarelas) {{
+                    try {{
+                        const resp = await fetch(endpoint, {{ cache: "no-store" }});
+                        if (resp.ok) {{
+                            const data = await resp.text();
+                            if (data.includes("game-") || data.includes("score") || data.includes("Primera")) {{
+                                html = data;
+                                break;
                             }}
-
-                            if (textoBloque.includes("primera") && (textoBloque.includes("12") || textoBloque.includes("día") || textoBloque.includes("dia"))) setPremio("primera_dia");
-                            else if (textoBloque.includes("gana más") || textoBloque.includes("gana-mas")) setPremio("gana_mas");
-                            else if (textoBloque.includes("real")) setPremio("real");
-                            else if (textoBloque.includes("primera") && (textoBloque.includes("noche") || textoBloque.includes("8"))) setPremio("primera_noche");
-                            else if (textoBloque.includes("leidsa")) setPremio("leidsa");
-                            else if (textoBloque.includes("nacional") && (textoBloque.includes("noche") || textoBloque.includes("8:50"))) setPremio("nacional_noche");
-                            else if (textoBloque.includes("loteka")) setPremio("loteka");
-                            else if (textoBloque.includes("lotedom")) setPremio("lotedom");
-                            else if (textoBloque.includes("suerte") && (textoBloque.includes("12") || textoBloque.includes("día") || textoBloque.includes("dia"))) setPremio("suerte_dia");
-                            else if (textoBloque.includes("suerte") && (textoBloque.includes("6") || textoBloque.includes("tarde"))) setPremio("suerte_tarde");
-                            else if (textoBloque.includes("anguila") && textoBloque.includes("10")) setPremio("anguila_10am");
-                            else if (textoBloque.includes("anguila") && (textoBloque.includes("1") || textoBloque.includes("13"))) setPremio("anguila_1pm");
-                            else if (textoBloque.includes("anguila") && (textoBloque.includes("6") || textoBloque.includes("18"))) setPremio("anguila_6pm");
-                            else if (textoBloque.includes("anguila") && (textoBloque.includes("9") || textoBloque.includes("21"))) setPremio("anguila_9pm");
                         }}
-                    }});
+                    }} catch (err) {{
+                        continue;
+                    }}
+                }}
 
-                    localStorage.setItem("shneyder_premios_rd", JSON.stringify(premios));
-                    cargarPizarraPremios();
-                    cargarBingazos();
+                if (html) {{
+                    try {{
+                        const doc = new DOMParser().parseFromString(html, "text/html");
+                        const bloques = doc.querySelectorAll(".game-block");
 
-                    if (txtStatus) txtStatus.innerText = "● Auto-Sincronizado (" + capturas + " salas)";
-                }} catch (e) {{
-                    const guardado = localStorage.getItem("shneyder_premios_rd");
-                    if (guardado) {{
-                        premios = JSON.parse(guardado);
+                        let capturas = 0;
+
+                        bloques.forEach(b => {{
+                            const scores = Array.from(b.querySelectorAll(".score")).map(el => el.innerText.trim().padStart(2, '0'));
+                            if (scores.length >= 3) {{
+                                const trio = scores.slice(0, 3);
+                                const textoBloque = b.innerText.toLowerCase();
+
+                                function setPremio(clave) {{
+                                    if (premios[clave]) {{
+                                        premios[clave].premios = trio;
+                                        premios[clave].estado = "Oficial RD";
+                                        capturas++;
+                                    }}
+                                }}
+
+                                if (textoBloque.includes("primera") && (textoBloque.includes("12") || textoBloque.includes("día") || textoBloque.includes("dia"))) setPremio("primera_dia");
+                                else if (textoBloque.includes("gana más") || textoBloque.includes("gana-mas")) setPremio("gana_mas");
+                                else if (textoBloque.includes("real")) setPremio("real");
+                                else if (textoBloque.includes("primera") && (textoBloque.includes("noche") || textoBloque.includes("8"))) setPremio("primera_noche");
+                                else if (textoBloque.includes("leidsa")) setPremio("leidsa");
+                                else if (textoBloque.includes("nacional") && (textoBloque.includes("noche") || textoBloque.includes("8:50"))) setPremio("nacional_noche");
+                                else if (textoBloque.includes("loteka")) setPremio("loteka");
+                                else if (textoBloque.includes("lotedom")) setPremio("lotedom");
+                                else if (textoBloque.includes("suerte") && (textoBloque.includes("12") || textoBloque.includes("día") || textoBloque.includes("dia"))) setPremio("suerte_dia");
+                                else if (textoBloque.includes("suerte") && (textoBloque.includes("6") || textoBloque.includes("tarde"))) setPremio("suerte_tarde");
+                                else if (textoBloque.includes("anguila") && textoBloque.includes("10")) setPremio("anguila_10am");
+                                else if (textoBloque.includes("anguila") && (textoBloque.includes("1") || textoBloque.includes("13"))) setPremio("anguila_1pm");
+                                else if (textoBloque.includes("anguila") && (textoBloque.includes("6") || textoBloque.includes("18"))) setPremio("anguila_6pm");
+                                else if (textoBloque.includes("anguila") && (textoBloque.includes("9") || textoBloque.includes("21"))) setPremio("anguila_9pm");
+                            }}
+                        }});
+
+                        localStorage.setItem("shneyder_premios_rd", JSON.stringify(premios));
                         cargarPizarraPremios();
                         cargarBingazos();
+
+                        if (txtStatus) txtStatus.innerText = "● Auto-Sincronizado (" + capturas + " salas)";
+                        return;
+                    }} catch (e) {{
+                        // Fallback a localStorage
                     }}
-                    if (txtStatus) txtStatus.innerText = "● Conectado (Offline)";
                 }}
+
+                // Recuperación de memoria si hay corte puntual
+                const guardado = localStorage.getItem("shneyder_premios_rd");
+                if (guardado) {{
+                    premios = JSON.parse(guardado);
+                    cargarPizarraPremios();
+                    cargarBingazos();
+                }}
+                if (txtStatus) txtStatus.innerText = "● Conectado (Reserva)";
             }}
 
             function copiarWhatsApp() {{
@@ -1286,6 +1305,7 @@ def index(request: Request):
             actualizarRelojCabecera();
             actualizarVista();
 
+            // Auto-sync inmediato
             sincronizarResultadosEnVivo();
             setInterval(sincronizarResultadosEnVivo, 60000);
         </script>
