@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 import uvicorn
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v66.1")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum Definitivo v68.0")
 DB_PATH = "loteria_master_ai.db"
 
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
@@ -468,7 +468,7 @@ def index(request: Request):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-        <title>Shneyder IA Pro RD v66.1</title>
+        <title>Shneyder IA Pro RD v68.0</title>
         <style>
             * {{ box-sizing: border-box; }}
             body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }}
@@ -553,7 +553,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v66.1</p>
+                    <p>Titan Quantum v68.0</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-clock" id="live_time">--:--:--</div>
