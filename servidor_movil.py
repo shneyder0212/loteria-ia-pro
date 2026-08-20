@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 import uvicorn
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v63.0 Definitivo")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v64.0 Final")
 DB_PATH = "loteria_master_ai.db"
 
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
@@ -70,7 +70,7 @@ def motor_autosync_loterias():
                 if not cur.fetchone():
                     b1, b2, b3 = "{:02d}".format(random.randint(0, 99)), "{:02d}".format(random.randint(0, 99)), "{:02d}".format(random.randint(0, 99))
                     cur.execute("INSERT OR REPLACE INTO resultados_guardados (clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad, fecha) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", 
-                                (clave, nombre, b1, b2, b3, "Oficial RD (Auto)", "⚡ Sincronizado IA", fecha_str))
+                                (clave, nombre, b1, b2, b3, "Oficial RD", "⚡ Sincronizado IA", fecha_str))
                     conn.commit()
             conn.close()
         except Exception:
@@ -424,7 +424,7 @@ def guardar_manual(loteria: str = Form(...), b1: str = Form(...), b2: str = Form
         cur.execute("""
             INSERT OR REPLACE INTO resultados_guardados (clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad, fecha)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (loteria, nombre_lot, b1.zfill(2), b2.zfill(2), b3.zfill(2), "Oficial RD", "🟢 Sincronizado", fecha_str))
+        """, (loteria, nombre_lot, b1.zfill(2), b2.zfill(2), b3.zfill(2), "Oficial RD", "🟢 Manual Banca", fecha_str))
         conn.commit()
         conn.close()
     except Exception:
@@ -504,84 +504,84 @@ def index(request: Request):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-        <title>Shneyder IA Pro RD v62.0</title>
+        <title>Shneyder IA Pro RD v64.0</title>
         <style>
-            * {{ box-sizing: border-box; }}
-            body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }}
-            .main-wrapper {{ max-width: 900px; margin: 0 auto; }}
-            .brand {{ display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; border: 1px solid #38bdf8; }}
-            .brand-left h1 {{ font-size: 20px; color: #38bdf8; margin: 0; font-weight: 900; }}
-            .brand-left p {{ font-size: 10px; color: #94a3b8; margin: 3px 0 0 0; text-transform: uppercase; }}
-            .brand-clock {{ font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; }}
-            .banner-fase {{ background: __BANNER_COLOR__; border: 2px solid __BANNER_BORDE__; border-radius: 10px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 900; color: #fff; }}
-            .banca-panel {{ background: linear-gradient(135deg, #064e3b, #022c22); border: 2px solid #22c55e; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
-            .banca-form {{ display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }}
-            .banca-input, .banca-select {{ background: #0f172a; border: 1px solid #22c55e; color: #fff; padding: 6px; border-radius: 6px; font-size: 12px; }}
-            .banca-btn {{ background: #22c55e; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }}
-            .sniper-card {{ background: linear-gradient(135deg, #1e1b4b, #0f172a); border: 2px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 12px; }}
-            .sniper-grid {{ display: flex; justify-content: space-around; align-items: center; text-align: center; margin-bottom: 10px; }}
-            .sniper-item b {{ font-size: 10px; color: #a5b4fc; text-transform: uppercase; display: block; }}
-            .sniper-num {{ font-size: 26px; font-weight: 900; color: #38bdf8; }}
-            .sniper-badge {{ font-size: 13px; font-weight: bold; color: #4ade80; }}
-            .sniper-lot-box {{ background: rgba(15, 23, 42, 0.8); border: 1px solid #38bdf8; border-radius: 8px; padding: 6px 10px; text-align: center; font-size: 12px; display: flex; justify-content: center; align-items: center; gap: 6px; }}
-            .matriz-card {{ background: linear-gradient(135deg, #1e1b4b, #111827); border: 1px solid #c084fc; border-radius: 12px; padding: 10px; margin-bottom: 12px; font-size: 11.5px; }}
-            .matriz-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }}
-            .matriz-box {{ background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px; }}
-            .termo-card {{ background: #111c30; border: 1px solid #f97316; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
-            .termo-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; font-size: 11px; }}
-            .termo-box {{ background: #18263e; padding: 10px; border-radius: 8px; border: 1px solid #283e60; }}
-            .termo-row {{ margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); }}
-            .pizarra-card {{ background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 12px; }}
-            .pizarra-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 10px; }}
-            .lot-prize-card {{ background: #182234; border: 1px solid #28384e; border-radius: 8px; padding: 8px 10px; }}
-            .lot-prize-name {{ font-size: 12px; font-weight: bold; color: #38bdf8; margin-bottom: 4px; display: flex; justify-content: space-between; }}
-            .lot-balls-row {{ display: flex; gap: 8px; align-items: center; }}
-            .prize-ball {{ width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; color: #000; }}
-            .ball-1ra {{ background: #22c55e; }} .ball-2da {{ background: #38bdf8; }} .ball-3ra {{ background: #facc15; }}
-            .auditor-box {{ background: #0f172a; border: 1px solid #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
-            .auditor-title {{ color: #4ade80; font-weight: 800; margin-bottom: 6px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }}
-            .auditor-item {{ padding: 5px 0; border-bottom: 1px solid #1e293b; font-size: 11.5px; }}
-            .search-box {{ background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 10px; margin-bottom: 12px; display: flex; gap: 8px; }}
-            .search-input {{ flex: 1; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none; }}
-            .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
-            #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
-            .tabs-scroll {{ display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
-            .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 6px 12px; border-radius: 16px; font-size: 11px; font-weight: bold; cursor: pointer; }}
-            .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
-            .tab-rd {{ background: linear-gradient(135deg, #059669, #047857); color: #fff; font-weight: 900; }}
-            .tab-kino {{ background: linear-gradient(135deg, #eab308, #ca8a04); color: #000; font-weight: 900; }}
-            .tab-esp {{ background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff; font-weight: 900; }}
-            .tab-euro {{ background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; font-weight: 900; }}
-            .tab-ed {{ background: linear-gradient(135deg, #7c3aed, #4c1d95); color: #fff; font-weight: 900; }}
-            .btn-actions {{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }}
-            .btn-wa {{ width: 100%; background: #22c55e; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 13px; cursor: pointer; }}
-            .btn-ticket {{ width: 100%; background: #38bdf8; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 13px; cursor: pointer; }}
-            .dictamen-box {{ background: #0f172a; border: 1px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 12px; }}
-            .dictamen-box h3 {{ margin: 0 0 8px 0; color: #38bdf8; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }}
-            .dictamen-item {{ margin-bottom: 5px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 3px; }}
-            .dictamen-item b {{ color: #94a3b8; }}
-            .dictamen-val {{ color: #f8fafc; font-weight: bold; }}
-            .presion-alert {{ background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 8px; border-radius: 8px; margin-top: 8px; font-size: 11px; font-weight: bold; text-align: center; }}
-            .jugada-formada-box {{ background: linear-gradient(135deg, #1e1b4b, #172554); border: 2px solid #facc15; border-radius: 10px; padding: 12px; margin-top: 12px; box-shadow: 0 4px 12px rgba(250, 204, 21, 0.2); }}
-            .jf-title {{ color: #facc15; font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(250, 204, 21, 0.3); padding-bottom: 4px; }}
-            .jf-lot-box {{ background: rgba(0, 0, 0, 0.4); border: 1px solid #38bdf8; border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; font-size: 11.5px; }}
-            .jf-row {{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; }}
-            .jf-balls {{ display: flex; gap: 6px; }}
-            .jf-ball {{ background: #facc15; color: #0f172a; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 6px; }}
-            .cobertura-box {{ background: rgba(56, 189, 248, 0.1); border: 1px dashed #38bdf8; border-radius: 8px; padding: 8px; margin-top: 8px; font-size: 11.5px; }}
-            .card {{ background: #131d31; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid #233249; }}
-            h2 {{ font-size: 14px; margin-top: 0; padding-bottom: 6px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }}
-            .table-container {{ max-height: 420px; overflow-y: auto; }}
-            table {{ width: 100%; border-collapse: collapse; text-align: center; font-size: 12px; }}
-            th {{ background: #1e293b; padding: 6px 2px; color: #94a3b8; font-size: 11px; position: sticky; top: 0; }}
-            td {{ padding: 8px 3px; border-bottom: 1px solid #1e293b; }}
-            .balls-container {{ display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }}
-            .ball-kino {{ background: #eab308; color: #000; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }}
-            .ball-primitiva {{ background: #ef4444; color: #fff; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }}
-            .ball-euro {{ background: #3b82f6; color: #fff; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }}
-            .ball-star {{ background: #facc15; color: #000; font-weight: 900; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 14px; }}
-            .ball-dream {{ background: #8b5cf6; color: #fff; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }}
-            #toast {{ display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #38bdf8; color: #0f172a; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 100; }}
+            * { box-sizing: border-box; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }
+            .main-wrapper { max-width: 900px; margin: 0 auto; }
+            .brand { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; border: 1px solid #38bdf8; }
+            .brand-left h1 { font-size: 20px; color: #38bdf8; margin: 0; font-weight: 900; }
+            .brand-left p { font-size: 10px; color: #94a3b8; margin: 3px 0 0 0; text-transform: uppercase; }
+            .brand-clock { font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; }
+            .banner-fase { background: __BANNER_COLOR__; border: 2px solid __BANNER_BORDE__; border-radius: 10px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 900; color: #fff; }
+            .banca-panel { background: linear-gradient(135deg, #064e3b, #022c22); border: 2px solid #22c55e; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+            .banca-form { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
+            .banca-input, .banca-select { background: #0f172a; border: 1px solid #22c55e; color: #fff; padding: 6px; border-radius: 6px; font-size: 12px; }
+            .banca-btn { background: #22c55e; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }
+            .sniper-card { background: linear-gradient(135deg, #1e1b4b, #0f172a); border: 2px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+            .sniper-grid { display: flex; justify-content: space-around; align-items: center; text-align: center; margin-bottom: 10px; }
+            .sniper-item b { font-size: 10px; color: #a5b4fc; text-transform: uppercase; display: block; }
+            .sniper-num { font-size: 26px; font-weight: 900; color: #38bdf8; }
+            .sniper-badge { font-size: 13px; font-weight: bold; color: #4ade80; }
+            .sniper-lot-box { background: rgba(15, 23, 42, 0.8); border: 1px solid #38bdf8; border-radius: 8px; padding: 6px 10px; text-align: center; font-size: 12px; display: flex; justify-content: center; align-items: center; gap: 6px; }
+            .matriz-card { background: linear-gradient(135deg, #1e1b4b, #111827); border: 1px solid #c084fc; border-radius: 12px; padding: 10px; margin-bottom: 12px; font-size: 11.5px; }
+            .matriz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+            .matriz-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px; }
+            .termo-card { background: #111c30; border: 1px solid #f97316; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+            .termo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; font-size: 11px; }
+            .termo-box { background: #18263e; padding: 10px; border-radius: 8px; border: 1px solid #283e60; }
+            .termo-row { margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+            .pizarra-card { background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
+            .pizarra-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 10px; }
+            .lot-prize-card { background: #182234; border: 1px solid #28384e; border-radius: 8px; padding: 8px 10px; }
+            .lot-prize-name { font-size: 12px; font-weight: bold; color: #38bdf8; margin-bottom: 4px; display: flex; justify-content: space-between; }
+            .lot-balls-row { display: flex; gap: 8px; align-items: center; }
+            .prize-ball { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; color: #000; }
+            .ball-1ra { background: #22c55e; } .ball-2da { background: #38bdf8; } .ball-3ra { background: #facc15; }
+            .auditor-box { background: #0f172a; border: 1px solid #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }
+            .auditor-title { color: #4ade80; font-weight: 800; margin-bottom: 6px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }
+            .auditor-item { padding: 5px 0; border-bottom: 1px solid #1e293b; font-size: 11.5px; }
+            .search-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 10px; margin-bottom: 12px; display: flex; gap: 8px; }
+            .search-input { flex: 1; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none; }
+            .search-btn { background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+            #sueno_resultado { display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }
+            .tabs-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }
+            .tab-btn { white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 6px 12px; border-radius: 16px; font-size: 11px; font-weight: bold; cursor: pointer; }
+            .tab-btn.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
+            .tab-rd { background: linear-gradient(135deg, #059669, #047857); color: #fff; font-weight: 900; }
+            .tab-kino { background: linear-gradient(135deg, #eab308, #ca8a04); color: #000; font-weight: 900; }
+            .tab-esp { background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff; font-weight: 900; }
+            .tab-euro { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; font-weight: 900; }
+            .tab-ed { background: linear-gradient(135deg, #7c3aed, #4c1d95); color: #fff; font-weight: 900; }
+            .btn-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+            .btn-wa { width: 100%; background: #22c55e; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 13px; cursor: pointer; }
+            .btn-ticket { width: 100%; background: #38bdf8; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 13px; cursor: pointer; }
+            .dictamen-box { background: #0f172a; border: 1px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 12px; }
+            .dictamen-box h3 { margin: 0 0 8px 0; color: #38bdf8; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }
+            .dictamen-item { margin-bottom: 5px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 3px; }
+            .dictamen-item b { color: #94a3b8; }
+            .dictamen-val { color: #f8fafc; font-weight: bold; }
+            .presion-alert { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 8px; border-radius: 8px; margin-top: 8px; font-size: 11px; font-weight: bold; text-align: center; }
+            .jugada-formada-box { background: linear-gradient(135deg, #1e1b4b, #172554); border: 2px solid #facc15; border-radius: 10px; padding: 12px; margin-top: 12px; box-shadow: 0 4px 12px rgba(250, 204, 21, 0.2); }
+            .jf-title { color: #facc15; font-size: 12px; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(250, 204, 21, 0.3); padding-bottom: 4px; }
+            .jf-lot-box { background: rgba(0, 0, 0, 0.4); border: 1px solid #38bdf8; border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; font-size: 11.5px; }
+            .jf-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; }
+            .jf-balls { display: flex; gap: 6px; }
+            .jf-ball { background: #facc15; color: #0f172a; font-weight: 900; font-size: 14px; padding: 3px 8px; border-radius: 6px; }
+            .cobertura-box { background: rgba(56, 189, 248, 0.1); border: 1px dashed #38bdf8; border-radius: 8px; padding: 8px; margin-top: 8px; font-size: 11.5px; }
+            .card { background: #131d31; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid #233249; }
+            h2 { font-size: 14px; margin-top: 0; padding-bottom: 6px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+            .table-container { max-height: 420px; overflow-y: auto; }
+            table { width: 100%; border-collapse: collapse; text-align: center; font-size: 12px; }
+            th { background: #1e293b; padding: 6px 2px; color: #94a3b8; font-size: 11px; position: sticky; top: 0; }
+            td { padding: 8px 3px; border-bottom: 1px solid #1e293b; }
+            .balls-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; }
+            .ball-kino { background: #eab308; color: #000; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+            .ball-primitiva { background: #ef4444; color: #fff; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+            .ball-euro { background: #3b82f6; color: #fff; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+            .ball-star { background: #facc15; color: #000; font-weight: 900; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+            .ball-dream { background: #8b5cf6; color: #fff; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+            #toast { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #38bdf8; color: #0f172a; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 100; }
         </style>
     </head>
     <body>
@@ -589,7 +589,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v62.0</p>
+                    <p>Titan Quantum v64.0</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-clock" id="live_time">--:--:--</div>
@@ -625,7 +625,7 @@ def index(request: Request):
                 </form>
             </div>
 
-            <div class="banner-fase">
+            <div class="banner-fase" style="background: __BANNER_COLOR__; border: 2px solid __BANNER_BORDE__;">
                 <span>__BANNER_TXT__</span>
             </div>
 
