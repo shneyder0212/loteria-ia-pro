@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 import uvicorn
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v61.0 AutoSync")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v62.0 Salas Individuales")
 DB_PATH = "loteria_master_ai.db"
 
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
@@ -42,53 +42,6 @@ def obtener_fechas_rd():
     fecha_str = hora_rd.strftime("%d/%m/%Y")
     dia_nombre = DIAS_SEMANA[hora_rd.weekday()]
     return hora_rd, fecha_str, dia_nombre
-
-# HILO EN SEGUNDO PLANO PARA AUTOSINCRONIZAR SORTEOS RD
-def motor_autosync_loterias():
-    while True:
-        try:
-            _, fecha_str, _ = obtener_fechas_rd()
-            conn = sqlite3.connect(DB_PATH)
-            cur = conn.cursor()
-            
-            # Salas y claves oficiales
-            salas_auto = [
-                ("anguila_10am", "Anguila Mañana (10:00 AM)"),
-                ("primera_dia", "La Primera Día (12:00 PM)"),
-                ("lotedom", "LoteDom (12:00 PM)"),
-                ("suerte_dia", "La Suerte Día (12:30 PM)"),
-                ("real", "Lotería Real (12:55 PM)"),
-                ("anguila_1pm", "Anguila Mediodía (1:00 PM)"),
-                ("gana_mas", "Gana Más (2:30 PM)"),
-                ("suerte_tarde", "La Suerte Tarde (6:00 PM)"),
-                ("anguila_6pm", "Anguila Tarde (6:00 PM)"),
-                ("loteka", "Loteka (7:55 PM)"),
-                ("primera_noche", "La Primera Noche (8:00 PM)"),
-                ("nacional_noche", "Nacional Noche (8:50 PM)"),
-                ("leidsa", "Leidsa (8:55 PM)"),
-                ("anguila_9pm", "Anguila Noche (9:00 PM)")
-            ]
-            
-            for clave, nombre in salas_auto:
-                cur.execute("SELECT clave FROM resultados_guardados WHERE clave = ? AND fecha = ?", (clave, fecha_str))
-                existe = cur.fetchone()
-                if not existe:
-                    # Genera de manera automática los bolos oficiales simulados por el motor cuántico del Titán
-                    b1 = "{:02d}".format(random.randint(0, 99))
-                    b2 = "{:02d}".format(random.randint(0, 99))
-                    b3 = "{:02d}".format(random.randint(0, 99))
-                    cur.execute("""
-                        INSERT OR REPLACE INTO resultados_guardados (clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad, fecha)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (clave, nombre, b1, b2, b3, "Oficial RD (Auto)", "⚡ Sincronizado IA", fecha_str))
-                    conn.commit()
-            conn.close()
-        except Exception:
-            pass
-        time.sleep(60) # Verifica cada minuto
-
-# Arranca el hilo de sincronización automática de forma transparente
-threading.Thread(target=motor_autosync_loterias, daemon=True).start()
 
 TABLA_JALADERA = {
     "00": ["55", "05", "50"], "01": ["56", "10", "61"], "02": ["57", "20", "72"], "03": ["58", "30", "83"],
@@ -187,33 +140,174 @@ def cluster_universal_15_ia(hora_rd, dia_nombre):
         "9pm": {"fijo": "{:02d}".format(rng.randint(0, 99)), "pale": "{} - {}".format(rng.randint(0, 99), rng.randint(0, 99)), "fuerza": 99.2, "estado": "Cierre Cuántico Noche"}
     }
 
+    # Estructura con las 14 salas independientes de la República Dominicana
     return {
-        "todas": {
-            "nombre": "Todas las Loterías (Consenso Cuántico RD)",
+        "real": {
+            "nombre": "Lotería Real (12:55 PM)",
             "tipo_juego": "quiniela",
             "es_tarde_noche": es_tarde_noche,
-            "fase": "⚡ TIRO DE GRACIA (NOCHE)" if es_tarde_noche else "🌅 MATRIZ MATUTINA (TARDE)",
-            "tiro_fijo": {"num": n1, "virado": n1_reves, "fuerza": 99.4, "palé_titan": p1, "lot_fuerte": lot_fuerte_principal},
+            "fase": "🌅 TANDA MEDIODÍA",
+            "tiro_fijo": {"num": n1, "virado": n1_reves, "fuerza": 99.0, "palé_titan": p1, "lot_fuerte": "Lotería Real"},
             "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
-            "jugada_maestra": {
-                "numeros_3": [n1, n2, n3],
-                "pale_1": p1,
-                "pale_2": p2,
-                "pale_reves": p_reves,
-                "tripleta": tripleta_reina,
-                "lot_fuerte": lot_fuerte_principal,
-                "lot_respaldo": lot_fuerte_respaldo
-            },
+            "jugada_maestra": {"numeros_3": [n1, n2, n3], "pale_1": p1, "pale_2": p2, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "Lotería Real", "lot_respaldo": "Gana Más"},
             "super_pales": super_pales,
-            "dictamen": {
-                "flujo": "ANCLAJE ESTRICTO 100% ACOPLADO",
-                "decena": "Decena Fuerte [{}]".format(decena_elegida_nombre),
-                "terminal": "Terminales {}".format(n1[-1]),
-                "pareja": "ALTA (Gemelos y Espejos en Tensión)",
-                "digito_fuerte": "Dígitos {} y {}".format(n1[0], n1[1]),
-                "presion": "🎯 Foco Directo: {}".format(lot_fuerte_principal),
-                "dia_tendencia": "{}: Concentración Salidora".format(dia_nombre)
-            },
+            "dictamen": {"flujo": "ANCLAJE REAL 100%", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n1[-1]), "pareja": "ALTA", "digito_fuerte": "Dígitos {} y {}".format(n1[0], n1[1]), "presion": "🎯 Foco: Real", "dia_tendencia": "{}: Salidor".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "gana_mas": {
+            "nombre": "Gana Más (2:30 PM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": es_tarde_noche,
+            "fase": "🌅 TANDA TARDE",
+            "tiro_fijo": {"num": n2, "virado": n1_reves, "fuerza": 98.5, "palé_titan": p2, "lot_fuerte": "Gana Más"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n2, n1, n3], "pale_1": p2, "pale_2": p1, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "Gana Más", "lot_respaldo": "Nacional"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "ANCLAJE VESPERTINO", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n2[-1]), "pareja": "MEDIA", "digito_fuerte": "Dígitos {}".format(n2), "presion": "🎯 Foco: Gana Más", "dia_tendencia": "{}: Salidor".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "nacional_noche": {
+            "nombre": "Nacional Noche (8:50 PM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": True,
+            "fase": "🌙 TANDA NOCHE",
+            "tiro_fijo": {"num": n3, "virado": n1_reves, "fuerza": 99.5, "palé_titan": p1, "lot_fuerte": "Nacional Noche"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n3, n1, n2], "pale_1": p1, "pale_2": p2, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "Nacional Noche", "lot_respaldo": "Leidsa"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "CIERRE NACIONAL", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n3[-1]), "pareja": "MÁXIMA", "digito_fuerte": "Dígitos {}".format(n3), "presion": "🎯 Foco: Nacional", "dia_tendencia": "{}: Sorteo Estelar".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "leidsa": {
+            "nombre": "Leidsa (8:55 PM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": True,
+            "fase": "🌙 TANDA NOCHE",
+            "tiro_fijo": {"num": n1, "virado": n3, "fuerza": 99.8, "palé_titan": p2, "lot_fuerte": "Leidsa"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n1, n3, n2], "pale_1": p2, "pale_2": p1, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "Leidsa", "lot_respaldo": "Nacional"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "SUPER LIGA LEIDSA", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n1[-1]), "pareja": "ALTA", "digito_fuerte": "Dígitos {}".format(n1), "presion": "🎯 Foco: Leidsa", "dia_tendencia": "{}: Liderazgo".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "loteka": {
+            "nombre": "Loteka (7:55 PM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": True,
+            "fase": "🌙 TANDA NOCHE",
+            "tiro_fijo": {"num": n2, "virado": n3, "fuerza": 97.9, "palé_titan": p1, "lot_fuerte": "Loteka"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n2, n3, n1], "pale_1": p1, "pale_2": p2, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "Loteka", "lot_respaldo": "Leidsa"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "DINÁMICA LOTEKA", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n2[-1]), "pareja": "MEDIA", "digito_fuerte": "Dígitos {}".format(n2), "presion": "🎯 Foco: Loteka", "dia_tendencia": "{}: Extracciones".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "primera_dia": {
+            "nombre": "La Primera Día (12:00 PM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": False,
+            "fase": "🌅 TANDA APERTURA",
+            "tiro_fijo": {"num": n3, "virado": n1, "fuerza": 98.2, "palé_titan": p2, "lot_fuerte": "La Primera Día"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n3, n2, n1], "pale_1": p2, "pale_2": p1, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "La Primera Día", "lot_respaldo": "Real"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "APERTURA MATUTINA", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n3[-1]), "pareja": "ALTA", "digito_fuerte": "Dígitos {}".format(n3), "presion": "🎯 Foco: La Primera", "dia_tendencia": "{}: Apertura".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "primera_noche": {
+            "nombre": "La Primera Noche (8:00 PM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": True,
+            "fase": "🌙 TANDA NOCHE",
+            "tiro_fijo": {"num": n1, "virado": n2, "fuerza": 98.7, "palé_titan": p1, "lot_fuerte": "La Primera Noche"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n1, n2, n3], "pale_1": p1, "pale_2": p2, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "La Primera Noche", "lot_respaldo": "Nacional"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "NOCHE PRIMERA", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n1[-1]), "pareja": "ALTA", "digito_fuerte": "Dígitos {}".format(n1), "presion": "🎯 Foco: Primera Noche", "dia_tendencia": "{}: Cierre".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "lotedom": {
+            "nombre": "LoteDom (12:00 PM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": False,
+            "fase": "🌅 TANDA MEDIODÍA",
+            "tiro_fijo": {"num": n2, "virado": n3, "fuerza": 97.4, "palé_titan": p1, "lot_fuerte": "LoteDom"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n2, n1, n3], "pale_1": p1, "pale_2": p2, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "LoteDom", "lot_respaldo": "Real"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "MEDIODÍA LOTEDOM", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n2[-1]), "pareja": "MEDIA", "digito_fuerte": "Dígitos {}".format(n2), "presion": "🎯 Foco: LoteDom", "dia_tendencia": "{}: Mediodía".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "suerte_dia": {
+            "nombre": "La Suerte Día (12:30 PM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": False,
+            "fase": "🌅 TANDA MEDIODÍA",
+            "tiro_fijo": {"num": n3, "virado": n2, "fuerza": 96.8, "palé_titan": p2, "lot_fuerte": "La Suerte Día"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n3, n1, n2], "pale_1": p2, "pale_2": p1, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "La Suerte Día", "lot_respaldo": "Real"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "SUERTE MATUTINA", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n3[-1]), "pareja": "MEDIA", "digito_fuerte": "Dígitos {}".format(n3), "presion": "🎯 Foco: Suerte Día", "dia_tendencia": "{}: Suerte".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "suerte_tarde": {
+            "nombre": "La Suerte Tarde (6:00 PM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": True,
+            "fase": "🌅 TANDA TARDE",
+            "tiro_fijo": {"num": n1, "virado": n2, "fuerza": 96.5, "palé_titan": p1, "lot_fuerte": "La Suerte Tarde"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n1, n3, n2], "pale_1": p1, "pale_2": p2, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "La Suerte Tarde", "lot_respaldo": "Loteka"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "SUERTE VESPERTINA", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n1[-1]), "pareja": "MEDIA", "digito_fuerte": "Dígitos {}".format(n1), "presion": "🎯 Foco: Suerte Tarde", "dia_tendencia": "{}: Tarde".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "anguila_10am": {
+            "nombre": "Anguila Mañana (10:00 AM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": False,
+            "fase": "🐍 ANGUILA APERTURA",
+            "tiro_fijo": {"num": n1, "virado": n2, "fuerza": 98.1, "palé_titan": p1, "lot_fuerte": "Anguila 10 AM"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n1, n2, n3], "pale_1": p1, "pale_2": p2, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "Anguila 10 AM", "lot_respaldo": "La Primera"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "CASCADA 10AM", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n1[-1]), "pareja": "ALTA", "digito_fuerte": "Dígitos {}".format(n1), "presion": "🎯 Foco: Anguila 10AM", "dia_tendencia": "{}: Mañana".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "anguila_1pm": {
+            "nombre": "Anguila Mediodía (1:00 PM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": False,
+            "fase": "🐍 ANGUILA MEDIODÍA",
+            "tiro_fijo": {"num": n2, "virado": n1, "fuerza": 97.5, "palé_titan": p2, "lot_fuerte": "Anguila 1 PM"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n2, n3, n1], "pale_1": p2, "pale_2": p1, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "Anguila 1 PM", "lot_respaldo": "Real"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "CASCADA 1PM", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n2[-1]), "pareja": "ALTA", "digito_fuerte": "Dígitos {}".format(n2), "presion": "🎯 Foco: Anguila 1PM", "dia_tendencia": "{}: Mediodía".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "anguila_6pm": {
+            "nombre": "Anguila Tarde (6:00 PM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": True,
+            "fase": "🐍 ANGUILA TARDE",
+            "tiro_fijo": {"num": n3, "virado": n2, "fuerza": 98.6, "palé_titan": p1, "lot_fuerte": "Anguila 6 PM"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n3, n1, n2], "pale_1": p1, "pale_2": p2, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "Anguila 6 PM", "lot_respaldo": "Loteka"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "CASCADA 6PM", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n3[-1]), "pareja": "ALTA", "digito_fuerte": "Dígitos {}".format(n3), "presion": "🎯 Foco: Anguila 6PM", "dia_tendencia": "{}: Tarde".format(dia_nombre)},
+            "sueltos": todas_pool
+        },
+        "anguila_9pm": {
+            "nombre": "Anguila Noche (9:00 PM)",
+            "tipo_juego": "quiniela",
+            "es_tarde_noche": True,
+            "fase": "🐍 ANGUILA NOCHE",
+            "tiro_fijo": {"num": n1, "virado": n3, "fuerza": 99.2, "palé_titan": p2, "lot_fuerte": "Anguila 9 PM"},
+            "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
+            "jugada_maestra": {"numeros_3": [n1, n2, n3], "pale_1": p2, "pale_2": p1, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": "Anguila 9 PM", "lot_respaldo": "Leidsa"},
+            "super_pales": super_pales,
+            "dictamen": {"flujo": "CASCADA CIERRE 9PM", "decena": "Decena [{}]".format(decena_elegida_nombre), "terminal": "Terminales {}".format(n1[-1]), "pareja": "MÁXIMA", "digito_fuerte": "Dígitos {}".format(n1), "presion": "🎯 Foco: Anguila 9PM", "dia_tendencia": "{}: Cierre".format(dia_nombre)},
             "sueltos": todas_pool
         },
         "kino_leidsa": {
@@ -348,23 +442,23 @@ def index(request: Request):
 
     termometro = {
         "decenas_calientes": [
-            {"rango": datos_loterias["todas"]["dictamen"]["decena"].replace("Decena Fuerte [", "").replace("]", ""), "presion": 98.4, "estado": "🚨 CRÍTICA", "lot": datos_loterias["todas"]["tiro_fijo"]["lot_fuerte"]},
-            {"rango": "70 - 79", "presion": 91.8, "estado": "🔥 ALTA", "lot": "Leidsa (8:55 PM)"},
-            {"rango": "80 - 89", "presion": 88.6, "estado": "⚡ MEDIA ALTA", "lot": "La Primera / Nacional"}
+            {"rango": "70 - 79", "presion": 98.4, "estado": "🚨 CRÍTICA", "lot": "Lotería Real"},
+            {"rango": "10 - 19", "presion": 91.8, "estado": "🔥 ALTA", "lot": "Leidsa (8:55 PM)"},
+            {"rango": "40 - 49", "presion": 88.6, "estado": "⚡ MEDIA ALTA", "lot": "Nacional Noche"}
         ],
         "terminales_fuertes": [
-            {"digito": datos_loterias["todas"]["tiro_fijo"]["num"][-1], "frecuencia": "Muy Alta (98.6%)", "lot": "Lotería Real (12:55 PM)"},
-            {"digito": datos_loterias["todas"]["jugada_maestra"]["numeros_3"][1][-1], "frecuencia": "Alta (94.2%)", "lot": "La Primera / Leidsa"},
-            {"digito": "8", "frecuencia": "Alta (89.5%)", "lot": "Anguila & Nacional"}
+            {"digito": "1", "frecuencia": "Muy Alta (98.6%)", "lot": "Lotería Real"},
+            {"digito": "5", "frecuencia": "Alta (94.2%)", "lot": "Leidsa / Nacional"},
+            {"digito": "8", "frecuencia": "Alta (89.5%)", "lot": "Anguila & Loteka"}
         ]
     }
 
     historial_auditoria = [{
         "fecha": fecha_str,
-        "sala": "Motor IA Activo",
+        "sala": "Matriz 14 Salas Activa",
         "tipo": "⚡ HORA RD: {}".format(hora_rd.strftime('%I:%M %p')),
-        "premio": "Sincronización 14 Salas ({})".format(dia_nombre),
-        "detalle": "Auto-Sincronización Habilitada"
+        "premio": "Sincronización Individual ({})".format(dia_nombre),
+        "detalle": "Pestañas de Loterías RD Separadas"
     }]
 
     datos_json = json.dumps(datos_loterias)
@@ -373,7 +467,7 @@ def index(request: Request):
     premios_json = json.dumps(pizarra_inicial)
     termometro_json = json.dumps(termometro)
 
-    es_tarde_noche = datos_loterias["todas"]["es_tarde_noche"]
+    es_tarde_noche = hora_rd.hour >= 18
     banner_color = "linear-gradient(135deg, #7f1d1d, #450a0a)" if es_tarde_noche else "linear-gradient(135deg, #1e3a8a, #0f172a)"
     banner_borde = "#ef4444" if es_tarde_noche else "#38bdf8"
     banner_txt = "🚨 RECALIBRACIÓN VESPERTINA: TIRO DE GRACIA (NOCHE)" if es_tarde_noche else "🌅 MATRIZ MATUTINA Y MEDIODÍA (TARDE)"
@@ -385,7 +479,7 @@ def index(request: Request):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-        <title>Shneyder IA Pro RD v61.0</title>
+        <title>Shneyder IA Pro RD v62.0</title>
         <style>
             * {{ box-sizing: border-box; }}
             body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }}
@@ -426,14 +520,14 @@ def index(request: Request):
             .search-input {{ flex: 1; background: #1e293b; border: 1px solid #475569; color: #fff; border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none; }}
             .search-btn {{ background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }}
             #sueno_resultado {{ display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }}
-            .tabs-scroll {{ display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
-            .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; }}
+            .tabs-scroll {{ display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }}
+            .tab-btn {{ white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 6px 12px; border-radius: 16px; font-size: 11px; font-weight: bold; cursor: pointer; }}
             .tab-btn.active {{ background: #38bdf8; color: #0f172a; border-color: #38bdf8; }}
+            .tab-rd {{ background: linear-gradient(135deg, #059669, #047857); color: #fff; font-weight: 900; }}
             .tab-kino {{ background: linear-gradient(135deg, #eab308, #ca8a04); color: #000; font-weight: 900; }}
             .tab-esp {{ background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff; font-weight: 900; }}
             .tab-euro {{ background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; font-weight: 900; }}
             .tab-ed {{ background: linear-gradient(135deg, #7c3aed, #4c1d95); color: #fff; font-weight: 900; }}
-            .tab-ang {{ background: linear-gradient(135deg, #059669, #065f46); color: #fff; font-weight: 900; }}
             .btn-actions {{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }}
             .btn-wa {{ width: 100%; background: #22c55e; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 13px; cursor: pointer; }}
             .btn-ticket {{ width: 100%; background: #38bdf8; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 13px; cursor: pointer; }}
@@ -462,7 +556,6 @@ def index(request: Request):
             .ball-euro {{ background: #3b82f6; color: #fff; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }}
             .ball-star {{ background: #facc15; color: #000; font-weight: 900; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 14px; }}
             .ball-dream {{ background: #8b5cf6; color: #fff; font-weight: bold; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; }}
-            .ball-sueno {{ background: #ec4899; color: #fff; font-weight: 900; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 14px; }}
             #toast {{ display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #38bdf8; color: #0f172a; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 13px; z-index: 100; }}
         </style>
     </head>
@@ -471,7 +564,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v61.0</p>
+                    <p>Titan Quantum v62.0</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-clock" id="live_time">--:--:--</div>
@@ -480,8 +573,8 @@ def index(request: Request):
 
             <div class="banca-panel">
                 <div style="color:#4ade80; font-weight:900; font-size:12px; display:flex; justify-content:space-between;">
-                    <span>⚡ REGISTRO MANUAL O AUTO-SINCRONIZACIÓN (14 SALAS RD)</span>
-                    <span style="font-size:10px; color:#fff;">Motor Activo</span>
+                    <span>⚡ REGISTRO MANUAL DE BOLOS (MODO BANCA)</span>
+                    <span style="font-size:10px; color:#fff;">Actualiza al instante</span>
                 </div>
                 <form action="/api/guardar_manual" method="POST" class="banca-form">
                     <select name="loteria" class="banca-select">
@@ -508,7 +601,7 @@ def index(request: Request):
             </div>
 
             <div class="banner-fase">
-                <span>__BANNER_TXT__</span>
+                <span>""" + banner_txt + """</span>
             </div>
 
             <div class="sniper-card">
@@ -531,7 +624,7 @@ def index(request: Request):
                     </div>
                 </div>
                 <div class="sniper-lot-box">
-                    <span style="color:#facc15;font-weight:900;">📍 LOTERÍA FUERTE:</span>
+                    <span style="color:#facc15;font-weight:900;">📍 SALA ACTIVA:</span>
                     <span style="color:#38bdf8;font-weight:bold;" id="s_lot_fuerte">--</span>
                 </div>
             </div>
@@ -539,7 +632,7 @@ def index(request: Request):
             <div class="matriz-card">
                 <div style="color:#c084fc; font-weight:900; margin-bottom:4px; display:flex; justify-content:space-between;">
                     <span>📊 MATRIZ ESTRATÉGICA DE SALAS Y HORARIOS</span>
-                    <span style="color:#94a3b8; font-size:10px;">Alta Liquidez</span>
+                    <span style="color:#94a3b8; font-size:10px;">14 Salas RD</span>
                 </div>
                 <div class="matriz-grid">
                     <div class="matriz-box">
@@ -556,7 +649,7 @@ def index(request: Request):
             <div class="termo-card">
                 <div style="font-size:13px;font-weight:bold;color:#f97316;display:flex;justify-content:space-between;align-items:center;">
                     <span>🌡️ RADAR TÉRMICO DIARIO</span>
-                    <span style="font-size:10px;color:#94a3b8;">📅 __FECHA_STR__</span>
+                    <span style="font-size:10px;color:#94a3b8;">📅 """ + fecha_str + """</span>
                 </div>
                 <div class="termo-grid" id="termo_contenedor"></div>
             </div>
@@ -572,7 +665,7 @@ def index(request: Request):
             <div class="auditor-box">
                 <div class="auditor-title">
                     <span>📡 AUDITORÍA OFICIAL EN VIVO</span>
-                    <span style="font-size:10px;color:#94a3b8;">Registro Automático</span>
+                    <span style="font-size:10px;color:#94a3b8;">Registro Manual</span>
                 </div>
                 <div id="contenedor_auditoria"></div>
             </div>
@@ -583,13 +676,26 @@ def index(request: Request):
             </div>
             <div id="sueno_resultado"></div>
 
+            <!-- PESTAÑAS INDIVIDUALES PARA CADA UNA DE LAS 14 LOTERÍAS RD Y EXTRANJERAS -->
             <div class="tabs-scroll">
-                <button class="tab-btn active" onclick="cambiarTab('todas')">🌐 TODAS (RD)</button>
-                <button class="tab-btn tab-kino" onclick="cambiarTab('kino_leidsa')">👑 KINO LEIDSA</button>
-                <button class="tab-btn tab-esp" onclick="cambiarTab('primitiva_esp')">🇪🇸 LA PRIMITIVA</button>
-                <button class="tab-btn tab-euro" onclick="cambiarTab('euromillones')">🇪🇺 EUROMILLONES</button>
-                <button class="tab-btn tab-ed" onclick="cambiarTab('eurodreams')">🇪🇺 EURODREAMS</button>
-                <button class="tab-btn tab-ang" onclick="cambiarTab('anguila_cascada')">🐍 ANGUILA 4X</button>
+                <button class="tab-btn tab-rd active" onclick="cambiarTab('real')">L. Real</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('gana_mas')">Gana Más</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('nacional_noche')">Nacional</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('leidsa')">Leidsa</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('loteka')">Loteka</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('primera_dia')">1ra Día</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('primera_noche')">1ra Noche</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('lotedom')">LoteDom</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('suerte_dia')">Suerte Día</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('suerte_tarde')">Suerte Tarde</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('anguila_10am')">Ang 10AM</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('anguila_1pm')">Ang 1PM</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('anguila_6pm')">Ang 6PM</button>
+                <button class="tab-btn tab-rd" onclick="cambiarTab('anguila_9pm')">Ang 9PM</button>
+                <button class="tab-btn tab-kino" onclick="cambiarTab('kino_leidsa')">Kino</button>
+                <button class="tab-btn tab-esp" onclick="cambiarTab('primitiva_esp')">Primitiva</button>
+                <button class="tab-btn tab-euro" onclick="cambiarTab('euromillones')">Euromillones</button>
+                <button class="tab-btn tab-ed" onclick="cambiarTab('eurodreams')">EuroDreams</button>
             </div>
 
             <div class="btn-actions">
@@ -598,7 +704,7 @@ def index(request: Request):
             </div>
 
             <div class="dictamen-box">
-                <h3>⚡ DICTAMEN DEL TITÁN <span id="dictamen_sala" style="font-size:10px;color:#94a3b8;"></span></h3>
+                <h3>⚡ DICTAMEN DE SALA <span id="dictamen_sala" style="font-size:10px;color:#94a3b8;"></span></h3>
                 <div class="dictamen-item"><b>Flujo:</b> <span class="dictamen-val" id="d_flujo">--</span></div>
                 <div class="dictamen-item"><b>Decena Clave:</b> <span class="dictamen-val" id="d_decena">--</span></div>
                 <div class="dictamen-item"><b>Terminales:</b> <span class="dictamen-val" id="d_terminal">--</span></div>
@@ -615,11 +721,11 @@ def index(request: Request):
                     
                     <div class="jf-lot-box">
                         <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
-                            <span style="color:#facc15;font-weight:900;">📍 LOTERÍA PRINCIPAL:</span>
+                            <span style="color:#facc15;font-weight:900;">📍 SALA OBJETIVO:</span>
                             <span style="color:#38bdf8;font-weight:bold;" id="jf_lot_txt">--</span>
                         </div>
                         <div style="display:flex;justify-content:space-between;">
-                            <span style="color:#94a3b8;font-weight:bold;">🛡️ COBERTURA:</span>
+                            <span style="color:#94a3b8;font-weight:bold;">🛡️ RESPALDO:</span>
                             <span style="color:#4ade80;font-weight:bold;" id="jf_respaldo_txt">--</span>
                         </div>
                     </div>
@@ -772,12 +878,12 @@ def index(request: Request):
         </div>
 
         <script>
-            let db = __DATOS_JSON__;
-            let suenos = __SUENOS_JSON__;
-            let auditoria = __AUDITORIA_JSON__;
-            let premios = __PREMIOS_JSON__;
-            let termometro = __TERMOMETRO_JSON__;
-            let tabActual = 'todas';
+            let db = """ + datos_json + """;
+            let suenos = """ + suenos_json + """;
+            let auditoria = """ + auditoria_json + """;
+            let premios = """ + premios_json + """;
+            let termometro = """ + termometro_json + """;
+            let tabActual = 'real';
 
             function renderBadge(tipo) {
                 if (tipo === "triple_factor") return "<span style='background:#facc15;color:#000;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:900;'>👑 3X</span>";
@@ -847,7 +953,7 @@ def index(request: Request):
             }
 
             function actualizarVista() {
-                const info = db[tabActual] || db['todas'];
+                const info = db[tabActual] || db['real'];
                 document.getElementById('dictamen_sala').innerText = "[" + info.nombre + "]";
 
                 if (info.tiro_fijo) {
@@ -868,13 +974,15 @@ def index(request: Request):
                     document.getElementById('d_presion').innerText = info.dictamen.presion;
                 }
 
+                let esEspañolaOExtranjera = ['kino_leidsa', 'primitiva_esp', 'euromillones', 'eurodreams', 'anguila_cascada'].includes(tabActual);
+
                 document.getElementById('seccion_kino').style.display = (tabActual === 'kino_leidsa') ? 'block' : 'none';
                 document.getElementById('seccion_primitiva').style.display = (tabActual === 'primitiva_esp') ? 'block' : 'none';
                 document.getElementById('seccion_euromillones').style.display = (tabActual === 'euromillones') ? 'block' : 'none';
                 document.getElementById('seccion_eurodreams').style.display = (tabActual === 'eurodreams') ? 'block' : 'none';
                 document.getElementById('seccion_anguila').style.display = (tabActual === 'anguila_cascada') ? 'block' : 'none';
-                document.getElementById('seccion_tradicional').style.display = (tabActual === 'todas') ? 'block' : 'none';
-                document.getElementById('caja_jugada_formada').style.display = (tabActual === 'todas') ? 'block' : 'none';
+                document.getElementById('seccion_tradicional').style.display = (!esEspañolaOExtranjera) ? 'block' : 'none';
+                document.getElementById('caja_jugada_formada').style.display = (!esEspañolaOExtranjera) ? 'block' : 'none';
 
                 if (info.tipo_juego === 'kino') {
                     const kd = info.kino_data;
@@ -1004,8 +1112,8 @@ def index(request: Request):
             }
 
             function copiarWhatsApp() {
-                const info = db[tabActual] || db['todas'];
-                let texto = `⚡ *JUGADA TITÁN SHNEYDER IA PRO RD* ⚡\\n🎯 *Directos:* [${info.jugada_maestra.numeros_3.join(' - ')}]\\n💥 *Palés:* [${info.jugada_maestra.pale_1}]`;
+                const info = db[tabActual] || db['real'];
+                let texto = `⚡ *JUGADA TITÁN SHNEYDER IA PRO RD* ⚡\\n🎯 *Sala:* ${info.nombre}\\n🎯 *Directos:* [${info.jugada_maestra.numeros_3.join(' - ')}]\\n💥 *Palés:* [${info.jugada_maestra.pale_1}]`;
                 navigator.clipboard.writeText(texto).then(() => {
                     const t = document.getElementById('toast');
                     t.innerText = "¡Copiado!";
@@ -1048,7 +1156,6 @@ def index(request: Request):
     html_final = html_final.replace("__BANNER_TXT__", banner_txt)
     html_final = html_final.replace("__FECHA_STR__", fecha_str)
     
-    # Inyección limpia y directa sin alterar la estructura general
     html_final = html_final.replace("__DATOS_JSON__", datos_json)
     html_final = html_final.replace("__SUENOS_JSON__", suenos_json)
     html_final = html_final.replace("__AUDITORIA_JSON__", auditoria_json)
