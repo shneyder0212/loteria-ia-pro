@@ -371,56 +371,10 @@ DICCIONARIO_SUENOS = {
     "casa": {"num": "04", "cabala": "Propiedad / Techo", "fuerza": 98.9, "lot": "Gana Mas / Nacional"}
 }
 
-@app.post("/api/guardar_manual")
-def guardar_manual(loteria: str = Form(...), b1: str = Form(...), b2: str = Form(...), b3: str = Form(...)):
-    _, fecha_str, _ = obtener_fechas_rd()
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-        nombre_lot = loteria.replace("_", " ").title()
-        cur.execute("""
-            INSERT OR REPLACE INTO resultados_guardados (clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad, fecha)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (loteria, nombre_lot, b1.zfill(2), b2.zfill(2), b3.zfill(2), "Oficial RD", "🟢 Manual Banca", fecha_str))
-        conn.commit()
-        conn.close()
-    except Exception:
-        pass
-    return RedirectResponse(url="/", status_code=303)
-
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     hora_rd, fecha_str, dia_nombre = obtener_fechas_rd()
     datos_loterias = cluster_universal_15_ia(hora_rd, dia_nombre)
-
-    pizarra_inicial = {
-        "anguila_10am": {"nombre": "Anguila Mañana (10:00 AM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "primera_dia": {"nombre": "La Primera Día (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "lotedom": {"nombre": "LoteDom (12:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "suerte_dia": {"nombre": "La Suerte Día (12:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "real": {"nombre": "Lotería Real (12:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "anguila_1pm": {"nombre": "Anguila Mediodía (1:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "gana_mas": {"nombre": "Gana Más (2:30 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "suerte_tarde": {"nombre": "La Suerte Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "anguila_6pm": {"nombre": "Anguila Tarde (6:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "loteka": {"nombre": "Loteka (7:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "primera_noche": {"nombre": "La Primera Noche (8:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "nacional_noche": {"nombre": "Nacional Noche (8:50 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "leidsa": {"nombre": "Leidsa (8:55 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"},
-        "anguila_9pm": {"nombre": "Anguila Noche (9:00 PM)", "premios": ["--", "--", "--"], "estado": "Pendiente", "volatilidad": "🟢 Pendiente"}
-    }
-
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-        cur.execute("SELECT clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad FROM resultados_guardados WHERE fecha = ?", (fecha_str,))
-        for f in cur.fetchall():
-            c_key, nom, b1, b2, b3, st, vol = f
-            if c_key in pizarra_inicial:
-                pizarra_inicial[c_key] = {"nombre": nom, "premios": [b1, b2, b3], "estado": st, "volatilidad": vol}
-        conn.close()
-    except Exception:
-        pass
 
     termometro = {
         "decenas_calientes": [
@@ -437,16 +391,15 @@ def index(request: Request):
 
     historial_auditoria = [{
         "fecha": fecha_str,
-        "sala": "Matriz 14 Salas Activa",
+        "sala": "Matriz IA Activa",
         "tipo": "⚡ HORA RD: {}".format(hora_rd.strftime('%I:%M %p')),
-        "premio": "Sincronización Individual ({})".format(dia_nombre),
-        "detalle": "Pizarra limpia en espera de resultados reales"
+        "premio": "Sincronización Cuántica ({})".format(dia_nombre),
+        "detalle": "Análisis predictivo en curso"
     }]
 
     datos_json = json.dumps(datos_loterias)
     suenos_json = json.dumps(DICCIONARIO_SUENOS)
     auditoria_json = json.dumps(historial_auditoria)
-    premios_json = json.dumps(pizarra_inicial)
     termometro_json = json.dumps(termometro)
 
     es_tarde_noche = hora_rd.hour >= 18
@@ -471,10 +424,6 @@ def index(request: Request):
             .brand-left p { font-size: 10px; color: #94a3b8; margin: 3px 0 0 0; text-transform: uppercase; }
             .brand-clock { font-size: 15px; color: #facc15; font-weight: 900; font-family: monospace; }
             .banner-fase { background: __BANNER_COLOR__; border: 2px solid __BANNER_BORDE__; border-radius: 10px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 900; color: #fff; }
-            .banca-panel { background: linear-gradient(135deg, #064e3b, #022c22); border: 2px solid #22c55e; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
-            .banca-form { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
-            .banca-input, .banca-select { background: #0f172a; border: 1px solid #22c55e; color: #fff; padding: 6px; border-radius: 6px; font-size: 12px; }
-            .banca-btn { background: #22c55e; color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }
             .sniper-card { background: linear-gradient(135deg, #1e1b4b, #0f172a); border: 2px solid #818cf8; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
             .sniper-grid { display: flex; justify-content: space-around; align-items: center; text-align: center; margin-bottom: 10px; }
             .sniper-item b { font-size: 10px; color: #a5b4fc; text-transform: uppercase; display: block; }
@@ -488,13 +437,6 @@ def index(request: Request):
             .termo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; font-size: 11px; }
             .termo-box { background: #18263e; padding: 10px; border-radius: 8px; border: 1px solid #283e60; }
             .termo-row { margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-            .pizarra-card { background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
-            .pizarra-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 10px; }
-            .lot-prize-card { background: #182234; border: 1px solid #28384e; border-radius: 8px; padding: 8px 10px; }
-            .lot-prize-name { font-size: 12px; font-weight: bold; color: #38bdf8; margin-bottom: 4px; display: flex; justify-content: space-between; }
-            .lot-balls-row { display: flex; gap: 8px; align-items: center; }
-            .prize-ball { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 14px; color: #000; }
-            .ball-1ra { background: #22c55e; } .ball-2da { background: #38bdf8; } .ball-3ra { background: #facc15; }
             .auditor-box { background: #0f172a; border: 1px solid #22c55e; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }
             .auditor-title { color: #4ade80; font-weight: 800; margin-bottom: 6px; display: flex; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }
             .auditor-item { padding: 5px 0; border-bottom: 1px solid #1e293b; font-size: 11.5px; }
@@ -553,35 +495,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <div class="banca-panel">
-                <div style="color:#4ade80; font-weight:900; font-size:12px; display:flex; justify-content:space-between;">
-                    <span>⚡ REGISTRO MANUAL DE BOLOS (MODO BANCA)</span>
-                    <span style="font-size:10px; color:#fff;">Actualiza al instante</span>
-                </div>
-                <form action="/api/guardar_manual" method="POST" class="banca-form">
-                    <select name="loteria" class="banca-select">
-                        <option value="anguila_10am">Anguila 10:00 AM</option>
-                        <option value="primera_dia">La Primera Día</option>
-                        <option value="lotedom">LoteDom</option>
-                        <option value="suerte_dia">La Suerte Día</option>
-                        <option value="real">Lotería Real</option>
-                        <option value="anguila_1pm">Anguila 1:00 PM</option>
-                        <option value="gana_mas">Gana Más</option>
-                        <option value="suerte_tarde">La Suerte Tarde</option>
-                        <option value="anguila_6pm">Anguila 6:00 PM</option>
-                        <option value="loteka">Loteka</option>
-                        <option value="primera_noche">La Primera Noche</option>
-                        <option value="nacional_noche">Nacional Noche</option>
-                        <option value="leidsa">Leidsa</option>
-                        <option value="anguila_9pm">Anguila 9:00 PM</option>
-                    </select>
-                    <input type="text" name="b1" placeholder="1ra" maxlength="2" required class="banca-input" style="text-align:center;">
-                    <input type="text" name="b2" placeholder="2da" maxlength="2" required class="banca-input" style="text-align:center;">
-                    <input type="text" name="b3" placeholder="3ra" maxlength="2" required class="banca-input" style="text-align:center;">
-                    <button type="submit" class="banca-btn">💾 GUARDAR</button>
-                </form>
-            </div>
-
             <div class="banner-fase">
                 <span>__BANNER_TXT__</span>
             </div>
@@ -614,7 +527,7 @@ def index(request: Request):
             <div class="matriz-card">
                 <div style="color:#c084fc; font-weight:900; margin-bottom:4px; display:flex; justify-content:space-between;">
                     <span>📊 MATRIZ ESTRATÉGICA DE SALAS Y HORARIOS</span>
-                    <span style="color:#94a3b8; font-size:10px;">14 Salas RD</span>
+                    <span style="color:#94a3b8; font-size:10px;">Análisis Cuántico</span>
                 </div>
                 <div class="matriz-grid">
                     <div class="matriz-box">
@@ -636,18 +549,10 @@ def index(request: Request):
                 <div class="termo-grid" id="termo_contenedor"></div>
             </div>
 
-            <div class="pizarra-card">
-                <div style="font-size:14px;font-weight:900;color:#38bdf8;display:flex;justify-content:space-between;align-items:center;">
-                    <span>🏆 NÚMEROS PREMIADOS (OFICIALES RD - 14 SALAS)</span>
-                    <span style="font-size:11px;color:#4ade80;">● Sincronizado</span>
-                </div>
-                <div class="pizarra-grid" id="pizarra_contenedor"></div>
-            </div>
-
             <div class="auditor-box">
                 <div class="auditor-title">
                     <span>📡 AUDITORÍA OFICIAL EN VIVO</span>
-                    <span style="font-size:10px;color:#94a3b8;">Registro Manual</span>
+                    <span style="font-size:10px;color:#94a3b8;">Sistema IA</span>
                 </div>
                 <div id="contenedor_auditoria"></div>
             </div>
@@ -862,7 +767,6 @@ def index(request: Request):
             let db = __DATOS_JSON__;
             let suenos = __SUENOS_JSON__;
             let auditoria = __AUDITORIA_JSON__;
-            let premios = __PREMIOS_JSON__;
             let termometro = __TERMOMETRO_JSON__;
             let tabActual = 'real';
 
@@ -896,26 +800,6 @@ def index(request: Request):
                     </div>
                 `;
                 document.getElementById('termo_contenedor').innerHTML = html;
-            }
-
-            function cargarPizarraPremios() {
-                let html = "";
-                for (let k in premios) {
-                    const lot = premios[k];
-                    let estColor = lot.estado.includes('Oficial') ? '#4ade80' : '#94a3b8';
-                    html += `<div class="lot-prize-card">
-                        <div class="lot-prize-name">
-                            <span>🇩🇴 ${lot.nombre}</span>
-                            <span style="font-size:10px;color:${estColor};">${lot.estado}</span>
-                        </div>
-                        <div class="lot-balls-row">
-                            <div class="prize-ball ball-1ra">${lot.premios[0] || '--'}</div>
-                            <div class="prize-ball ball-2da">${lot.premios[1] || '--'}</div>
-                            <div class="prize-ball ball-3ra">${lot.premios[2] || '--'}</div>
-                        </div>
-                    </div>`;
-                }
-                document.getElementById('pizarra_contenedor').innerHTML = html;
             }
 
             function cargarAuditoria() {
@@ -1122,7 +1006,6 @@ def index(request: Request):
             }
 
             cargarTermometro();
-            cargarPizarraPremios();
             cargarAuditoria();
             setInterval(actualizarRelojCabecera, 1000);
             actualizarRelojCabecera();
@@ -1140,7 +1023,6 @@ def index(request: Request):
     html_final = html_final.replace("__DATOS_JSON__", datos_json)
     html_final = html_final.replace("__SUENOS_JSON__", suenos_json)
     html_final = html_final.replace("__AUDITORIA_JSON__", auditoria_json)
-    html_final = html_final.replace("__PREMIOS_JSON__", premios_json)
     html_final = html_final.replace("__TERMOMETRO_JSON__", termometro_json)
 
     return html_final
