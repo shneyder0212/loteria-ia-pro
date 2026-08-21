@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 import uvicorn
 
-app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum Definitivo v71.0")
+app = FastAPI(title="Shneyder IA Pro RD - Titan Quantum v72.0 Memoria Horaria")
 DB_PATH = "loteria_master_ai.db"
 
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
@@ -62,25 +62,61 @@ def cluster_triple_decena_ia(hora_rd, dia_nombre):
     es_tarde_noche = hora_rd.hour >= 18
     rng = random.Random(seed_base + (99 if es_tarde_noche else 11))
 
-    salas_tarde = ["Lotería Real (12:55 PM)", "Gana Más (2:30 PM)", "La Primera Día (12:00 PM)", "La Suerte Día (12:30 PM)"]
-    salas_noche = ["Leidsa (8:55 PM)", "Nacional Noche (8:50 PM)", "Loteka (7:55 PM)", "La Primera Noche (8:00 PM)"]
+    # --- FILTRO DE MEMORIA HORARIA (CIERRE DE SALAS QUE YA PASARON) ---
+    hora_actual = hora_rd.hour
     
-    pool_salas = salas_noche if es_tarde_noche else salas_tarde
-    lot_fuerte_principal = pool_salas[0]
-    lot_fuerte_respaldo = pool_salas[1]
+    # Definir todas las salas posibles con su hora límite de cierre (en formato 24h)
+    maestro_salas = [
+        ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 30, False),
+        ("primera_dia", "La Primera Día (12:00 PM)", 12, 15, False),
+        ("lotedom", "LoteDom (12:00 PM)", 12, 15, False),
+        ("suerte_dia", "La Suerte Día (12:30 PM)", 12, 45, False),
+        ("real", "Lotería Real (12:55 PM)", 13, 15, False),
+        ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 15, False),
+        ("gana_mas", "Gana Más (2:30 PM)", 14, 50, False),
+        ("suerte_tarde", "La Suerte Tarde (6:00 PM)", 18, 15, True),
+        ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 15, True),
+        ("loteka", "Loteka (7:55 PM)", 20, 15, True),
+        ("primera_noche", "La Primera Noche (8:00 PM)", 20, 15, True),
+        ("nacional_noche", "Nacional Noche (8:50 PM)", 21, 10, True),
+        ("leidsa", "Leidsa (8:55 PM)", 21, 15, True),
+        ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 20, True)
+    ]
 
-    # --- RASTREO AVANZADO DE 3 DECENAS ---
+    salas_activas_filtradas = {}
+    
+    for clave, nombre_sala, h_cierre, m_cierre, es_nocturna in maestro_salas:
+        # Calcular si el sorteo ya pasó hoy
+        minutos_actuales = hora_rd.hour * 60 + hora_rd.minute
+        minutos_cierre = h_cierre * 60 + m_cierre
+        
+        # Si ya pasó la hora del sorteo, se omite (memoria de cierre)
+        if minutos_actuales > minutos_cierre:
+            continue
+            
+        salas_activas_filtradas[clave] = {
+            "nombre": nombre_sala,
+            "es_nocturna": es_nocturna
+        }
+
+    # Si por alguna razón todas cerraron (madrugada), dejamos al menos las de la noche siguiente o un respaldo
+    if not salas_activas_filtradas:
+        salas_activas_filtradas["nacional_noche"] = {"nombre": "Nacional Noche (8:50 PM)", "es_nocturna": True}
+
+    pool_claves = list(salas_activas_filtradas.keys())
+    lot_fuerte_principal = salas_activas_filtradas[pool_claves[0]]["nombre"] if pool_claves else "Nacional Noche"
+    lot_fuerte_respaldo = salas_activas_filtradas[pool_claves[1]]["nombre"] if len(pool_claves) > 1 else lot_fuerte_principal
+
+    # --- TRIPLE CLÚSTER DE 3 DECENAS ---
     decenas_disponibles = [
         ("Decena [00-09]", 0), ("Decena [10-19]", 10), ("Decena [20-29]", 20), 
         ("Decena [30-39]", 30), ("Decena [40-49]", 40), ("Decena [70-79]", 70), ("Decena [80-89]", 80)
     ]
     seleccion_decenas = rng.sample(decenas_disponibles, 3)
-    
     decena_nombre_1, base_1 = seleccion_decenas[0]
     decena_nombre_2, base_2 = seleccion_decenas[1]
     decena_nombre_3, base_3 = seleccion_decenas[2]
 
-    # Terminales específicos cruzados de las 3 decenas
     t1 = rng.choice([1, 4, 7])
     t2 = rng.choice([2, 5, 8])
     t3 = rng.choice([3, 6, 9])
@@ -95,6 +131,7 @@ def cluster_triple_decena_ia(hora_rd, dia_nombre):
 
     p1 = "{} - {}".format(n1, n2)
     p2 = "{} - {}".format(n2, n3)
+    p_reves = "{} - {}".format(n1_reves, n2)
     tripleta_reina = "{} - {} - {}".format(n1, n2, n3)
 
     todas_pool = [
@@ -110,7 +147,7 @@ def cluster_triple_decena_ia(hora_rd, dia_nombre):
     rng.shuffle(otros_nums)
     for i, num_extra in enumerate(otros_nums[:14]):
         fuerza = round(91.0 - (i * 2.2), 1)
-        todas_pool.append({"num": num_extra, "fuerza": fuerza, "tipo": "caliente", "lot": rng.choice(pool_salas)})
+        todas_pool.append({"num": num_extra, "fuerza": fuerza, "tipo": "caliente", "lot": lot_fuerte_principal})
 
     super_pales = [
         {"cruse": "{} (Decena 1) × {} (Decena 2)".format(n1, n2), "salas": "Cruce Triple Clúster", "fuerza": 99.1},
@@ -140,22 +177,15 @@ def cluster_triple_decena_ia(hora_rd, dia_nombre):
     }
 
     diccionario_salas = {}
-    claves_salas = [
-        ("real", "Lotería Real (12:55 PM)"), ("gana_mas", "Gana Más (2:30 PM)"), 
-        ("nacional_noche", "Nacional Noche (8:50 PM)"), ("leidsa", "Leidsa (8:55 PM)"),
-        ("loteka", "Loteka (7:55 PM)"), ("primera_dia", "La Primera Día (12:00 PM)"),
-        ("primera_noche", "La Primera Noche (8:00 PM)"), ("lotedom", "LoteDom (12:00 PM)"),
-        ("suerte_dia", "La Suerte Día (12:30 PM)"), ("suerte_tarde", "La Suerte Tarde (6:00 PM)"),
-        ("anguila_10am", "Anguila Mañana (10:00 AM)"), ("anguila_1pm", "Anguila Mediodía (1:00 PM)"),
-        ("anguila_6pm", "Anguila Tarde (6:00 PM)"), ("anguila_9pm", "Anguila Noche (9:00 PM)")
-    ]
 
-    for clave, nombre_sala in claves_salas:
+    # Construir solo las salas que NO han pasado de hora
+    for clave, info_s in salas_activas_filtradas.items():
+        nombre_sala = info_s["nombre"]
         diccionario_salas[clave] = {
             "nombre": nombre_sala,
             "tipo_juego": "quiniela",
-            "es_tarde_noche": es_tarde_noche,
-            "fase": "🔮 TRIPLE CLÚSTER IA",
+            "es_tarde_noche": info_s["es_nocturna"],
+            "fase": "🔮 TRIPLE CLÚSTER IA (MEMORIA ACTIVA)",
             "tiro_fijo": {"num": n1, "virado": n1_reves, "fuerza": 99.4, "palé_titan": p1, "lot_fuerte": nombre_sala},
             "cobertura_lateral": {"mas1": n1_mas1, "menos1": n1_menos1, "pale_reves": p_reves},
             "jugada_maestra": {"numeros_3": [n1, n2, n3], "pale_1": p1, "pale_2": p2, "pale_reves": p_reves, "tripleta": tripleta_reina, "lot_fuerte": nombre_sala, "lot_respaldo": lot_fuerte_respaldo},
@@ -167,12 +197,12 @@ def cluster_triple_decena_ia(hora_rd, dia_nombre):
                 "pareja": "MÁXIMA", 
                 "digito_fuerte": f"Dígitos {t1}, {t2} y {t3}", 
                 "presion": f"🎯 Foco Principal: {decena_nombre_1}", 
-                "dia_tendencia": f"{dia_nombre}: Alta Viabilidad"
+                "dia_tendencia": f"{dia_nombre}: Vigente"
             },
             "sueltos": todas_pool
         }
 
-    # Añadir juegos internacionales
+    # Añadir siempre las pestañas internacionales
     diccionario_salas["kino_leidsa"] = {
         "nombre": "VENTA ESPECIAL: KINO LEIDSA TV",
         "tipo_juego": "kino",
@@ -229,7 +259,7 @@ def cluster_triple_decena_ia(hora_rd, dia_nombre):
         }
     }
 
-    return diccionario_salas
+    return diccionario_salas, list(salas_activas_filtradas.keys())
 
 DICCIONARIO_SUENOS = {
     "dinero": {"num": "48", "cabala": "Plata / Riqueza", "fuerza": 98.5, "lot": "Leidsa / Nacional"},
@@ -246,7 +276,7 @@ DICCIONARIO_SUENOS = {
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     hora_rd, fecha_str, dia_nombre = obtener_fechas_rd()
-    datos_loterias = cluster_triple_decena_ia(hora_rd, dia_nombre)
+    datos_loterias, salas_disponibles = cluster_triple_decena_ia(hora_rd, dia_nombre)
 
     termometro = {
         "decenas_calientes": [
@@ -259,10 +289,10 @@ def index(request: Request):
 
     historial_auditoria = [{
         "fecha": fecha_str,
-        "sala": "Motor Triple Clúster IA",
+        "sala": "Motor Memoria Horaria IA",
         "tipo": "⚡ HORA RD: {}".format(hora_rd.strftime('%I:%M %p')),
-        "premio": "Sincronización de 3 Decenas ({})".format(dia_nombre),
-        "detalle": "Análisis cruzado sin solapamientos ni errores"
+        "premio": "Sede activa ({} salas disponibles)".format(len(salas_disponibles)),
+        "detalle": "Loterías pasadas ocultadas automáticamente"
     }]
 
     datos_json = json.dumps(datos_loterias)
@@ -273,7 +303,7 @@ def index(request: Request):
     es_tarde_noche = hora_rd.hour >= 18
     banner_color = "linear-gradient(135deg, #7f1d1d, #450a0a)" if es_tarde_noche else "linear-gradient(135deg, #1e3a8a, #0f172a)"
     banner_borde = "#ef4444" if es_tarde_noche else "#38bdf8"
-    banner_txt = "🚨 RECALIBRACIÓN VESPERTINA: TRIPLE CLÚSTER IA (NOCHE)" if es_tarde_noche else "🌅 MATRIZ MATUTINA: TRIPLE CLÚSTER IA (TARDE)"
+    banner_txt = "🚨 MEMORIA HORARIA ACTIVA: TANDA NOCTURNA" if es_tarde_noche else "🌅 MEMORIA HORARIA ACTIVA: TANDA DIURNA"
 
     html_template = """
     <!DOCTYPE html>
@@ -282,7 +312,7 @@ def index(request: Request):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-        <title>Shneyder IA Pro RD v71.0</title>
+        <title>Shneyder IA Pro RD v72.0</title>
         <style>
             * { box-sizing: border-box; }
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #080d1a; color: #e2e8f0; margin: 0; padding: 10px; }
@@ -313,13 +343,13 @@ def index(request: Request):
             .search-btn { background: #38bdf8; color: #0f172a; font-weight: bold; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; }
             #sueno_resultado { display: none; background: #131d31; border: 1px solid #38bdf8; border-radius: 10px; padding: 10px; margin-bottom: 12px; font-size: 12px; }
             .tabs-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; }
-            .tab-btn { white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 6px 12px; border-radius: 16px; font-size: 11px; font-weight: bold; cursor: pointer; }
+            .tab-btn { white-space: nowrap; background: #1f2937; color: #9ca3af; border: 1px solid #374151; padding: 6px 12px; border-radius: 16px; font-size: 11px; font-weight: bold; cursor: pointer; display: none; }
             .tab-btn.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
             .tab-rd { background: linear-gradient(135deg, #059669, #047857); color: #fff; font-weight: 900; }
-            .tab-kino { background: linear-gradient(135deg, #eab308, #ca8a04); color: #000; font-weight: 900; }
-            .tab-esp { background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff; font-weight: 900; }
-            .tab-euro { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; font-weight: 900; }
-            .tab-ed { background: linear-gradient(135deg, #7c3aed, #4c1d95); color: #fff; font-weight: 900; }
+            .tab-kino { background: linear-gradient(135deg, #eab308, #ca8a04); color: #000; font-weight: 900; display: inline-block; }
+            .tab-esp { background: linear-gradient(135deg, #dc2626, #991b1b); color: #fff; font-weight: 900; display: inline-block; }
+            .tab-euro { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; font-weight: 900; display: inline-block; }
+            .tab-ed { background: linear-gradient(135deg, #7c3aed, #4c1d95); color: #fff; font-weight: 900; display: inline-block; }
             .btn-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
             .btn-wa { width: 100%; background: #22c55e; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 13px; cursor: pointer; }
             .btn-ticket { width: 100%; background: #38bdf8; color: #0f172a; font-weight: 800; text-align: center; padding: 12px; border-radius: 10px; border: none; font-size: 13px; cursor: pointer; }
@@ -356,7 +386,7 @@ def index(request: Request):
             <div class="brand">
                 <div class="brand-left">
                     <h1>SHNEYDER IA PRO RD</h1>
-                    <p>Titan Quantum v71.0 - Triple Clúster</p>
+                    <p>Titan Quantum v72.0 - Memoria Horaria</p>
                 </div>
                 <div class="brand-right">
                     <div class="brand-clock" id="live_time">--:--:--</div>
@@ -387,31 +417,31 @@ def index(request: Request):
                     </div>
                 </div>
                 <div class="sniper-lot-box">
-                    <span style="color:#facc15;font-weight:900;">📍 SALA ACTIVA:</span>
+                    <span style="color:#facc15;font-weight:900;">📍 SALA ACTIVA VIGENTE:</span>
                     <span style="color:#38bdf8;font-weight:bold;" id="s_lot_fuerte">--</span>
                 </div>
             </div>
 
             <div class="matriz-card">
                 <div style="color:#c084fc; font-weight:900; margin-bottom:4px; display:flex; justify-content:space-between;">
-                    <span>📊 MATRIZ ESTRATÉGICA DE 3 DECENAS</span>
-                    <span style="color:#94a3b8; font-size:10px;">Motor Avanzado IA</span>
+                    <span>📊 MEMORIA HORARIA AUTOMÁTICA</span>
+                    <span style="color:#94a3b8; font-size:10px;">Filtro de Sorteos Cerrados</span>
                 </div>
                 <div class="matriz-grid">
                     <div class="matriz-box">
-                        <b style="color:#38bdf8;">🌅 TANDA MEDIODÍA</b>
-                        <div style="color:#cbd5e1; font-size:10.5px; margin-top:2px;">Foco: <b>Triple Cruce Dinámico</b></div>
+                        <b style="color:#38bdf8;">🌅 TANDA DIURNA</b>
+                        <div style="color:#cbd5e1; font-size:10.5px; margin-top:2px;">Estado: <b>Ocultas si ya pasaron</b></div>
                     </div>
                     <div class="matriz-box">
-                        <b style="color:#f472b6;">🌙 TANDA NOCHE</b>
-                        <div style="color:#cbd5e1; font-size:10.5px; margin-top:2px;">Foco: <b>Alta Inercia Estelar</b></div>
+                        <b style="color:#f472b6;">🌙 TANDA NOCTURNA</b>
+                        <div style="color:#cbd5e1; font-size:10.5px; margin-top:2px;">Estado: <b>Activas para la noche</b></div>
                     </div>
                 </div>
             </div>
 
             <div class="termo-card">
                 <div style="font-size:13px;font-weight:bold;color:#f97316;display:flex;justify-content:space-between;align-items:center;">
-                    <span>🌡️ RADAR TÉRMICO DE TRIPLE CLÚSTER</span>
+                    <span>🌡️ RADAR TÉRMICO DE SALAS VIGENTES</span>
                     <span style="font-size:10px;color:#94a3b8;">📅 __FECHA_STR__</span>
                 </div>
                 <div class="termo-grid" id="termo_contenedor"></div>
@@ -419,7 +449,7 @@ def index(request: Request):
 
             <div class="auditor-box">
                 <div class="auditor-title">
-                    <span>📡 AUDITORÍA OFICIAL EN VIVO</span>
+                    <span>📡 AUDITORÍA DE MEMORIA EN VIVO</span>
                     <span style="font-size:10px;color:#94a3b8;">Sistema IA</span>
                 </div>
                 <div id="contenedor_auditoria"></div>
@@ -431,21 +461,22 @@ def index(request: Request):
             </div>
             <div id="sueno_resultado"></div>
 
-            <div class="tabs-scroll">
-                <button class="tab-btn tab-rd active" onclick="cambiarTab('real')">L. Real</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('gana_mas')">Gana Más</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('nacional_noche')">Nacional</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('leidsa')">Leidsa</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('loteka')">Loteka</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('primera_dia')">1ra Día</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('primera_noche')">1ra Noche</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('lotedom')">LoteDom</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('suerte_dia')">Suerte Día</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('suerte_tarde')">Suerte Tarde</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('anguila_10am')">Ang 10AM</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('anguila_1pm')">Ang 1PM</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('anguila_6pm')">Ang 6PM</button>
-                <button class="tab-btn tab-rd" onclick="cambiarTab('anguila_9pm')">Ang 9PM</button>
+            <div class="tabs-scroll" id="contenedor_pestanas">
+                <!-- Se generan dinámicamente solo las salas que no han pasado de hora -->
+                <button class="tab-btn tab-rd" id="btn_real" onclick="cambiarTab('real')" style="display:none;">L. Real</button>
+                <button class="tab-btn tab-rd" id="btn_gana_mas" onclick="cambiarTab('gana_mas')" style="display:none;">Gana Más</button>
+                <button class="tab-btn tab-rd" id="btn_nacional_noche" onclick="cambiarTab('nacional_noche')" style="display:none;">Nacional</button>
+                <button class="tab-btn tab-rd" id="btn_leidsa" onclick="cambiarTab('leidsa')" style="display:none;">Leidsa</button>
+                <button class="tab-btn tab-rd" id="btn_loteka" onclick="cambiarTab('loteka')" style="display:none;">Loteka</button>
+                <button class="tab-btn tab-rd" id="btn_primera_dia" onclick="cambiarTab('primera_dia')" style="display:none;">1ra Día</button>
+                <button class="tab-btn tab-rd" id="btn_primera_noche" onclick="cambiarTab('primera_noche')" style="display:none;">1ra Noche</button>
+                <button class="tab-btn tab-rd" id="btn_lotedom" onclick="cambiarTab('lotedom')" style="display:none;">LoteDom</button>
+                <button class="tab-btn tab-rd" id="btn_suerte_dia" onclick="cambiarTab('suerte_dia')" style="display:none;">Suerte Día</button>
+                <button class="tab-btn tab-rd" id="btn_suerte_tarde" onclick="cambiarTab('suerte_tarde')" style="display:none;">Suerte Tarde</button>
+                <button class="tab-btn tab-rd" id="btn_anguila_10am" onclick="cambiarTab('anguila_10am')" style="display:none;">Ang 10AM</button>
+                <button class="tab-btn tab-rd" id="btn_anguila_1pm" onclick="cambiarTab('anguila_1pm')" style="display:none;">Ang 1PM</button>
+                <button class="tab-btn tab-rd" id="btn_anguila_6pm" onclick="cambiarTab('anguila_6pm')" style="display:none;">Ang 6PM</button>
+                <button class="tab-btn tab-rd" id="btn_anguila_9pm" onclick="cambiarTab('anguila_9pm')" style="display:none;">Ang 9PM</button>
                 <button class="tab-btn tab-kino" onclick="cambiarTab('kino_leidsa')">Kino</button>
                 <button class="tab-btn tab-esp" onclick="cambiarTab('primitiva_esp')">Primitiva</button>
                 <button class="tab-btn tab-euro" onclick="cambiarTab('euromillones')">Euromillones</button>
@@ -469,7 +500,7 @@ def index(request: Request):
 
                 <div class="jugada-formada-box" id="caja_jugada_formada">
                     <div class="jf-title">
-                        <span>⚡ JUGADA FORMADA (TRIPLE CLÚSTER)</span>
+                        <span>⚡ JUGADA FORMADA (MEMORIA ACTIVA)</span>
                         <span style="font-size:10px;color:#4ade80;">DIRECTA</span>
                     </div>
                     
@@ -583,16 +614,6 @@ def index(request: Request):
                 </div>
             </div>
 
-            <div id="seccion_anguila" style="display:none;">
-                <div class="card" style="border: 2px solid #10b981; background:#18181b;">
-                    <h2 style="color: #34d399;">🐍 ANGUILA CASCADA 4X</h2>
-                    <table>
-                        <thead><tr><th>TANDA</th><th>ESTADO</th><th>TIRO</th><th>PALÉ</th><th>FUERZA</th></tr></thead>
-                        <tbody id="tabla_anguila_cascada"></tbody>
-                    </table>
-                </div>
-            </div>
-
             <div id="seccion_tradicional">
                 <div class="card" style="border: 2px solid #f59e0b; background: linear-gradient(135deg, #1c1917, #0c0a09);">
                     <h2 style="color: #fbbf24;">⚡ SUPER PALÉ CRUZADO</h2>
@@ -636,7 +657,24 @@ def index(request: Request):
             let suenos = __SUENOS_JSON__;
             let auditoria = __AUDITORIA_JSON__;
             let termometro = __TERMOMETRO_JSON__;
-            let tabActual = 'real';
+            
+            // Obtener las claves de las salas que siguen vigentes hoy
+            let salasVigentes = Object.keys(db).filter(k => !['kino_leidsa', 'primitiva_esp', 'euromillones', 'eurodreams'].includes(k));
+            let tabActual = salasVigentes.length > 0 ? salasVigentes[0] : 'kino_leidsa';
+
+            // Mostrar solo los botones de las salas vigentes
+            function inicializarPestanasVigentes() {
+                salasVigentes.forEach((sala, index) => {
+                    let btn = document.getElementById('btn_' + sala);
+                    if (btn) {
+                        btn.style.display = 'inline-block';
+                        if (index === 0) {
+                            btn.classList.add('active');
+                            tabActual = sala;
+                        }
+                    }
+                });
+            }
 
             function renderBadge(tipo) {
                 if (tipo === "triple_factor") return "<span style='background:#facc15;color:#000;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:900;'>👑 3X</span>";
@@ -686,7 +724,7 @@ def index(request: Request):
             }
 
             function actualizarVista() {
-                const info = db[tabActual] || db['real'];
+                const info = db[tabActual] || db[salasVigentes[0]] || db['kino_leidsa'];
                 document.getElementById('dictamen_sala').innerText = "[" + info.nombre + "]";
 
                 if (info.tiro_fijo) {
@@ -707,13 +745,12 @@ def index(request: Request):
                     document.getElementById('d_presion').innerText = info.dictamen.presion;
                 }
 
-                let esEspañolaOExtranjera = ['kino_leidsa', 'primitiva_esp', 'euromillones', 'eurodreams', 'anguila_cascada'].includes(tabActual);
+                let esEspañolaOExtranjera = ['kino_leidsa', 'primitiva_esp', 'euromillones', 'eurodreams'].includes(tabActual);
 
                 document.getElementById('seccion_kino').style.display = (tabActual === 'kino_leidsa') ? 'block' : 'none';
                 document.getElementById('seccion_primitiva').style.display = (tabActual === 'primitiva_esp') ? 'block' : 'none';
                 document.getElementById('seccion_euromillones').style.display = (tabActual === 'euromillones') ? 'block' : 'none';
                 document.getElementById('seccion_eurodreams').style.display = (tabActual === 'eurodreams') ? 'block' : 'none';
-                document.getElementById('seccion_anguila').style.display = (tabActual === 'anguila_cascada') ? 'block' : 'none';
                 document.getElementById('seccion_tradicional').style.display = (!esEspañolaOExtranjera) ? 'block' : 'none';
                 document.getElementById('caja_jugada_formada').style.display = (!esEspañolaOExtranjera) ? 'block' : 'none';
 
@@ -835,7 +872,7 @@ def index(request: Request):
             }
 
             function copiarWhatsApp() {
-                const info = db[tabActual] || db['real'];
+                const info = db[tabActual] || db[salasVigentes[0]];
                 let texto = `⚡ *JUGADA TITÁN SHNEYDER IA PRO RD* ⚡\n🎯 *Sala:* ${info.nombre}\n🎯 *Directos:* [${info.jugada_maestra.numeros_3.join(' - ')}]\n💥 *Palés:* [${info.jugada_maestra.pale_1}]`;
                 navigator.clipboard.writeText(texto).then(() => {
                     const t = document.getElementById('toast');
@@ -863,6 +900,7 @@ def index(request: Request):
                 }
             }
 
+            inicializarPestanasVigentes();
             cargarTermometro();
             cargarAuditoria();
             setInterval(actualizarRelojCabecera, 1000);
