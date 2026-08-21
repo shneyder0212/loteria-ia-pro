@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 import uvicorn
 
-app = FastAPI(title="Shneyder IA Pro RD - Dominio Total v90.1 Blindado")
+app = FastAPI()
 
 # [MOTOR DE JALADERAS DINÁMICO]
 JALADERAS_MODELO = {
@@ -18,21 +18,19 @@ def obtener_jaladera_evolutiva(num):
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    try:
-        # Hora RD (España - 6 horas para RD)
-        ahora = datetime.utcnow() - timedelta(hours=6)
-        
-        # [SEGURIDAD]: Si es hora de reset (4:30 AM), mostrar pantalla de mantenimiento
-        if ahora.hour == 4 and ahora.minute >= 30:
-            return "<h1>MANTENIMIENTO DEL SISTEMA: RECALIBRANDO MOTORES (4:30 AM)... VUELVA EN INSTANTES</h1>"
+    # 1. Definición inicial de variables para evitar 'not defined'
+    analisis = {}
+    ahora = datetime.utcnow() - timedelta(hours=6)
+    
+    # 2. Lógica de mantenimiento
+    if ahora.hour == 4 and ahora.minute >= 30:
+        return "<h1>MANTENIMIENTO DEL SISTEMA: RECALIBRANDO MOTORES (4:30 AM)... VUELVA EN INSTANTES</h1>"
 
-        # [MEMORIA SECUENCIAL]
+    # 3. Procesamiento de motores
+    try:
         es_martes = ahora.weekday() == 1
         factor = 1.05 if es_martes else 1.0
-        
-        # [14 MOTORES INDEPENDIENTES]
         salas = ["real", "gana_mas", "leidsa", "loteka", "nacional", "anguila_9pm"]
-        analisis = {}
         
         for clave in salas:
             rng = random.Random(f"{ahora.strftime('%Y%m%d')}{clave}")
@@ -43,20 +41,22 @@ async def root():
                 "jaladeras": obtener_jaladera_evolutiva(n_base),
                 "fuerza": round(98.0 * factor, 2)
             }
-
+        
+        # 4. Renderizado seguro con los datos definidos
+        datos_json = json.dumps(analisis)
+        
         return f"""
         <html><body style="background:#050a14; color:#fff; font-family:sans-serif; padding:20px;">
-            <h1>SHNEYDER IA PRO RD (v90.1 - BLINDADO)</h1>
-            <p>Hora RD: {ahora.strftime('%H:%M')} | Estado: <b>Sincronizado</b></p>
+            <h1>SHNEYDER IA PRO RD (v90.2 - BLINDADO)</h1>
             <div id="app"></div>
             <script>
-                let data = {json.dumps(analisis)};
+                let data = {datos_json};
                 let html = "";
                 for(let k in data) {{
                     html += `<div style='background:#0f172a; border-left: 5px solid #38bdf8; padding:15px; margin-bottom:10px; border-radius:8px;'>
-                        <h2>${data[k].nombre}</h2>
-                        <p>Foco: <b style='font-size:20px; color:#facc15;'>${data[k].directo}</b></p>
-                        <p>Jaladeras: ${data[k].jaladeras.join(' - ')}</p>
+                        <h2>${{data[k].nombre}}</h2>
+                        <p>Foco: <b style='font-size:20px; color:#facc15;'>${{data[k].directo}}</b></p>
+                        <p>Jaladeras: ${{data[k].jaladeras.join(' - ')}}</p>
                     </div>`;
                 }}
                 document.getElementById('app').innerHTML = html;
@@ -64,7 +64,7 @@ async def root():
         </body></html>
         """
     except Exception as e:
-        return f"<h1>Error de Sistema: {str(e)}</h1>"
+        return f"<h1>Error de Ejecución: {str(e)}</h1>"
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=10000)
