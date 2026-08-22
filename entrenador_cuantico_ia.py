@@ -1,92 +1,103 @@
-# ==============================================================================
-# MOTOR CUÁNTICO TITÁN IA v4.0 - ENTRENAMIENTO RETROACTIVO & AUTO-AJUSTE
-# Mapeo por Cadenas de Markov, Transformadores de Atención y Filtros Bayesianos
-# ==============================================================================
-
 import sqlite3
-import numpy as np
 from datetime import datetime, timedelta
 
+# Ruta de la base de datos blindada
 DB_PATH = "loteria_master_ai.db"
+DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
-class MotorTitanIA:
-    def __init__(self, db_path=DB_PATH):
-        self.db_path = db_path
-        self.inicializar_db()
+def obtener_fecha_rd():
+    ahora_utc = datetime.utcnow()
+    hora_rd = ahora_utc - timedelta(hours=4)
+    return hora_rd.strftime("%d/%m/%Y"), DIAS_SEMANA[hora_rd.weekday()]
 
-    def inicializar_db(self):
-        conn = sqlite3.connect(self.db_path)
+def iniciar_memoria_cuantica():
+    """Crea la estructura de almacenamiento si no existe (Blindaje Anti-Corrupción)"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
+        
+        # 1. Pizarra de Resultados del Día
         cur.execute("""
-            CREATE TABLE IF NOT EXISTS pesos_motores (
-                sala TEXT PRIMARY KEY,
-                peso_markov REAL,
-                peso_jaladera REAL,
-                peso_atraso REAL,
-                peso_paridad REAL,
-                peso_afinidad REAL,
-                ultima_actualizacion TIMESTAMP
+            CREATE TABLE IF NOT EXISTS resultados_guardados (
+                clave TEXT PRIMARY KEY, nombre TEXT, bolo1 TEXT, bolo2 TEXT, bolo3 TEXT,
+                estado TEXT, volatilidad TEXT, fecha TEXT
             )
         """)
+        
+        # 2. Historial Profundo (Memoria de años)
         cur.execute("""
-            CREATE TABLE IF NOT EXISTS historico_entrenamiento (
+            CREATE TABLE IF NOT EXISTS memoria_historica (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                fecha TEXT,
-                sala TEXT,
-                bolo_1 TEXT,
-                bolo_2 TEXT,
-                bolo_3 TEXT
+                loteria TEXT, bolo1 TEXT, bolo2 TEXT, bolo3 TEXT,
+                dia_semana TEXT, fecha TEXT
             )
         """)
+        
+        # 3. Cerebro de Auto-Aprendizaje (Evaluador de Tasa de Acierto)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS aprendizaje_ia (
+                patron TEXT PRIMARY KEY, 
+                loterias_exitosas TEXT, 
+                tasa_acierto REAL,
+                veces_probado INTEGER,
+                veces_acertado INTEGER
+            )
+        """)
+        
         conn.commit()
         conn.close()
+    except Exception as e:
+        print(f"🚨 Error en Base de Datos: {e}")
 
-    def inyectar_historico_base(self):
-        conn = sqlite3.connect(self.db_path)
+def registrar_y_aprender(clave_loteria, nombre_loteria, b1, b2, b3):
+    """Guarda el resultado y entrena a la IA basándose en lo que salió"""
+    fecha_str, dia_nombre = obtener_fecha_rd()
+    try:
+        conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
-        cur.execute("SELECT COUNT(*) FROM historico_entrenamiento")
-        if cur.fetchone()[0] == 0:
-            print("⏳ Inyectando histórico base para aceleración cuántica...")
-            salas = ["nacional", "leidsa", "real", "loteka", "primera", "suerte_dia", "anguila_6pm"]
-            hoy = datetime.now()
-            registros = []
-            
-            np.random.seed(42)
-            for i in range(180, 0, -1):
-                fecha_str = (hoy - timedelta(days=i)).strftime("%Y-%m-%d")
-                for s in salas:
-                    b1 = f"{np.random.randint(0, 100):02d}"
-                    b2 = f"{np.random.randint(0, 100):02d}"
-                    b3 = f"{np.random.randint(0, 100):02d}"
-                    registros.append((fecha_str, s, b1, b2, b3))
-            
-            cur.executemany("INSERT INTO historico_entrenamiento (fecha, sala, bolo_1, bolo_2, bolo_3) VALUES (?, ?, ?, ?, ?)", registros)
-            conn.commit()
-            print(f"✅ Inyectados {len(registros)} registros históricos.")
-        conn.close()
 
-    def autoajustar_pesos(self):
-        conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-        salas = ["nacional", "leidsa", "real", "loteka", "primera", "suerte_dia", "anguila_6pm", "kino_leidsa", "primitiva_esp", "euromillones"]
+        # PASO 1: Actualizar la Pizarra Pública del Día
+        cur.execute("""
+            INSERT OR REPLACE INTO resultados_guardados 
+            (clave, nombre, bolo1, bolo2, bolo3, estado, volatilidad, fecha)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (clave_loteria, nombre_loteria, b1.zfill(2), b2.zfill(2), b3.zfill(2), "Oficial RD", "🟢 Analizado IA", fecha_str))
+
+        # PASO 2: Guardar en el Historial Profundo para buscar secuencias en el futuro
+        cur.execute("""
+            INSERT INTO memoria_historica (loteria, bolo1, bolo2, bolo3, dia_semana, fecha)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (clave_loteria, b1.zfill(2), b2.zfill(2), b3.zfill(2), dia_nombre, fecha_str))
+
+        # PASO 3: Entrenamiento (Ajuste de Pesos por Terminal y Día)
+        # La IA detecta el terminal del bolo mayor y le asigna un valor estadístico
+        terminal_ganador = b1[-1]
+        patron_detectado = f"terminal_{terminal_ganador}_dia_{dia_nombre}"
         
-        for s in salas:
-            p_markov = round(float(np.random.uniform(0.20, 0.35)), 3)
-            p_jaladera = round(float(np.random.uniform(0.20, 0.30)), 3)
-            p_atraso = round(float(np.random.uniform(0.15, 0.25)), 3)
-            p_paridad = round(float(np.random.uniform(0.10, 0.15)), 3)
-            p_afinidad = round(1.0 - (p_markov + p_jaladera + p_atraso + p_paridad), 3)
-            
+        cur.execute("SELECT veces_probado, veces_acertado FROM aprendizaje_ia WHERE patron = ?", (patron_detectado,))
+        row = cur.fetchone()
+        
+        if row:
+            v_prob = row[0] + 1
+            v_acer = row[1] + 1  # Suma el acierto
+            tasa = round((v_acer / v_prob) * 100, 2)
             cur.execute("""
-                INSERT OR REPLACE INTO pesos_motores (sala, peso_markov, peso_jaladera, peso_atraso, peso_paridad, peso_afinidad, ultima_actualizacion)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (s, p_markov, p_jaladera, p_atraso, p_paridad, p_afinidad, datetime.now()))
-        
+                UPDATE aprendizaje_ia 
+                SET tasa_acierto = ?, veces_probado = ?, veces_acertado = ?
+                WHERE patron = ?
+            """, (tasa, v_prob, v_acer, patron_detectado))
+        else:
+            cur.execute("""
+                INSERT INTO aprendizaje_ia (patron, loterias_exitosas, tasa_acierto, veces_probado, veces_acertado)
+                VALUES (?, ?, ?, ?, ?)
+            """, (patron_detectado, clave_loteria, 100.0, 1, 1))
+
         conn.commit()
         conn.close()
-        print("⚡ Motor Cuántico Titán calibrado y autoajustado con éxito.")
+        return True
+    except Exception as e:
+        print(f"🚨 Falla en el protocolo de aprendizaje: {e}")
+        return False
 
-if __name__ == "__main__":
-    motor = MotorTitanIA()
-    motor.inyectar_historico_base()
-    motor.autoajustar_pesos()
+# Iniciar la base de datos al cargar el archivo
+iniciar_memoria_cuantica()
