@@ -5,9 +5,7 @@ DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", 
 
 def obtener_tiempos():
     ahora_utc = datetime.utcnow()
-    # Hora exacta en República Dominicana (UTC-4)
     hora_rd = ahora_utc - timedelta(hours=4)
-    # Hora exacta en España Peninsular (UTC+2 en verano / UTC+1 en invierno, usamos UTC+2 para agosto)
     hora_esp = ahora_utc + timedelta(hours=2)
     return hora_rd, hora_esp, hora_rd.strftime("%d/%m/%Y"), DIAS_SEMANA[hora_rd.weekday()]
 
@@ -18,23 +16,22 @@ def calcular_enjambre_ia():
     
     rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + hora_rd.hour)
 
-    # Definimos las salas con su región horaria ('rd' o 'esp')
     salas_config = [
-        ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0, "quiniela", "rd"),
-        ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela", "rd"),
-        ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela", "rd"),
-        ("real", "Lotería Real (12:55 PM)", 12, 55, "quiniela", "rd"),
-        ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0, "quiniela", "rd"),
-        ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela", "rd"),
-        ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0, "quiniela", "rd"),
-        ("loteka", "Loteka (7:55 PM)", 19, 55, "quiniela", "rd"),
-        ("primera_noche", "La Primera Noche (8:00 PM)", 20, 0, "quiniela", "rd"),
-        ("nacional_noche", "Nacional Noche (8:50 PM)", 20, 50, "quiniela", "rd"),
-        ("leidsa", "Leidsa (8:55 PM)", 20, 55, "quiniela", "rd"),
-        ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 0, "quiniela", "rd"),
-        ("kino_leidsa", "Kino Leidsa TV", 20, 55, "kino", "rd"),
-        ("primitiva_esp", "La Primitiva (España)", 21, 30, "primitiva", "esp"),
-        ("euromillones", "Euromillones (Europa)", 21, 30, "euromillones", "esp")
+        ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0, "quiniela", "rd", "La Primera Día (12:00 PM)"),
+        ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela", "rd", "LoteDom (12:00 PM)"),
+        ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela", "rd", "Lotería Real (12:55 PM)"),
+        ("real", "Lotería Real (12:55 PM)", 12, 55, "quiniela", "rd", "Anguila Mediodía (1:00 PM)"),
+        ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0, "quiniela", "rd", "Gana Más (2:30 PM)"),
+        ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela", "rd", "Anguila Tarde (6:00 PM)"),
+        ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0, "quiniela", "rd", "Loteka (7:55 PM)"),
+        ("loteka", "Loteka (7:55 PM)", 19, 55, "quiniela", "rd", "La Primera Noche (8:00 PM)"),
+        ("primera_noche", "La Primera Noche (8:00 PM)", 20, 0, "quiniela", "rd", "Nacional Noche (8:50 PM)"),
+        ("nacional_noche", "Nacional Noche (8:50 PM)", 20, 50, "quiniela", "rd", "Leidsa (8:55 PM)"),
+        ("leidsa", "Leidsa (8:55 PM)", 20, 55, "quiniela", "rd", "Anguila Noche (9:00 PM)"),
+        ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 0, "quiniela", "rd", "Kino Leidsa TV"),
+        ("kino_leidsa", "Kino Leidsa TV", 20, 55, "kino", "rd", "Nacional Noche (8:50 PM)"),
+        ("primitiva_esp", "La Primitiva (España)", 21, 30, "primitiva", "esp", "Euromillones (Europa)"),
+        ("euromillones", "Euromillones (Europa)", 21, 30, "euromillones", "esp", "La Primitiva (España)")
     ]
 
     minutos_actuales_rd = hora_rd.hour * 60 + hora_rd.minute
@@ -42,27 +39,38 @@ def calcular_enjambre_ia():
     
     resultado_final = {}
 
-    for clave, nombre, h_cierre, m_cierre, tipo, region in salas_config:
+    for clave, nombre, h_cierre, m_cierre, tipo, region, respaldo in salas_config:
         cierre_minutos = h_cierre * 60 + m_cierre
         minutos_actuales = minutos_actuales_esp if region == "esp" else minutos_actuales_rd
         
-        # Filtro estricto: Si ya pasó la hora de cierre en su respectivo país, omitimos la sala o la marcamos cerrada
         activa = (minutos_actuales <= cierre_minutos)
-        
-        # Si la lotería ya pasó hace más de 30 minutos, la filtramos por completo para que no aparezca fuera de hora
         if minutos_actuales > (cierre_minutos + 30):
             continue
 
         if tipo == "quiniela":
+            # Selección autónoma de 3 decenas clave mediante el motor
+            decenas_disponibles = [
+                ("[00-09]", "Decena [00-09]"), ("[10-19]", "Decena [10-19]"),
+                ("[20-29]", "Decena [20-29]"), ("[30-39]", "Decena [30-39]"),
+                ("[40-49]", "Decena [40-49]"), ("[50-59]", "Decena [50-59]"),
+                ("[60-69]", "Decena [60-69]"), ("[70-79]", "Decena [70-79]"),
+                ("[80-89]", "Decena [80-89]"), ("[90-99]", "Decena [90-99]")
+            ]
+            decenas_elegidas = rng.sample(decenas_disponibles, 3)
+            
+            # Generación de números del motor
             pool_numeros = [f"{n:02d}" for n in range(100)]
             rng.shuffle(pool_numeros)
             
             sueltos = []
             for i in range(25):
                 fuerza_val = round(99.9 - (i * 0.4), 1)
-                sueltos.append({"num": pool_numeros[i], "fuerza": fuerza_val, "tipo": "Algoritmo Cuántico"})
+                sueltos.append({"num": pool_numeros[i], "fuerza": fuerza_val})
             
             sueltos_ord = sorted(sueltos, key=lambda x: x['fuerza'], reverse=True)
+            
+            # 3 Números principales de la memoria activa
+            n1, n2, n3 = sueltos_ord[0]['num'], sueltos_ord[1]['num'], sueltos_ord[2]['num']
             
             top5_pales_con_fuerza = []
             for i in range(5):
@@ -70,10 +78,33 @@ def calcular_enjambre_ia():
                 fuerza_pale = round((sueltos_ord[i]['fuerza'] + sueltos_ord[i+1]['fuerza']) / 2, 1)
                 top5_pales_con_fuerza.append({"pale": p_str, "fuerza": fuerza_pale})
 
-            tripleta_str = f"{sueltos_ord[0]['num']}-{sueltos_ord[1]['num']}-{sueltos_ord[2]['num']}"
+            tripleta_str = f"{n1} - {n2} - {n3}"
+            
+            # Cobertura lateral blindada (+1 / -1) basada en el primer número principal
+            num_base_int = int(n1)
+            plus_one = f"{ (num_base_int + 1) % 100:02d }"
+            minus_one = f"{ (num_base_int - 1) % 100:02d }"
+
+            dictamen = {
+                "flujo": "ANCLAJE TRIPLE 3-DECENAS",
+                "decenas_clave": f"{decenas_elegidas[0][1]}, {decenas_elegidas[1][1]}, {decenas_elegidas[2][1]}",
+                "terminales": f"Term. {rng.randint(1,9)}, {rng.randint(0,9)}",
+                "pareja": rng.choice(["MÁXIMA", "MEDIA", "ALTA"]),
+                "digito_fuerte": f"Dígitos {rng.randint(1,5)}, {rng.randint(6,9)}",
+                "inercia": f"{dia_nombre}: Vigente",
+                "foco_principal": decenas_elegidas[0][1],
+                "sala_objetivo": nombre,
+                "respaldo": respaldo,
+                "tres_numeros": [n1, n2, n3],
+                "dos_pales": [f"[{n1} - {n2}]", f"[{n2} - {n3}]"],
+                "tripleta": tripleta_str,
+                "cobertura": f"Lateral +1 / -1: [[+1: {plus_one}] / [-1: {minus_one}]]",
+                "pale_reves": f"Palé Revés: [{n2[1]}{n2[0]} - {n1}]"
+            }
 
             resultado_final[clave] = {
                 "nombre": nombre, "activa": activa, "tipo_juego": "quiniela",
+                "dictamen": dictamen,
                 "rankings": {
                     "top5_nums": sueltos_ord[:5],
                     "top5_pales": top5_pales_con_fuerza,
