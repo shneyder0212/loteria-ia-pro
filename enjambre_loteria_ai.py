@@ -3,9 +3,6 @@ from datetime import datetime, timedelta
 
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
-def obtener_jalamatico(num_str):
-    return [num_str[::-1], "{:02d}".format((int(num_str)+10)%100), "{:02d}".format((int(num_str)+50)%100)]
-
 def obtener_fechas_rd():
     ahora_utc = datetime.utcnow()
     hora_rd = ahora_utc - timedelta(hours=4)
@@ -30,9 +27,9 @@ def calcular_enjambre_ia():
 
     hora_actual_minutos = hora_rd.hour * 60 + hora_rd.minute
     resultado_final = {}
-    usados = []
 
     for clave, nombre, h_cierre, m_cierre, tipo in salas_config:
+        cierre_minutos = h_cierre * 60 + m_cierre
         activa = (hora_actual_minutos <= cierre_minutos)
         
         if tipo == "quiniela":
@@ -57,4 +54,5 @@ def calcular_enjambre_ia():
             }
         else:
             resultado_final[clave] = {"nombre": nombre, "activa": activa, "tipo_juego": "kino"}
+            
     return resultado_final
