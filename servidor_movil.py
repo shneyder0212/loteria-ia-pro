@@ -67,10 +67,9 @@ def calcular_enjambre_ia():
             n1, n2, n3 = sueltos_ord[0]['num'], sueltos_ord[1]['num'], sueltos_ord[2]['num']
             n4, n5 = sueltos_ord[3]['num'], sueltos_ord[4]['num']
             
-            # Generación de Alerta de Jaladeras y Secuencias activas basadas en el motor
             jaladera_num_1 = n1
             jaladera_num_2 = n2
-            jaladera_atrae = f"{int(n1) % 10}{(int(n2) + 3) % 10:01d}" # Cálculo de secuencia matemática de atracción
+            jaladera_atrae = f"{int(n1) % 10}{(int(n2) + 3) % 10:01d}"
             
             sala_sugerida_1 = nombre
             sala_sugerida_2 = respaldo
@@ -102,7 +101,7 @@ def calcular_enjambre_ia():
             top20_nums = ""
             for idx, n_obj in enumerate(sueltos_ord[:20]):
                 loterias_asociadas = sala_sugerida_1 if idx < 10 else sala_sugerida_2
-                top20_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td><td style='font-size:11px; color:#94a3b8;'>{loterias_asociadas}</td></tr>")
+                top20_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td><td style='font-size:11px; color:#94a3b8;'>{loterias_asociadas}</td></tr>"
 
             tres_nums_html = "".join([f'<span class="ball">{n}</span>' for n in [n1, n2, n3]])
 
