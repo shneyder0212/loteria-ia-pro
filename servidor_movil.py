@@ -31,6 +31,7 @@ def index(request: Request):
             .tab-btn {{ background:#1f2937; color:#fff; border:none; padding:10px; margin:2px; border-radius:8px; cursor:pointer; font-weight: bold; }}
             .active {{ background:#38bdf8; color:#0f172a; }}
             h3 {{ color: #38bdf8; font-size: 14px; margin-top: 15px; border-bottom: 1px solid #233249; padding-bottom: 4px; }}
+            .ball {{ background: #facc15; color: #0f172a; font-weight: 900; border-radius: 50%; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; margin: 3px; font-size: 13px; }}
         </style>
     </head>
     <body>
@@ -66,32 +67,44 @@ def index(request: Request):
                 let html = "";
                 
                 if (info.tipo_juego === 'quiniela' && info.rankings) {{
-                    // TOP 5 NÚMEROS
                     html += "<h3>⭐ TOP 5 NÚMEROS DE ALTA PRECISIÓN:</h3><table><tr><th>#</th><th>Número</th><th>Fuerza</th></tr>";
                     info.rankings.top5_nums.forEach((n, i) => {{ 
                         html += `<tr><td>#${{i+1}}</td><td style="color:#38bdf8; font-weight:bold; font-size:15px;">${{n.num}}</td><td style="color:#4ade80;">${{n.fuerza}}%</td></tr>`; 
                     }});
                     html += "</table>";
 
-                    // TOP 5 PALÉS CON PORCENTAJE
                     html += "<h3>💥 TOP 5 PALÉS MAESTROS:</h3>";
                     info.rankings.top5_pales.forEach((p, i) => {{ 
                         html += `<p style="margin:6px 0; font-size:13px; display:flex; justify-content:space-between; align-items:center;"><span>#${{i+1}}: <b style="color:#facc15; font-size:14px;">${{p.pale}}</b></span> <span style="color:#4ade80; font-weight:bold;">${{p.fuerza}}%</span></p>`; 
                     }});
 
-                    // TOP 3 TRIPLETAS
                     html += "<h3>🏆 TRIPLETA RECOMENDADA:</h3>";
                     html += `<p style="font-size:15px; color:#f472b6; font-weight:bold;">[${{info.rankings.top5_tripletas[0]}}]</p>`;
 
-                    // TOP 20 GENERAL (COBERTURA)
                     html += "<h3>📊 TOP 20 GENERAL (COBERTURA TOTAL):</h3>";
                     html += "<div style='max-height:180px; overflow-y:auto; border:1px solid #1e293b; border-radius:6px;'><table>";
                     info.rankings.top20.forEach((n, i) => {{ 
                         html += `<tr><td>#${{i+1}}</td><td>${{n.num}}</td><td>${{n.fuerza}}%</td></tr>`; 
                     }});
                     html += "</table></div>";
-                }} else {{
-                    html += "<p style='color:#facc15;'>🔥 Módulo de Análisis Cuántico Activo para Kino Leidsa TV. Generando matrices numéricas...</p>";
+                }} 
+                else if (info.tipo_juego === 'kino') {{
+                    html += "<h3>👑 MATRIZ DE 10 NÚMEROS DUEÑOS (KINO):</h3><div style='text-align:center; margin:15px 0;'>";
+                    info.kino_data.duenos.forEach(d => {{ html += `<span class="ball">${{d}}</span>`; }});
+                    html += "</div>";
+                }}
+                else if (info.tipo_juego === 'primitiva') {{
+                    html += `<p style="color:#facc15; font-weight:bold;">🇪🇸 Reintegro Sugerido: <span style="font-size:18px; color:#fff;">${{info.primitiva_data.reintegro}}</span></p>`;
+                    html += "<h3>🇪🇸 MATRIZ DE NÚMEROS (LA PRIMITIVA):</h3><div style='text-align:center; margin:15px 0;'>";
+                    info.primitiva_data.numeros_base.forEach(n => {{ html += `<span class="ball">${{n}}</span>`; }});
+                    html += "</div>";
+                }}
+                else if (info.tipo_juego === 'euromillones') {{
+                    html += "<h3>🇪🇺 ESTRELLAS FIJAS:</h3><div style='text-align:center; margin:10px 0;'>";
+                    info.euro_data.estrellas.forEach(e => {{ html += `<span class="ball" style="background:#38bdf8; color:#0f172a;">⭐${{e}}</span>`; }});
+                    html += "</div><h3>🇪🇺 NÚMEROS DE AFINIDAD (EUROMILLONES):</h3><div style='text-align:center; margin:15px 0;'>";
+                    info.euro_data.numeros.forEach(n => {{ html += `<span class="ball">${{n}}</span>`; }});
+                    html += "</div>";
                 }}
                 
                 document.getElementById('contenido_sala').innerHTML = html;
