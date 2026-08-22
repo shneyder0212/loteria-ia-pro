@@ -16,13 +16,13 @@ def index(request: Request):
     except Exception as e:
         datos_loterias = {}
 
-    # Generamos los botones de las pestañas directamente en el servidor para garantizar que aparezcan siempre
+    # Generamos las pestañas en el servidor de forma segura
     botones_html = ""
     primero = True
-    for clave in datos_loterias:
-        nombre_sala = datos_loterias[clave]["nombre"]
+    for clave, info in datos_loterias.items():
+        nombre_sala = info.get("nombre", clave)
         clase_activa = "active" if primero else ""
-        botones_html += f'<button class="tab-btn {clase_activa}" onclick="mostrarSala(\'{clave}\')">{nombre_sala}</button>'
+        botones_html += f'<button class="tab-btn {clase_activa}" onclick="mostrarSala(\'{clave}\', this)">{nombre_sala}</button>'
         primero = False
 
     html = f"""
@@ -38,7 +38,7 @@ def index(request: Request):
             th, td {{ padding:8px; border-bottom:1px solid #1e293b; text-align:center; font-size: 13px; }}
             th {{ background: #1e293b; color: #94a3b8; }}
             .tab-btn {{ background:#1f2937; color:#fff; border:none; padding:10px; margin:2px; border-radius:8px; cursor:pointer; font-weight: bold; white-space: nowrap; }}
-            .active {{ background:#38bdf8; color:#0f172a !important; }}
+            .active {{ background:#38bdf8 !important; color:#0f172a !important; }}
             h3 {{ color: #38bdf8; font-size: 14px; margin-top: 15px; border-bottom: 1px solid #233249; padding-bottom: 4px; }}
             .ball {{ background: #facc15; color: #0f172a; font-weight: 900; border-radius: 50%; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; margin: 3px; font-size: 13px; }}
             .tactical-box {{ background: #0f172a; border: 1px solid #38bdf8; border-radius: 10px; padding: 12px; margin-bottom: 15px; font-size: 13px; }}
@@ -69,11 +69,12 @@ def index(request: Request):
         <script>
             let db = {datos_loterias};
 
-            function mostrarSala(clave) {{
-                // Actualizar botones activos
+            function mostrarSala(clave, elemento) {{
                 let botones = document.querySelectorAll('.tab-btn');
                 botones.forEach(b => b.classList.remove('active'));
-                event.target.classList.add('active');
+                if (elemento) {{
+                    elemento.classList.add('active');
+                }}
 
                 let info = db[clave];
                 if (!info) return;
@@ -128,7 +129,7 @@ def index(request: Request):
                 }}
                 else if (info.tipo_juego === 'euromillones') {{
                     html += "<h3>🇪🇺 ESTRELLAS:</h3><div style='text-align:center; margin:10px 0;'>";
-                    info.euro_data.estrellas.forEach(e => {{ html += `<span class='ball' style='background:#38bdf8; color:#0f172a;'>⭐${{e}}</span>`; }});
+                    info.euro_data.estrellas.forEach(e => {{ html += `<span class='ball' style='background:#38bdf8; color:#0f172a; '>\u2b50${{e}}</span>`; }});
                     html += "</div><h3>🇪🇺 NÚMEROS:</h3><div style='text-align:center; margin:15px 0;'>";
                     info.euro_data.numeros.forEach(n => {{ html += `<span class='ball'>${{n}}</span>`; }});
                     html += "</div>";
@@ -139,14 +140,9 @@ def index(request: Request):
             window.onload = function() {{
                 setTimeout(() => {{
                     document.getElementById('pantalla_carga').style.display = 'none';
-                    // Cargar la primera sala por defecto al abrir
-                    let keys = Object.keys(db);
-                    if (keys.length > 0) {{
-                        // Seleccionamos el primer botón y cargamos su contenido
-                        let primerBoton = document.querySelector('.tab-btn');
-                        if(primerBoton) primerBoton.click();
-                    }}
-                }}, 800);
+                    let primerBoton = document.querySelector('.tab-btn');
+                    if(primerBoton) primerBoton.click();
+                }}, 600);
             }};
         </script>
     </body>
