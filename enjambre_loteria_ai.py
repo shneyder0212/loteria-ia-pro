@@ -3,46 +3,57 @@ from datetime import datetime, timedelta
 
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
-def obtener_fechas_rd():
+def obtener_tiempos():
     ahora_utc = datetime.utcnow()
+    # Hora exacta en República Dominicana (UTC-4)
     hora_rd = ahora_utc - timedelta(hours=4)
-    return hora_rd, hora_rd.strftime("%d/%m/%Y"), DIAS_SEMANA[hora_rd.weekday()]
+    # Hora exacta en España Peninsular (UTC+2 en verano / UTC+1 en invierno, usamos UTC+2 para agosto)
+    hora_esp = ahora_utc + timedelta(hours=2)
+    return hora_rd, hora_esp, hora_rd.strftime("%d/%m/%Y"), DIAS_SEMANA[hora_rd.weekday()]
 
 def calcular_enjambre_ia():
-    hora_rd, _, dia_nombre = obtener_fechas_rd()
+    hora_rd, hora_esp, _, dia_nombre = obtener_tiempos()
     seed_base = int(hora_rd.strftime("%Y%m%d"))
     es_lunes_domingo = dia_nombre in ["Lunes", "Domingo"]
     
-    # Semilla estrictamente matemática basada en tiempo y día
     rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + hora_rd.hour)
 
+    # Definimos las salas con su región horaria ('rd' o 'esp')
     salas_config = [
-        ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0, "quiniela"),
-        ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela"),
-        ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela"),
-        ("real", "Lotería Real (12:55 PM)", 12, 55, "quiniela"),
-        ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0, "quiniela"),
-        ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela"),
-        ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0, "quiniela"),
-        ("loteka", "Loteka (7:55 PM)", 19, 55, "quiniela"),
-        ("primera_noche", "La Primera Noche (8:00 PM)", 20, 0, "quiniela"),
-        ("nacional_noche", "Nacional Noche (8:50 PM)", 20, 50, "quiniela"),
-        ("leidsa", "Leidsa (8:55 PM)", 20, 55, "quiniela"),
-        ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 0, "quiniela"),
-        ("kino_leidsa", "Kino Leidsa TV", 20, 55, "kino"),
-        ("primitiva_esp", "La Primitiva (España)", 21, 30, "primitiva"),
-        ("euromillones", "Euromillones (Europa)", 21, 30, "euromillones")
+        ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0, "quiniela", "rd"),
+        ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela", "rd"),
+        ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela", "rd"),
+        ("real", "Lotería Real (12:55 PM)", 12, 55, "quiniela", "rd"),
+        ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0, "quiniela", "rd"),
+        ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela", "rd"),
+        ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0, "quiniela", "rd"),
+        ("loteka", "Loteka (7:55 PM)", 19, 55, "quiniela", "rd"),
+        ("primera_noche", "La Primera Noche (8:00 PM)", 20, 0, "quiniela", "rd"),
+        ("nacional_noche", "Nacional Noche (8:50 PM)", 20, 50, "quiniela", "rd"),
+        ("leidsa", "Leidsa (8:55 PM)", 20, 55, "quiniela", "rd"),
+        ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 0, "quiniela", "rd"),
+        ("kino_leidsa", "Kino Leidsa TV", 20, 55, "kino", "rd"),
+        ("primitiva_esp", "La Primitiva (España)", 21, 30, "primitiva", "esp"),
+        ("euromillones", "Euromillones (Europa)", 21, 30, "euromillones", "esp")
     ]
 
-    hora_actual_minutos = hora_rd.hour * 60 + hora_rd.minute
+    minutos_actuales_rd = hora_rd.hour * 60 + hora_rd.minute
+    minutos_actuales_esp = hora_esp.hour * 60 + hora_esp.minute
+    
     resultado_final = {}
 
-    for clave, nombre, h_cierre, m_cierre, tipo in salas_config:
+    for clave, nombre, h_cierre, m_cierre, tipo, region in salas_config:
         cierre_minutos = h_cierre * 60 + m_cierre
-        activa = (hora_actual_minutos <= cierre_minutos)
+        minutos_actuales = minutos_actuales_esp if region == "esp" else minutos_actuales_rd
         
+        # Filtro estricto: Si ya pasó la hora de cierre en su respectivo país, omitimos la sala o la marcamos cerrada
+        activa = (minutos_actuales <= cierre_minutos)
+        
+        # Si la lotería ya pasó hace más de 30 minutos, la filtramos por completo para que no aparezca fuera de hora
+        if minutos_actuales > (cierre_minutos + 30):
+            continue
+
         if tipo == "quiniela":
-            # Generación 100% autónoma por frecuencias y probabilidades del motor
             pool_numeros = [f"{n:02d}" for n in range(100)]
             rng.shuffle(pool_numeros)
             
@@ -59,7 +70,6 @@ def calcular_enjambre_ia():
                 fuerza_pale = round((sueltos_ord[i]['fuerza'] + sueltos_ord[i+1]['fuerza']) / 2, 1)
                 top5_pales_con_fuerza.append({"pale": p_str, "fuerza": fuerza_pale})
 
-            # Tripleta 100% generada por el motor sin cruces manuales
             tripleta_str = f"{sueltos_ord[0]['num']}-{sueltos_ord[1]['num']}-{sueltos_ord[2]['num']}"
 
             resultado_final[clave] = {
