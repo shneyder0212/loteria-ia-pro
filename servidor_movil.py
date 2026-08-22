@@ -14,9 +14,10 @@ def ping_salud():
 def index(request: Request):
     try:
         datos_loterias = enjambre_loteria_ai.calcular_enjambre_ia()
-        datos_json = json.dumps(datos_loterias)
     except Exception as e:
-        datos_json = "{}"
+        datos_loterias = {}
+
+    datos_json = json.dumps(datos_loterias)
 
     html = f"""
     <!DOCTYPE html>
@@ -45,7 +46,7 @@ def index(request: Request):
         <div id="pantalla_carga">
             <div class="spinner"></div>
             <h2 style="color: #facc15; font-size: 18px; margin: 5px;">SHNEYDER IA PRO RD</h2>
-            <p id="texto_cargando" style="color: #94a3b8; font-size: 14px;">Calculando Dictamen y Memoria Activa...</p>
+            <p id="texto_cargando" style="color: #94a3b8; font-size: 14px;">Iniciando Sistema Táctico...</p>
         </div>
 
         <div style="max-width:800px; margin:auto;" id="panel_principal">
@@ -58,28 +59,33 @@ def index(request: Request):
         </div>
 
         <script>
-            let db = JSON.parse('{datos_json}');
+            let db = {datos_json};
             let keys = Object.keys(db);
             let tabActual = keys.length > 0 ? keys[0] : null;
 
             function construirTabs() {{
                 let html = "";
                 if (keys.length === 0) {{
-                    document.getElementById('contenedor_tabs').innerHTML = "<p style='color:#facc15;'>Cargando matrices de IA...</p>";
+                    document.getElementById('contenedor_tabs').innerHTML = "<p style='color:#facc15;'>No se encontraron salas.</p>";
                     return;
                 }}
-                for (let clave in db) {{
-                    html += `<button class="tab-btn ${{clave === tabActual ? 'active' : ''}}" onclick="cambiarTab('${{clave}}')">${{db[clave].nombre}}</button>`;
-                }}
+                keys.forEach(clave => {{
+                    let activoClase = (clave === tabActual) ? 'active' : '';
+                    html += `<button class="tab-btn ${{activoClase}}" onclick="cambiarTab('${{clave}}')">${{db[clave].nombre}}</button>`;
+                }});
                 document.getElementById('contenedor_tabs').innerHTML = html;
             }}
 
-            function cambiarTab(clave) {{ tabActual = clave; construirTabs(); actualizarVista(); }}
+            function cambiarTab(clave) {{ 
+                tabActual = clave; 
+                construirTabs(); 
+                actualizarVista(); 
+            }}
 
             function actualizarVista() {{
                 if (!tabActual || !db[tabActual]) {{
                     document.getElementById('titulo_sala').innerText = "SISTEMA ACTIVO";
-                    document.getElementById('contenido_sala').innerHTML = "<p>Selecciona una pestaña superior para ver el dictamen.</p>";
+                    document.getElementById('contenido_sala').innerHTML = "<p>Selecciona una pestaña superior.</p>";
                     return;
                 }}
                 let info = db[tabActual];
@@ -141,13 +147,13 @@ def index(request: Request):
                 document.getElementById('contenido_sala').innerHTML = html;
             }}
 
-            setTimeout(() => {{
-                document.getElementById('pantalla_carga').style.display = 'none';
-                construirTabs(); 
-                actualizarVista();
-            }}, 2500);
-
-            setInterval(() => {{ location.reload(); }}, 60000);
+            window.onload = function() {{
+                setTimeout(() => {{
+                    document.getElementById('pantalla_carga').style.display = 'none';
+                    construirTabs(); 
+                    actualizarVista();
+                }}, 1500);
+            }};
         </script>
     </body>
     </html>
