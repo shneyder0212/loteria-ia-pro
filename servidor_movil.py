@@ -23,7 +23,7 @@ def calcular_enjambre_ia():
         ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0, "quiniela", "rd", "La Primera Día (12:00 PM)"),
         ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela", "rd", "LoteDom (12:00 PM)"),
         ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela", "rd", "Lotería Real (12:55 PM)"),
-        ("real", "La Primitiva (España)", 12, 55, "quiniela", "rd", "Anguila Mediodía (1:00 PM)"),
+        ("real", "Lotería Real (12:55 PM)", 12, 55, "quiniela", "rd", "Anguila Mediodía (1:00 PM)"),
         ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0, "quiniela", "rd", "Gana Más (2:30 PM)"),
         ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela", "rd", "Anguila Tarde (6:00 PM)"),
         ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0, "quiniela", "rd", "Loteka (7:55 PM)"),
@@ -67,12 +67,15 @@ def calcular_enjambre_ia():
             n1, n2, n3 = sueltos_ord[0]['num'], sueltos_ord[1]['num'], sueltos_ord[2]['num']
             n4, n5 = sueltos_ord[3]['num'], sueltos_ord[4]['num']
             
-            # Cruce cuántico de alta potencia para súper palés y tripleta
-            super_pale_1 = f"[{n1} - {n2}]"
-            super_pale_2 = f"[{n1} - {n3}]"
-            super_pale_3 = f"[{n2} - {n4}]"
-            tripleta_caliente = f"[{n1} - {n2} - {n3}]"
-            tripleta_alternativa = f"[{n1} - {n3} - {n5}]"
+            # Asignación de salas objetivo sugeridas para los palés y tripleta
+            sala_sugerida_1 = nombre
+            sala_sugerida_2 = respaldo
+            sala_sugerida_3 = "Lotería Nacional / Leidsa"
+
+            super_pale_1 = f"[{n1} - {n2}] <span style='font-size:11px; color:#38bdf8;'>({sala_sugerida_1})</span>"
+            super_pale_2 = f"[{n1} - {n3}] <span style='font-size:11px; color:#38bdf8;'>({sala_sugerida_2})</span>"
+            super_pale_3 = f"[{n2} - {n4}] <span style='font-size:11px; color:#38bdf8;'>({sala_sugerida_1})</span>"
+            tripleta_caliente = f"[{n1} - {n2} - {n3}] <span style='font-size:11px; color:#f472b6;'>({sala_sugerida_1} + {sala_sugerida_2})</span>"
 
             decenas_extraidas = set()
             for obj in sueltos_ord[:10]:
@@ -109,12 +112,12 @@ def calcular_enjambre_ia():
             </div>
 
             <div class="tactical-box" style="border-color: #facc15;">
-                <div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">🔥 JUGADA MAESTRA (SÚPER CALIENTES)</div>
-                <div class="tactical-row"><span>Sala Objetivo:</span><b style="color:#38bdf8;">{nombre}</b></div>
-                <div class="tactical-row"><span>Respaldo:</span><span style="color:#4ade80;">{respaldo}</span></div>
+                <div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">🔥 JUGADA MAESTRA CON SALA OBJETIVO</div>
+                <div class="tactical-row"><span>Sala Objetivo Principal:</span><b style="color:#38bdf8;">{nombre}</b></div>
+                <div class="tactical-row"><span>Respaldo Sugerido:</span><span style="color:#4ade80;">{respaldo}</span></div>
                 <div class="tactical-row"><span>3 Números Base:</span><div>{tres_nums_html}</div></div>
-                <div class="tactical-row"><span>Súper Palés Calientes:</span><b style="color:#facc15;">{super_pale_1} / {super_pale_2} / {super_pale_3}</b></div>
-                <div class="tactical-row"><span>Tripletas de Poder:</span><b style="color:#f472b6;">{tripleta_caliente} o {tripleta_alternativa}</b></div>
+                <div class="tactical-row"><span>Súper Palés + Sala:</span><div style="text-align:right;"><b style="color:#facc15;">{super_pale_1}</b><br><b style="color:#facc15;">{super_pale_2}</b></div></div>
+                <div class="tactical-row"><span>Tripleta + Salas:</span><b style="color:#f472b6;">{tripleta_caliente}</b></div>
             </div>
 
             <h3>⭐ TOP 20 NÚMEROS:</h3>
