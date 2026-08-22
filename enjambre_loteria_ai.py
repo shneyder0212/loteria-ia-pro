@@ -43,7 +43,6 @@ def calcular_enjambre_ia():
         cierre_minutos = h_cierre * 60 + m_cierre
         minutos_actuales = minutos_actuales_esp if region == "esp" else minutos_actuales_rd
         
-        # Dejamos que 'activa' sea True o False según la hora, pero NUNCA filtramos la sala para que siempre aparezca en las pestañas
         activa = (minutos_actuales <= cierre_minutos)
 
         if tipo == "quiniela":
