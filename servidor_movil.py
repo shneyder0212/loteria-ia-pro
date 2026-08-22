@@ -10,7 +10,6 @@ DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", 
 
 def calcular_enjambre_ia():
     ahora_utc = datetime.utcnow()
-    # Hora en RD (UTC-4) y hora en España (UTC+2)
     hora_rd = ahora_utc - timedelta(hours=4)
     hora_esp = ahora_utc + timedelta(hours=2)
     
@@ -20,24 +19,23 @@ def calcular_enjambre_ia():
     
     rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + hora_rd.hour)
 
-    # Definimos cada sala con su hora límite de cierre (Hora, Minuto, Región)
-    # Región 'rd' usa hora dominicana, región 'esp' usa hora española
+    # Cada tupla tiene exactamente: (clave, nombre, hora_cierre, min_cierre, tipo, region, respaldo)
     salas_config = [
         ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0, "quiniela", "rd", "La Primera Día (12:00 PM)"),
-        ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela", "LoteDom (12:00 PM)"),
-        ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela", "Lotería Real (12:55 PM)"),
-        ("real", "Lotería Real (12:55 PM)", 12, 55, "quiniela", "Anguila Mediodía (1:00 PM)"),
-        ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0, "quiniela", "Gana Más (2:30 PM)"),
-        ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela", "Anguila Tarde (6:00 PM)"),
-        ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0, "quiniela", "Loteka (7:55 PM)"),
-        ("loteka", "Loteka (7:55 PM)", 19, 55, "quiniela", "La Primera Noche (8:00 PM)"),
-        ("primera_noche", "La Primera Noche (8:00 PM)", 20, 0, "quiniela", "Nacional Noche (8:50 PM)"),
-        ("nacional_noche", "Nacional Noche (8:50 PM)", 20, 50, "quiniela", "Leidsa (8:55 PM)"),
-        ("leidsa", "Leidsa (8:55 PM)", 20, 55, "quiniela", "Anguila Noche (9:00 PM)"),
-        ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 0, "quiniela", "Kino Leidsa TV"),
-        ("kino_leidsa", "Kino Leidsa TV", 20, 55, "kino", "Nacional Noche (8:50 PM)"),
-        ("primitiva_esp", "La Primitiva (España)", 21, 30, "primitiva", "Euromillones (Europa)"),
-        ("euromillones", "Euromillones (Europa)", 21, 30, "euromillones", "La Primitiva (España)")
+        ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela", "rd", "LoteDom (12:00 PM)"),
+        ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela", "rd", "Lotería Real (12:55 PM)"),
+        ("real", "Lotería Real (12:55 PM)", 12, 55, "quiniela", "rd", "Anguila Mediodía (1:00 PM)"),
+        ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0, "quiniela", "rd", "Gana Más (2:30 PM)"),
+        ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela", "rd", "Anguila Tarde (6:00 PM)"),
+        ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0, "quiniela", "rd", "Loteka (7:55 PM)"),
+        ("loteka", "Loteka (7:55 PM)", 19, 55, "quiniela", "rd", "La Primera Noche (8:00 PM)"),
+        ("primera_noche", "La Primera Noche (8:00 PM)", 20, 0, "quiniela", "rd", "Nacional Noche (8:50 PM)"),
+        ("nacional_noche", "Nacional Noche (8:50 PM)", 20, 50, "quiniela", "rd", "Leidsa (8:55 PM)"),
+        ("leidsa", "Leidsa (8:55 PM)", 20, 55, "quiniela", "rd", "Anguila Noche (9:00 PM)"),
+        ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 0, "quiniela", "rd", "Kino Leidsa TV"),
+        ("kino_leidsa", "Kino Leidsa TV", 20, 55, "kino", "rd", "Nacional Noche (8:50 PM)"),
+        ("primitiva_esp", "La Primitiva (España)", 21, 30, "primitiva", "esp", "Euromillones (Europa)"),
+        ("euromillones", "Euromillones (Europa)", 21, 30, "euromillones", "esp", "La Primitiva (España)")
     ]
 
     minutos_actuales_rd = hora_rd.hour * 60 + hora_rd.minute
@@ -49,7 +47,6 @@ def calcular_enjambre_ia():
         cierre_minutos = h_cierre * 60 + m_cierre
         minutos_actuales = minutos_actuales_esp if region == "esp" else minutos_actuales_rd
         
-        # Validación real de estado según la hora actual
         activa = minutos_actuales <= cierre_minutos
 
         if tipo == "quiniela":
@@ -151,7 +148,6 @@ def index(request: Request, sala: str = None):
     botones_html = ""
     for clave, datos_sala in datos.items():
         clase_activa = "active" if clave == sala_activa else ""
-        # Distinguimos visualmente con un punto verde o rojo en el botón según el horario
         indicador = "🟢" if datos_sala.get("activa", True) else "🔴"
         botones_html += f'<button class="tab-btn {clase_activa}" onclick="location.href=\'/?sala={clave}\'">{indicador} {datos_sala["nombre"]}</button>'
 
