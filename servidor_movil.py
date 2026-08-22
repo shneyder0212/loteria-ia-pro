@@ -74,10 +74,10 @@ def calcular_enjambre_ia():
             sala_sugerida_1 = nombre
             sala_sugerida_2 = respaldo
 
-            # Súper Palé y Tripleta específicos para la Alerta con Lotería detallada
+            # Definición explícita para renderizar en la alerta
             pale_alerta = f"[{jaladera_num_1} - {jaladera_atrae}]"
             tripleta_alerta = f"[{jaladera_num_1} - {jaladera_num_2} - {jaladera_atrae}]"
-            loterias_alerta_str = f"{sala_sugerida_1} (Principal) / {sala_sugerida_2} (Respaldo)"
+            loterias_alerta_str = f"{sala_sugerida_1} / Respaldo: {sala_sugerida_2}"
 
             super_pale_1 = f"[{n1} - {n2}] <span style='font-size:11px; color:#38bdf8;'>({sala_sugerida_1})</span>"
             super_pale_2 = f"[{n1} - {n3}] <span style='font-size:11px; color:#38bdf8;'>({sala_sugerida_2})</span>"
@@ -106,17 +106,18 @@ def calcular_enjambre_ia():
             top20_nums = ""
             for idx, n_obj in enumerate(sueltos_ord[:20]):
                 loterias_asociadas = sala_sugerida_1 if idx < 10 else sala_sugerida_2
-                top20_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td><td style='font-size:11px; color:#94a3b8;'>{loterias_asociadas}</td></tr>")
+                top20_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td><td style='font-size:11px; color:#94a3b8;'>{loterias_asociadas}</td></tr>"
 
             tres_nums_html = "".join([f'<span class="ball">{n}</span>' for n in [n1, n2, n3]])
 
             dictamen_html = f"""
             <div style="background: linear-gradient(135deg, #7f1d1d, #450a0a); border: 2px solid #ef4444; border-radius: 10px; padding: 12px; margin-bottom: 15px; color: #fff; text-align: center;">
                 <div style="font-weight: bold; font-size: 14px; color: #f87171; margin-bottom: 6px;">🚨 ALGORITMO DE JALADERAS Y SECUENCIAS ACTIVO</div>
-                <div style="font-size: 13px; margin-bottom: 4px;">El número <b style="color: #facc15;">{jaladera_num_1}</b> jala a <b style="color: #facc15;">{jaladera_atrae}</b></div>
-                <div style="font-size: 12px; color: #cbd5e1; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 6px; margin-top: 6px;">
-                    🔥 <b>Palé de Jaladera:</b> <span style="color: #facc15; font-weight: bold;">{pale_alerta}</span> | 👑 <b>Tripleta:</b> <span style="color: #f472b6; font-weight: bold;">{tripleta_alerta}</span><br>
-                    🎯 <b>Loterías Recomendadas:</b> <span style="color: #38bdf8;">{loterias_alerta_str}</span>
+                <div style="font-size: 13px; margin-bottom: 6px;">El número <b style="color: #facc15;">{jaladera_num_1}</b> jala directamente a <b style="color: #facc15;">{jaladera_atrae}</b></div>
+                <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 8px; margin-top: 6px; font-size: 12px; color: #cbd5e1; text-align: left;">
+                    🔥 <b>Palé de Jaladera:</b> <span style="color: #facc15; font-size: 14px; font-weight: bold;">{pale_alerta}</span><br>
+                    👑 <b>Tripleta Activa:</b> <span style="color: #f472b6; font-size: 14px; font-weight: bold;">{tripleta_alerta}</span><br>
+                    🎯 <b>Loterías Recomendadas:</b> <span style="color: #38bdf8; font-weight: bold;">{loterias_alerta_str}</span>
                 </div>
             </div>
 
