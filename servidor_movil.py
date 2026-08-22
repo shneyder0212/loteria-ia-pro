@@ -67,10 +67,8 @@ def calcular_enjambre_ia():
             n1, n2, n3 = sueltos_ord[0]['num'], sueltos_ord[1]['num'], sueltos_ord[2]['num']
             n4, n5 = sueltos_ord[3]['num'], sueltos_ord[4]['num']
             
-            # Asignación de salas objetivo sugeridas para los palés y tripleta
             sala_sugerida_1 = nombre
             sala_sugerida_2 = respaldo
-            sala_sugerida_3 = "Lotería Nacional / Leidsa"
 
             super_pale_1 = f"[{n1} - {n2}] <span style='font-size:11px; color:#38bdf8;'>({sala_sugerida_1})</span>"
             super_pale_2 = f"[{n1} - {n3}] <span style='font-size:11px; color:#38bdf8;'>({sala_sugerida_2})</span>"
@@ -89,15 +87,18 @@ def calcular_enjambre_ia():
             terminales_extraidos = set([n['num'][1] for n in sueltos_ord[:10]])
             digitos_extraidos = set([n['num'][0] for n in sueltos_ord[:10]])
 
+            # Listado Top 20 con sugerencia de lotería por renglón
             top20_pales = []
             for i in range(20):
                 p_str = f"{sueltos_ord[i]['num']} - {sueltos_ord[i+1]['num']}"
                 fuerza_pale = round((sueltos_ord[i]['fuerza'] + sueltos_ord[i+1]['fuerza']) / 2, 1)
-                top20_pales.append(f"<tr><td>#{i+1}</td><td style='color:#38bdf8; font-weight:bold;'>{p_str}</td><td style='color:#facc15;'>{fuerza_pale}%</td></tr>")
+                loterias_asociadas = sala_sugerida_1 if i % 2 == 0 else sala_sugerida_2
+                top20_pales.append(f"<tr><td>#{i+1}</td><td style='color:#38bdf8; font-weight:bold;'>{p_str}</td><td style='color:#facc15;'>{fuerza_pale}%</td><td style='font-size:11px; color:#94a3b8;'>{loterias_asociadas}</td></tr>")
 
             top20_nums = ""
             for idx, n_obj in enumerate(sueltos_ord[:20]):
-                top20_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td></tr>"
+                loterias_asociadas = sala_sugerida_1 if idx < 10 else sala_sugerida_2
+                top20_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td><td style='font-size:11px; color:#94a3b8;'>{loterias_asociadas}</td></tr>"
 
             tres_nums_html = "".join([f'<span class="ball">{n}</span>' for n in [n1, n2, n3]])
 
@@ -120,14 +121,14 @@ def calcular_enjambre_ia():
                 <div class="tactical-row"><span>Tripleta + Salas:</span><b style="color:#f472b6;">{tripleta_caliente}</b></div>
             </div>
 
-            <h3>⭐ TOP 20 NÚMEROS:</h3>
+            <h3>⭐ TOP 20 NÚMEROS (CON SUGERENCIA DE SALA):</h3>
             <div style="max-height: 250px; overflow-y: auto;">
-                <table><tr><th>#</th><th>Número</th><th>Fuerza</th></tr>{top20_nums}</table>
+                <table><tr><th>#</th><th>Número</th><th>Fuerza</th><th>Sala Sugerida</th></tr>{top20_nums}</table>
             </div>
             
-            <h3>⭐ TOP 20 PALÉS:</h3>
+            <h3>⭐ TOP 20 PALÉS (CON SUGERENCIA DE SALA):</h3>
             <div style="max-height: 250px; overflow-y: auto;">
-                <table><tr><th>#</th><th>Palé</th><th>Fuerza</th></tr>{"".join(top20_pales)}</table>
+                <table><tr><th>#</th><th>Palé</th><th>Fuerza</th><th>Sala Sugerida</th></tr>{"".join(top20_pales)}</table>
             </div>
             """
             resultado_final[clave] = {"nombre": nombre, "activa": activa, "contenido": dictamen_html}
