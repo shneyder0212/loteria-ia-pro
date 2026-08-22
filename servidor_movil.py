@@ -1,4 +1,3 @@
-import json
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
 import uvicorn
@@ -17,7 +16,14 @@ def index(request: Request):
     except Exception as e:
         datos_loterias = {}
 
-    datos_json = json.dumps(datos_loterias)
+    # Generamos los botones de las pestañas directamente en el servidor para garantizar que aparezcan siempre
+    botones_html = ""
+    primero = True
+    for clave in datos_loterias:
+        nombre_sala = datos_loterias[clave]["nombre"]
+        clase_activa = "active" if primero else ""
+        botones_html += f'<button class="tab-btn {clase_activa}" onclick="mostrarSala(\'{clave}\')">{nombre_sala}</button>'
+        primero = False
 
     html = f"""
     <!DOCTYPE html>
@@ -32,7 +38,7 @@ def index(request: Request):
             th, td {{ padding:8px; border-bottom:1px solid #1e293b; text-align:center; font-size: 13px; }}
             th {{ background: #1e293b; color: #94a3b8; }}
             .tab-btn {{ background:#1f2937; color:#fff; border:none; padding:10px; margin:2px; border-radius:8px; cursor:pointer; font-weight: bold; white-space: nowrap; }}
-            .active {{ background:#38bdf8; color:#0f172a; }}
+            .active {{ background:#38bdf8; color:#0f172a !important; }}
             h3 {{ color: #38bdf8; font-size: 14px; margin-top: 15px; border-bottom: 1px solid #233249; padding-bottom: 4px; }}
             .ball {{ background: #facc15; color: #0f172a; font-weight: 900; border-radius: 50%; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; margin: 3px; font-size: 13px; }}
             .tactical-box {{ background: #0f172a; border: 1px solid #38bdf8; border-radius: 10px; padding: 12px; margin-bottom: 15px; font-size: 13px; }}
@@ -51,7 +57,9 @@ def index(request: Request):
 
         <div style="max-width:800px; margin:auto;" id="panel_principal">
             <h1>SHNEYDER IA PRO RD</h1>
-            <div id="contenedor_tabs" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px;"></div>
+            <div id="contenedor_tabs" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px;">
+                {botones_html}
+            </div>
             <div class="card" id="vista_general">
                 <h2 id="titulo_sala" style="color: #facc15; font-size: 16px;">Selecciona una Lotería</h2>
                 <div id="contenido_sala"></div>
@@ -59,36 +67,17 @@ def index(request: Request):
         </div>
 
         <script>
-            let db = JSON.parse('{datos_json}');
-            let keys = Object.keys(db);
-            let tabActual = keys.length > 0 ? keys[0] : null;
+            let db = {datos_loterias};
 
-            function construirTabs() {{
-                let html = "";
-                if (keys.length === 0) {{
-                    document.getElementById('contenedor_tabs').innerHTML = "<p style='color:#facc15;'>Cargando salas...</p>";
-                    return;
-                }}
-                keys.forEach(clave => {{
-                    let activoClase = (clave === tabActual) ? 'active' : '';
-                    html += `<button class="tab-btn ${{activoClase}}" onclick="cambiarTab('${{clave}}')">${{db[clave].nombre}}</button>`;
-                }});
-                document.getElementById('contenedor_tabs').innerHTML = html;
-            }}
+            function mostrarSala(clave) {{
+                // Actualizar botones activos
+                let botones = document.querySelectorAll('.tab-btn');
+                botones.forEach(b => b.classList.remove('active'));
+                event.target.classList.add('active');
 
-            function cambiarTab(clave) {{ 
-                tabActual = clave; 
-                construirTabs(); 
-                actualizarVista(); 
-            }}
+                let info = db[clave];
+                if (!info) return;
 
-            function actualizarVista() {{
-                if (!tabActual || !db[tabActual]) {{
-                    document.getElementById('titulo_sala').innerText = "SISTEMA ACTIVO";
-                    document.getElementById('contenido_sala').innerHTML = "<p>Selecciona una pestaña superior.</p>";
-                    return;
-                }}
-                let info = db[tabActual];
                 let estadoBadge = info.activa ? "<span style='color:#4ade80; font-size:12px;'>● ABIERTA</span>" : "<span style='color:#f87171; font-size:12px;'>● CERRADA</span>";
                 document.getElementById('titulo_sala').innerHTML = "📊 " + info.nombre.toUpperCase() + " " + estadoBadge;
                 let html = "";
@@ -150,9 +139,14 @@ def index(request: Request):
             window.onload = function() {{
                 setTimeout(() => {{
                     document.getElementById('pantalla_carga').style.display = 'none';
-                    construirTabs(); 
-                    actualizarVista();
-                }}, 1000);
+                    // Cargar la primera sala por defecto al abrir
+                    let keys = Object.keys(db);
+                    if (keys.length > 0) {{
+                        // Seleccionamos el primer botón y cargamos su contenido
+                        let primerBoton = document.querySelector('.tab-btn');
+                        if(primerBoton) primerBoton.click();
+                    }}
+                }}, 800);
             }};
         </script>
     </body>
