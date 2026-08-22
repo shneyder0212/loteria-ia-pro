@@ -52,7 +52,6 @@ def calcular_enjambre_ia():
 
         activa = juega_hoy and (minutos_actuales <= cierre_minutos)
 
-        # Semilla completamente única y exclusiva para cada sala
         rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + hora_rd.hour + (idx_sala * 13))
 
         if tipo == "quiniela":
@@ -67,6 +66,11 @@ def calcular_enjambre_ia():
             sueltos_ord = sorted(sueltos, key=lambda x: x['fuerza'], reverse=True)
             n1, n2, n3 = sueltos_ord[0]['num'], sueltos_ord[1]['num'], sueltos_ord[2]['num']
             n4, n5 = sueltos_ord[3]['num'], sueltos_ord[4]['num']
+            
+            # Generación de Alerta de Jaladeras y Secuencias activas basadas en el motor
+            jaladera_num_1 = n1
+            jaladera_num_2 = n2
+            jaladera_atrae = f"{int(n1) % 10}{(int(n2) + 3) % 10:01d}" # Cálculo de secuencia matemática de atracción
             
             sala_sugerida_1 = nombre
             sala_sugerida_2 = respaldo
@@ -98,11 +102,16 @@ def calcular_enjambre_ia():
             top20_nums = ""
             for idx, n_obj in enumerate(sueltos_ord[:20]):
                 loterias_asociadas = sala_sugerida_1 if idx < 10 else sala_sugerida_2
-                top20_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td><td style='font-size:11px; color:#94a3b8;'>{loterias_asociadas}</td></tr>"
+                top20_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td><td style='font-size:11px; color:#94a3b8;'>{loterias_asociadas}</td></tr>")
 
             tres_nums_html = "".join([f'<span class="ball">{n}</span>' for n in [n1, n2, n3]])
 
             dictamen_html = f"""
+            <div style="background: linear-gradient(135deg, #7f1d1d, #450a0a); border: 2px solid #ef4444; border-radius: 10px; padding: 12px; margin-bottom: 15px; color: #fff; text-align: center;">
+                <div style="font-weight: bold; font-size: 14px; color: #f87171; margin-bottom: 4px;">🚨 ALGORITMO DE JALADERAS Y SECUENCIAS ACTIVO</div>
+                <div style="font-size: 13px;">El número <b style="color: #facc15;">{jaladera_num_1}</b> jala directamente a <b style="color: #facc15;">{jaladera_atrae}</b> | Secuencia Activa: <b style="color: #38bdf8;">[{jaladera_num_1} ➔ {jaladera_num_2}]</b></div>
+            </div>
+
             <div class="tactical-box">
                 <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN EXCLUSIVO: {nombre.upper()}</div>
                 <div class="tactical-row"><span>Flujo:</span><b style="color:#facc15;">ANCLAJE TRIPLE 3-DECENAS (EXCLUSIVO)</b></div>
