@@ -1,4 +1,50 @@
-<script>
+import json
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
+import uvicorn
+import enjambre_loteria_ai
+import entrenador_cuantico_ia
+
+app = FastAPI(title="Shneyder IA Pro RD - Enjambre Cuántico Definitivo")
+
+@app.post("/api/guardar_manual")
+def guardar_manual(loteria: str = Form(...), b1: str = Form(...), b2: str = Form(...), b3: str = Form(...)):
+    entrenador_cuantico_ia.registrar_y_aprender(loteria, loteria.replace("_", " ").title(), b1, b2, b3)
+    return RedirectResponse(url="/", status_code=303)
+
+@app.get("/", response_class=HTMLResponse)
+def index(request: Request):
+    datos_loterias = enjambre_loteria_ai.calcular_enjambre_ia()
+    datos_json = json.dumps(datos_loterias)
+
+    html = f"""
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8"><title>Shneyder IA Pro</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body {{ background:#080d1a; color:#e2e8f0; font-family:sans-serif; padding:10px; }}
+            .card {{ background:#131d31; border-radius:12px; padding:15px; margin-bottom:15px; border:1px solid #233249; }}
+            table {{ width:100%; border-collapse:collapse; color:#fff; }}
+            th, td {{ padding:8px; border-bottom:1px solid #1e293b; text-align:center; font-size: 13px; }}
+            th {{ background: #1e293b; color: #94a3b8; }}
+            .tab-btn {{ background:#1f2937; color:#fff; border:none; padding:10px; margin:2px; border-radius:8px; cursor:pointer; font-weight: bold; white-space: nowrap; }}
+            .active {{ background:#38bdf8; color:#0f172a; }}
+            h3 {{ color: #38bdf8; font-size: 14px; margin-top: 15px; border-bottom: 1px solid #233249; padding-bottom: 4px; }}
+            .ball {{ background: #facc15; color: #0f172a; font-weight: 900; border-radius: 50%; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; margin: 3px; font-size: 13px; }}
+        </style>
+    </head>
+    <body>
+        <div style="max-width:800px; margin:auto;">
+            <h1>SHNEYDER IA PRO RD</h1>
+            <div id="contenedor_tabs" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px;"></div>
+            <div class="card" id="vista_general">
+                <h2 id="titulo_sala" style="color: #facc15; font-size: 16px;">Selecciona una Lotería</h2>
+                <div id="contenido_sala"></div>
+            </div>
+        </div>
+        <script>
             let db = {datos_json};
             let tabActual = Object.keys(db)[0];
 
@@ -33,11 +79,10 @@
                     }});
                     html += "</table></div>";
                 }} 
-                // ... (resto de las condiciones kino, primitiva, euromillon igual)
                 else if (info.tipo_juego === 'kino') {{
-                    html += "<h3>👑 JUGADA A:</h3><div style='text-align:center; margin:10px 0;'>";
+                    html += "<h3>👑 JUGADA A (MATRIZ KINO):</h3><div style='text-align:center; margin:10px 0;'>";
                     info.kino_data.jugada_a.forEach(d => {{ html += `<span class='ball'>${{d}}</span>`; }});
-                    html += "</div><h3>👑 JUGADA B:</h3><div style='text-align:center; margin:10px 0;'>";
+                    html += "</div><h3>👑 JUGADA B (MATRIZ KINO):</h3><div style='text-align:center; margin:10px 0;'>";
                     info.kino_data.jugada_b.forEach(d => {{ html += `<span class='ball'>${{d}}</span>`; }});
                     html += "</div>";
                 }}
@@ -53,15 +98,18 @@
                     info.euro_data.numeros.forEach(n => {{ html += `<span class='ball'>${{n}}</span>`; }});
                     html += "</div>";
                 }}
-                
                 document.getElementById('contenido_sala').innerHTML = html;
             }}
 
-            // NUEVA FUNCIÓN: Auto-refresco cada 60 segundos
-            setInterval(() => {{
-                location.reload();
-            }}, 60000); 
+            // Auto-refresco inteligente cada 60 segundos
+            setInterval(() => {{ location.reload(); }}, 60000);
 
-            construirTabs(); 
-            actualizarVista();
+            construirTabs(); actualizarVista();
         </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html)
+
+if __name__ == "__main__":
+    uvicorn.run("servidor_movil:app", host="0.0.0.0", port=10000)
