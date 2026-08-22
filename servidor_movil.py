@@ -1,4 +1,5 @@
 import json
+import traceback
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse
 import uvicorn
@@ -20,10 +21,10 @@ def guardar_manual(loteria: str = Form(...), b1: str = Form(...), b2: str = Form
 def index(request: Request):
     try:
         datos_loterias = enjambre_loteria_ai.calcular_enjambre_ia()
+        datos_json = json.dumps(datos_loterias)
     except Exception as e:
-        datos_loterias = {}
-    
-    datos_json = json.dumps(datos_loterias)
+        error_detalles = traceback.format_exc()
+        return HTMLResponse(content=f"<h2 style='color:red;'>ERROR EN EL SERVIDOR:</h2><pre style='color:white;'>{error_detalles}</pre>", status_code=500)
 
     html = f"""
     <!DOCTYPE html>
