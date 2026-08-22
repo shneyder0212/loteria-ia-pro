@@ -58,7 +58,7 @@ def index(request: Request):
         </div>
 
         <script>
-            let db = {datos_json};
+            let db = JSON.parse('{datos_json}');
             let keys = Object.keys(db);
             let tabActual = keys.length > 0 ? keys[0] : null;
 
