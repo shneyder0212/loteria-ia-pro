@@ -73,10 +73,10 @@ def index(request: Request):
                     }});
                     html += "</table>";
 
-                    // TOP 5 PALÉS
+                    // TOP 5 PALÉS CON PORCENTAJE
                     html += "<h3>💥 TOP 5 PALÉS MAESTROS:</h3>";
                     info.rankings.top5_pales.forEach((p, i) => {{ 
-                        html += `<p style="margin:5px 0; font-size:13px;">#${{i+1}}: <b style="color:#facc15; font-size:14px;">${{p}}</b></p>`; 
+                        html += `<p style="margin:6px 0; font-size:13px; display:flex; justify-content:space-between; align-items:center;"><span>#${{i+1}}: <b style="color:#facc15; font-size:14px;">${{p.pale}}</b></span> <span style="color:#4ade80; font-weight:bold;">${{p.fuerza}}%</span></p>`; 
                     }});
 
                     // TOP 3 TRIPLETAS
