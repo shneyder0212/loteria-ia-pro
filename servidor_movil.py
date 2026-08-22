@@ -65,7 +65,7 @@ def index(request: Request):
             function construirTabs() {{
                 let html = "";
                 if (keys.length === 0) {{
-                    document.getElementById('contenedor_tabs').innerHTML = "<p style='color:#facc15;'>No hay loterías activas en este horario.</p>";
+                    document.getElementById('contenedor_tabs').innerHTML = "<p style='color:#facc15;'>Cargando matrices de IA...</p>";
                     return;
                 }}
                 for (let clave in db) {{
@@ -78,8 +78,8 @@ def index(request: Request):
 
             function actualizarVista() {{
                 if (!tabActual || !db[tabActual]) {{
-                    document.getElementById('titulo_sala').innerText = "SIN SALAS ACTIVAS";
-                    document.getElementById('contenido_sala').innerHTML = "<p>Todas las loterías de hoy han finalizado. Vuelve en el próximo horario de sorteos.</p>";
+                    document.getElementById('titulo_sala').innerText = "SISTEMA ACTIVO";
+                    document.getElementById('contenido_sala').innerHTML = "<p>Selecciona una pestaña superior para ver el dictamen.</p>";
                     return;
                 }}
                 let info = db[tabActual];
