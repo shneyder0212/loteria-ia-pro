@@ -1,4 +1,3 @@
-import json
 import random
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
@@ -21,7 +20,7 @@ def calcular_enjambre_ia():
     salas_config = [
         ("anguila_10am", "Anguila Mañana (10:00 AM)", "quiniela", "La Primera Día (12:00 PM)"),
         ("primera_dia", "La Primera Día (12:00 PM)", "quiniela", "LoteDom (12:00 PM)"),
-        ("lotedom", "La Primera Día (12:00 PM)", "quiniela", "Lotería Real (12:55 PM)"),
+        ("lotedom", "LoteDom (12:00 PM)", "quiniela", "Lotería Real (12:55 PM)"),
         ("real", "Lotería Real (12:55 PM)", "quiniela", "Anguila Mediodía (1:00 PM)"),
         ("anguila_1pm", "Anguila Mediodía (1:00 PM)", "quiniela", "Gana Más (2:30 PM)"),
         ("gana_mas", "Gana Más (2:30 PM)", "quiniela", "Anguila Tarde (6:00 PM)"),
@@ -120,17 +119,81 @@ def ping_salud():
     return "OK - Servidor Activo 24/7"
 
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request):
+def index(request: Request, sala: str = None):
     datos_loterias = calcular_enjambre_ia()
-    datos_json = json.dumps(datos_loterias)
+    
+    keys = list(datos_loterias.keys())
+    sala_activa = sala if sala in datos_loterias else (keys[0] if keys else "")
+    info = datos_loterias.get(sala_activa, {})
 
     botones_html = ""
-    primero = True
-    for clave, info in datos_loterias.items():
-        nombre_sala = info.get("nombre", clave)
-        clase_activa = "active" if primero else ""
-        botones_html += f'<button class="tab-btn {clase_activa}" onclick="mostrarSala(\'{clave}\', this)">{nombre_sala}</button>'
-        primero = False
+    for clave, datos in datos_loterias.items():
+        clase_activa = "active" if clave == sala_activa else ""
+        botones_html += f'<button class="tab-btn {clase_activa}" onclick="location.href=\'/?sala={clave}\'">{datos["nombre"]}</button>'
+
+    contenido_html = ""
+    nombre_sala = info.get("nombre", "Selecciona una Lotería")
+    tipo_juego = info.get("tipo_juego", "")
+
+    if tipo_juego == "quiniela":
+        d = info.get("dictamen", {})
+        tres_nums_html = "".join([f'<span class="ball" style="width:28px; height:28px; font-size:11px;">{n}</span>' for n in d.get("tres_numeros", [])])
+        
+        top5_html = ""
+        for idx, n_obj in enumerate(info.get("rankings", {}).get("top5_nums", [])):
+            top5_html += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td></tr>"
+
+        contenido_html = f"""
+        <div class="tactical-box">
+            <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN DE SALA</div>
+            <div class="tactical-row"><span>Flujo:</span><b style="color:#facc15;">{d.get('flujo', '')}</b></div>
+            <div class="tactical-row"><span>Decenas Clave:</span><span style="color:#fff;">{d.get('decenas_clave', '')}</span></div>
+            <div class="tactical-row"><span>Terminales:</span><span style="color:#fff;">{d.get('terminales', '')}</span></div>
+            <div class="tactical-row"><span>Pareja:</span><span style="color:#fff;">{d.get('pareja', '')}</span></div>
+            <div class="tactical-row"><span>Dígito Fuerte:</span><span style="color:#fff;">{d.get('digito_fuerte', '')}</span></div>
+            <div class="tactical-row"><span>Inercia:</span><span style="color:#4ade80;">{d.get('inercia', '')}</span></div>
+            <div style="background:#1e293b; padding:6px; border-radius:6px; text-align:center; color:#facc15; font-weight:bold; margin-top:6px;">🔥 Foco Principal: {d.get('foco_principal', '')}</div>
+        </div>
+
+        <div class="tactical-box" style="border-color: #facc15;">
+            <div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">⚡ JUGADA FORMADA (MEMORIA ACTIVA)</div>
+            <div class="tactical-row"><span>Sala Objetivo:</span><b style="color:#38bdf8;">{d.get('sala_objetivo', '')}</b></div>
+            <div class="tactical-row"><span>Respaldo:</span><span style="color:#4ade80;">{d.get('respaldo', '')}</span></div>
+            <div class="tactical-row"><span>3 Números:</span><div>{tres_nums_html}</div></div>
+            <div class="tactical-row"><span>2 Palés:</span><b style="color:#facc15;">{' / '.join(d.get('dos_pales', []))}</b></div>
+            <div class="tactical-row"><span>1 Tripleta:</span><b style="color:#f472b6;">[{d.get('tripleta', '')}]</b></div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:6px;"><b>COBERTURA LATERAL BLINDADA:</b><br>{d.get('cobertura', '')}<br><span style="color:#facc15;">{d.get('pale_reves', '')}</span></div>
+        </div>
+
+        <h3>⭐ TOP 5 NÚMEROS:</h3>
+        <table>
+            <tr><th>#</th><th>Número</th><th>Fuerza</th></tr>
+            {top5_html}
+        </table>
+        """
+    elif tipo_juego == "kino":
+        k_data = info.get("kino_data", {})
+        jugada_a_html = "".join([f"<span class='ball'>{n}</span>" for n in k_data.get("jugada_a", [])])
+        jugada_b_html = "".join([f"<span class='ball'>{n}</span>" for n in k_data.get("jugada_b", [])])
+        contenido_html = f"""
+        <h3>👑 JUGADA A (MATRIZ KINO):</h3><div style='text-align:center; margin:10px 0;'>{jugada_a_html}</div>
+        <h3>👑 JUGADA B (MATRIZ KINO):</h3><div style='text-align:center; margin:10px 0;'>{jugada_b_html}</div>
+        """
+    elif tipo_juego == "primitiva":
+        p_data = info.get("primitiva_data", {})
+        nums_html = "".join([f"<span class='ball'>{n}</span>" for n in p_data.get("numeros_base", [])])
+        contenido_html = f"""
+        <p style="color:#facc15; font-weight:bold;">🇪🇸 Reintegro: <span style="font-size:18px; color:#fff;">{p_data.get('reintegro', '')}</span></p>
+        <h3>🇪🇸 MATRIZ PRIMITIVA:</h3><div style='text-align:center; margin:15px 0;'>{nums_html}</div>
+        """
+    elif tipo_juego == "euromillones":
+        e_data = info.get("euro_data", {})
+        estrellas_html = "".join([f"<span class='ball' style='background:#38bdf8; color:#0f172a;'>⭐{e}</span>" for e in e_data.get("estrellas", [])])
+        nums_html = "".join([f"<span class='ball'>{n}</span>" for n in e_data.get("numeros", [])])
+        contenido_html = f"""
+        <h3>🇪🇺 ESTRELLAS:</h3><div style='text-align:center; margin:10px 0;'>{estrellas_html}</div>
+        <h3>🇪🇺 NÚMEROS:</h3><div style='text-align:center; margin:15px 0;'>{nums_html}</div>
+        """
 
     html = f"""
     <!DOCTYPE html>
@@ -144,7 +207,7 @@ def index(request: Request):
             table {{ width:100%; border-collapse:collapse; color:#fff; }}
             th, td {{ padding:8px; border-bottom:1px solid #1e293b; text-align:center; font-size: 13px; }}
             th {{ background: #1e293b; color: #94a3b8; }}
-            .tab-btn {{ background:#1f2937; color:#fff; border:none; padding:10px; margin:2px; border-radius:8px; cursor:pointer; font-weight: bold; white-space: nowrap; }}
+            .tab-btn {{ background:#1f2937; color:#fff; border:none; padding:10px; margin:2px; border-radius:8px; cursor:pointer; font-weight: bold; white-space: nowrap; text-decoration: none; display: inline-block; }}
             .active {{ background:#38bdf8 !important; color:#0f172a !important; }}
             h3 {{ color: #38bdf8; font-size: 14px; margin-top: 15px; border-bottom: 1px solid #233249; padding-bottom: 4px; }}
             .ball {{ background: #facc15; color: #0f172a; font-weight: 900; border-radius: 50%; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; margin: 3px; font-size: 13px; }}
@@ -159,7 +222,7 @@ def index(request: Request):
         <div id="pantalla_carga">
             <div class="spinner"></div>
             <h2 style="color: #facc15; font-size: 18px; margin: 5px;">SHNEYDER IA PRO RD</h2>
-            <p id="texto_cargando" style="color: #94a3b8; font-size: 14px;">Iniciando Sistema Táctico...</p>
+            <p style="color: #94a3b8; font-size: 14px;">Iniciando Sistema Táctico...</p>
         </div>
 
         <div style="max-width:800px; margin:auto;" id="panel_principal">
@@ -168,95 +231,17 @@ def index(request: Request):
                 {botones_html}
             </div>
             <div class="card" id="vista_general">
-                <h2 id="titulo_sala" style="color: #facc15; font-size: 16px;">Selecciona una Lotería</h2>
-                <div id="contenido_sala"></div>
+                <h2 id="titulo_sala" style="color: #facc15; font-size: 16px;">📊 {nombre_sala.upper()} <span style='color:#4ade80; font-size:12px;'>● ACTIVA</span></h2>
+                <div id="contenido_sala">
+                    {contenido_html}
+                </div>
             </div>
         </div>
 
         <script>
-            let db = JSON.parse('{datos_json}');
-
-            function mostrarSala(clave, elemento) {{
-                let botones = document.querySelectorAll('.tab-btn');
-                botones.forEach(b => b.classList.remove('active'));
-                if (elemento) {{
-                    elemento.classList.add('active');
-                }} else {{
-                    let primerBtn = document.querySelector('.tab-btn');
-                    if(primerBtn) primerBtn.classList.add('active');
-                }}
-
-                let info = db[clave];
-                if (!info) return;
-
-                let estadoBadge = "<span style='color:#4ade80; font-size:12px;'>● ACTIVA</span>";
-                document.getElementById('titulo_sala').innerHTML = "📊 " + info.nombre.toUpperCase() + " " + estadoBadge;
-                let html = "";
-                
-                if (info.tipo_juego === 'quiniela' && info.dictamen) {{
-                    let d = info.dictamen;
-                    
-                    html += `<div class="tactical-box">`;
-                    html += `<div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN DE SALA</div>`;
-                    html += `<div class="tactical-row"><span>Flujo:</span><b style="color:#facc15;">${{d.flujo}}</b></div>`;
-                    html += `<div class="tactical-row"><span>Decenas Clave:</span><span style="color:#fff;">${{d.decenas_clave}}</span></div>`;
-                    html += `<div class="tactical-row"><span>Terminales:</span><span style="color:#fff;">${{d.terminales}}</span></div>`;
-                    html += `<div class="tactical-row"><span>Pareja:</span><span style="color:#fff;">${{d.pareja}}</span></div>`;
-                    html += `<div class="tactical-row"><span>Dígito Fuerte:</span><span style="color:#fff;">${{d.digito_fuerte}}</span></div>`;
-                    html += `<div class="tactical-row"><span>Inercia:</span><span style="color:#4ade80;">${{d.inercia}}</span></div>`;
-                    html += `<div style="background:#1e293b; padding:6px; border-radius:6px; text-align:center; color:#facc15; font-weight:bold; margin-top:6px;">🔥 Foco Principal: ${{d.foco_principal}}</div>`;
-                    html += `</div>`;
-
-                    html += `<div class="tactical-box" style="border-color: #facc15;">`;
-                    html += `<div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">⚡ JUGADA FORMADA (MEMORIA ACTIVA)</div>`;
-                    html += `<div class="tactical-row"><span>Sala Objetivo:</span><b style="color:#38bdf8;">${{d.sala_objetivo}}</b></div>`;
-                    html += `<div class="tactical-row"><span>Respaldo:</span><span style="color:#4ade80;">${{d.respaldo}}</span></div>`;
-                    html += `<div class="tactical-row"><span>3 Números:</span><div>`;
-                    d.tres_numeros.forEach(num => {{ html += `<span class="ball" style="width:28px; height:28px; font-size:11px;">${{num}}</span>`; }});
-                    html += `</div></div>`;
-                    html += `<div class="tactical-row"><span>2 Palés:</span><b style="color:#facc15;">${{d.dos_pales.join(' / ')}}</b></div>`;
-                    html += `<div class="tactical-row"><span>1 Tripleta:</span><b style="color:#f472b6;">[${{d.tripleta}}]</b></div>`;
-                    html += `<div style="font-size:11px; color:#94a3b8; margin-top:6px;"><b>COBERTURA LATERAL BLINDADA:</b><br>${{d.cobertura}}<br><span style="color:#facc15;">${{d.pale_reves}}</span></div>`;
-                    html += `</div>`;
-
-                    html += "<h3>⭐ TOP 5 NÚMEROS:</h3><table><tr><th>#</th><th>Número</th><th>Fuerza</th></tr>";
-                    info.rankings.top5_nums.forEach((n, i) => {{ 
-                        html += `<tr><td>#${{i+1}}</td><td style="color:#38bdf8; font-weight:bold; font-size:15px;">${{n.num}}</td><td style="color:#4ade80;">${{n.fuerza}}%</td></tr>`; 
-                    }});
-                    html += "</table>";
-                }} 
-                else if (info.tipo_juego === 'kino') {{
-                    html += "<h3>👑 JUGADA A (MATRIZ KINO):</h3><div style='text-align:center; margin:10px 0;'>";
-                    info.kino_data.jugada_a.forEach(d => {{ html += `<span class='ball'>${{d}}</span>`; }});
-                    html += "</div><h3>👑 JUGADA B (MATRIZ KINO):</h3><div style='text-align:center; margin:10px 0;'>";
-                    info.kino_data.jugada_b.forEach(d => {{ html += `<span class='ball'>${{d}}</span>`; }});
-                    html += "</div>";
-                }}
-                else if (info.tipo_juego === 'primitiva') {{
-                    html += `<p style="color:#facc15; font-weight:bold;">🇪🇸 Reintegro: <span style="font-size:18px; color:#fff;">${{info.primitiva_data.reintegro}}</span></p><h3>🇪🇸 MATRIZ PRIMITIVA:</h3><div style='text-align:center; margin:15px 0;'>`;
-                    info.primitiva_data.numeros_base.forEach(n => {{ html += `<span class='ball'>${{n}}</span>`; }});
-                    html += "</div>";
-                }}
-                else if (info.tipo_juego === 'euromillones') {{
-                    html += "<h3>🇪🇺 ESTRELLAS:</h3><div style='text-align:center; margin:10px 0;'>";
-                    info.euro_data.estrellas.forEach(e => {{ html += `<span class='ball' style='background:#38bdf8; color:#0f172a;'>⭐${{e}}</span>`; }});
-                    html += "</div><h3>🇪🇺 NÚMEROS:</h3><div style='text-align:center; margin:15px 0;'>";
-                    info.euro_data.numeros.forEach(n => {{ html += `<span class='ball'>${{n}}</span>`; }});
-                    html += "</div>";
-                }}
-                document.getElementById('contenido_sala').innerHTML = html;
-            }}
-
-            window.onload = function() {{
-                setTimeout(() => {{
-                    document.getElementById('pantalla_carga').style.display = 'none';
-                    let primerBoton = document.querySelector('.tab-btn');
-                    if(primerBoton) {{
-                        let keys = Object.keys(db);
-                        if(keys.length > 0) mostrarSala(keys[0], primerBoton);
-                    }}
-                }}, 400);
-            }};
+            setTimeout(() => {{
+                document.getElementById('pantalla_carga').style.display = 'none';
+            }}, 300);
         </script>
     </body>
     </html>
