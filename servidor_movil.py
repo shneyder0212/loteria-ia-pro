@@ -23,7 +23,7 @@ def calcular_enjambre_ia():
         ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0, "quiniela", "rd", "La Primera Día (12:00 PM)"),
         ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela", "rd", "LoteDom (12:00 PM)"),
         ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela", "rd", "Lotería Real (12:55 PM)"),
-        ("real", "Lotería Real (12:55 PM)", 12, 55, "quiniela", "rd", "Anguila Mediodía (1:00 PM)"),
+        ("real", "La Primitiva (España)", 12, 55, "quiniela", "rd", "Anguila Mediodía (1:00 PM)"),
         ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0, "quiniela", "rd", "Gana Más (2:30 PM)"),
         ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela", "rd", "Anguila Tarde (6:00 PM)"),
         ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0, "quiniela", "rd", "Loteka (7:55 PM)"),
@@ -65,8 +65,15 @@ def calcular_enjambre_ia():
             
             sueltos_ord = sorted(sueltos, key=lambda x: x['fuerza'], reverse=True)
             n1, n2, n3 = sueltos_ord[0]['num'], sueltos_ord[1]['num'], sueltos_ord[2]['num']
+            n4, n5 = sueltos_ord[3]['num'], sueltos_ord[4]['num']
             
-            # Extracción automática de las tres decenas clave basadas en los números del motor de IA
+            # Cruce cuántico de alta potencia para súper palés y tripleta
+            super_pale_1 = f"[{n1} - {n2}]"
+            super_pale_2 = f"[{n1} - {n3}]"
+            super_pale_3 = f"[{n2} - {n4}]"
+            tripleta_caliente = f"[{n1} - {n2} - {n3}]"
+            tripleta_alternativa = f"[{n1} - {n3} - {n5}]"
+
             decenas_extraidas = set()
             for obj in sueltos_ord[:10]:
                 decena_num = (int(obj['num']) // 10) * 10
@@ -76,7 +83,6 @@ def calcular_enjambre_ia():
                 lista_decenas.append("[00-09]")
             decenas_clave_str = ", ".join(lista_decenas)
 
-            # Extracción de terminales y dígitos fuertes reales
             terminales_extraidos = set([n['num'][1] for n in sueltos_ord[:10]])
             digitos_extraidos = set([n['num'][0] for n in sueltos_ord[:10]])
 
@@ -91,13 +97,11 @@ def calcular_enjambre_ia():
                 top20_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td></tr>"
 
             tres_nums_html = "".join([f'<span class="ball">{n}</span>' for n in [n1, n2, n3]])
-            pales_str = f"[{n1} - {n2}] / [{n2} - {n3}]"
-            tripleta_str = f"[{n1} - {n2} - {n3}]"
 
             dictamen_html = f"""
             <div class="tactical-box">
-                <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN DE SALA (MOTOR IA)</div>
-                <div class="tactical-row"><span>Flujo:</span><b style="color:#facc15;">ANCLAJE TRIPLE 3-DECENAS</b></div>
+                <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN DE SALA (MOTOR IA CUÁNTICO)</div>
+                <div class="tactical-row"><span>Flujo:</span><b style="color:#facc15;">ANCLAJE TRIPLE 3-DECENAS (CALIBRADO)</b></div>
                 <div class="tactical-row"><span>Decenas Clave (IA):</span><span style="color:#fff;">{decenas_clave_str}</span></div>
                 <div class="tactical-row"><span>Terminales (IA):</span><span style="color:#fff;">Term. {", ".join(list(terminales_extraidos)[:3])}</span></div>
                 <div class="tactical-row"><span>Dígitos Fuertes (IA):</span><span style="color:#fff;">{", ".join(list(digitos_extraidos)[:3])}</span></div>
@@ -105,12 +109,12 @@ def calcular_enjambre_ia():
             </div>
 
             <div class="tactical-box" style="border-color: #facc15;">
-                <div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">⚡ JUGADA FORMADA (MEMORIA ACTIVA)</div>
+                <div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">🔥 JUGADA MAESTRA (SÚPER CALIENTES)</div>
                 <div class="tactical-row"><span>Sala Objetivo:</span><b style="color:#38bdf8;">{nombre}</b></div>
                 <div class="tactical-row"><span>Respaldo:</span><span style="color:#4ade80;">{respaldo}</span></div>
-                <div class="tactical-row"><span>3 Números:</span><div>{tres_nums_html}</div></div>
-                <div class="tactical-row"><span>2 Palés:</span><b style="color:#facc15;">{pales_str}</b></div>
-                <div class="tactical-row"><span>1 Tripleta:</span><b style="color:#f472b6;">{tripleta_str}</b></div>
+                <div class="tactical-row"><span>3 Números Base:</span><div>{tres_nums_html}</div></div>
+                <div class="tactical-row"><span>Súper Palés Calientes:</span><b style="color:#facc15;">{super_pale_1} / {super_pale_2} / {super_pale_3}</b></div>
+                <div class="tactical-row"><span>Tripletas de Poder:</span><b style="color:#f472b6;">{tripleta_caliente} o {tripleta_alternativa}</b></div>
             </div>
 
             <h3>⭐ TOP 20 NÚMEROS:</h3>
