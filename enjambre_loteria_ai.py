@@ -47,29 +47,24 @@ def calcular_enjambre_ia():
                 sueltos.append({"num": num, "fuerza": round(99.9 - (i*0.4), 1), "tipo": "Algoritmo"})
             
             sueltos_ord = sorted(sueltos, key=lambda x: x['fuerza'], reverse=True)
-            
-            top5_pales_con_fuerza = []
-            for i in range(5):
-                p_str = f"{sueltos_ord[i]['num']} - {sueltos_ord[i+1]['num']}"
-                fuerza_pale = round((sueltos_ord[i]['fuerza'] + sueltos_ord[i+1]['fuerza']) / 2, 1)
-                top5_pales_con_fuerza.append({"pale": p_str, "fuerza": fuerza_pale})
+            top5_pales_con_fuerza = [{"pale": f"{sueltos_ord[i]['num']} - {sueltos_ord[i+1]['num']}", "fuerza": round((sueltos_ord[i]['fuerza'] + sueltos_ord[i+1]['fuerza']) / 2, 1)} for i in range(5)]
 
             resultado_final[clave] = {
                 "nombre": nombre, "activa": activa, "tipo_juego": "quiniela",
-                "tiro_fijo": {"num": sueltos_ord[0]['num'], "virado": sueltos_ord[0]['num'][::-1], "fuerza": 99.6, "palé_titan": f"{sueltos_ord[0]['num']}-{sueltos_ord[1]['num']}"},
                 "rankings": {
                     "top5_nums": sueltos_ord[:5],
                     "top5_pales": top5_pales_con_fuerza,
                     "top5_tripletas": [f"{sueltos_ord[0]['num']}-{sueltos_ord[1]['num']}-{sueltos_ord[2]['num']}"],
                     "top20": sueltos_ord[:20]
-                },
-                "sueltos": sueltos_ord
+                }
             }
         elif tipo == "kino":
-            kino_duenos = ["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), 10))]
+            # Generamos 2 jugadas independientes
+            jugada_a = ["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), 10))]
+            jugada_b = ["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), 10))]
             resultado_final[clave] = {
                 "nombre": nombre, "activa": activa, "tipo_juego": "kino",
-                "kino_data": {"duenos": kino_duenos}
+                "kino_data": {"jugada_a": jugada_a, "jugada_b": jugada_b}
             }
         elif tipo == "primitiva":
             prim_base = ["{:02d}".format(n) for n in sorted(rng.sample(range(1, 50), 6))]
