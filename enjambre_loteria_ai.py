@@ -16,7 +16,6 @@ def calcular_enjambre_ia():
     
     rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + hora_rd.hour)
 
-    # Lista completa de salas que SIEMPRE se mostrarán
     salas_config = [
         ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0, "quiniela", "rd", "La Primera Día (12:00 PM)"),
         ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela", "rd", "LoteDom (12:00 PM)"),
@@ -35,16 +34,11 @@ def calcular_enjambre_ia():
         ("euromillones", "Euromillones (Europa)", 21, 30, "euromillones", "esp", "La Primitiva (España)")
     ]
 
-    minutos_actuales_rd = hora_rd.hour * 60 + hora_rd.minute
-    minutos_actuales_esp = hora_esp.hour * 60 + hora_esp.minute
-    
     resultado_final = {}
 
     for clave, nombre, h_cierre, m_cierre, tipo, region, respaldo in salas_config:
-        cierre_minutos = h_cierre * 60 + m_cierre
-        minutos_actuales = minutos_actuales_esp if region == "esp" else minutos_actuales_rd
-        
-        activa = (minutos_actuales <= cierre_minutos)
+        # Forzamos que la sala aparezca activa siempre para evitar bloqueos nocturnos
+        activa = True
 
         if tipo == "quiniela":
             decenas_disponibles = [
