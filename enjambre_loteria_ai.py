@@ -44,11 +44,12 @@ def calcular_enjambre_ia():
         minutos_actuales = minutos_actuales_esp if region == "esp" else minutos_actuales_rd
         
         activa = (minutos_actuales <= cierre_minutos)
-        if minutos_actuales > (cierre_minutos + 30):
+        
+        # Permitimos ver las salas incluso si cerraron hace unas horas para que la app nunca se quede en blanco
+        if minutos_actuales > (cierre_minutos + 360): # 6 horas de margen tras el cierre
             continue
 
         if tipo == "quiniela":
-            # Selección autónoma de 3 decenas clave mediante el motor
             decenas_disponibles = [
                 ("[00-09]", "Decena [00-09]"), ("[10-19]", "Decena [10-19]"),
                 ("[20-29]", "Decena [20-29]"), ("[30-39]", "Decena [30-39]"),
@@ -58,7 +59,6 @@ def calcular_enjambre_ia():
             ]
             decenas_elegidas = rng.sample(decenas_disponibles, 3)
             
-            # Generación de números del motor
             pool_numeros = [f"{n:02d}" for n in range(100)]
             rng.shuffle(pool_numeros)
             
@@ -69,7 +69,6 @@ def calcular_enjambre_ia():
             
             sueltos_ord = sorted(sueltos, key=lambda x: x['fuerza'], reverse=True)
             
-            # 3 Números principales de la memoria activa
             n1, n2, n3 = sueltos_ord[0]['num'], sueltos_ord[1]['num'], sueltos_ord[2]['num']
             
             top5_pales_con_fuerza = []
@@ -80,7 +79,6 @@ def calcular_enjambre_ia():
 
             tripleta_str = f"{n1} - {n2} - {n3}"
             
-            # Cobertura lateral blindada (+1 / -1) basada en el primer número principal
             num_base_int = int(n1)
             plus_one = f"{ (num_base_int + 1) % 100:02d }"
             minus_one = f"{ (num_base_int - 1) % 100:02d }"
