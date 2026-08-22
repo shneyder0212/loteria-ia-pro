@@ -25,13 +25,13 @@ def calcular_enjambre_ia():
         ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela", "rd", "Lotería Real (12:55 PM)"),
         ("real", "Lotería Real (12:55 PM)", 12, 55, "quiniela", "rd", "Anguila Mediodía (1:00 PM)"),
         ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0, "quiniela", "rd", "Gana Más (2:30 PM)"),
-        ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela", "Anguila Tarde (6:00 PM)"),
-        ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0, "quiniela", "Loteka (7:55 PM)"),
-        ("loteka", "Loteka (7:55 PM)", 19, 55, "quiniela", "La Primera Noche (8:00 PM)"),
-        ("primera_noche", "La Primera Noche (8:00 PM)", 20, 0, "quiniela", "Nacional Noche (8:50 PM)"),
-        ("nacional_noche", "Nacional Noche (8:50 PM)", 20, 50, "quiniela", "Leidsa (8:55 PM)"),
-        ("leidsa", "Leidsa (8:55 PM)", 20, 55, "quiniela", "Anguila Noche (9:00 PM)"),
-        ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 0, "quiniela", "Kino Leidsa TV"),
+        ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela", "rd", "Anguila Tarde (6:00 PM)"),
+        ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0, "quiniela", "rd", "Loteka (7:55 PM)"),
+        ("loteka", "Loteka (7:55 PM)", 19, 55, "quiniela", "rd", "La Primera Noche (8:00 PM)"),
+        ("primera_noche", "La Primera Noche (8:00 PM)", 20, 0, "quiniela", "rd", "Nacional Noche (8:50 PM)"),
+        ("nacional_noche", "Nacional Noche (8:50 PM)", 20, 50, "quiniela", "rd", "Leidsa (8:55 PM)"),
+        ("leidsa", "Leidsa (8:55 PM)", 20, 55, "quiniela", "rd", "Anguila Noche (9:00 PM)"),
+        ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 0, "quiniela", "rd", "Kino Leidsa TV"),
         ("kino_leidsa", "Kino Leidsa TV", 20, 55, "kino", "rd", "Nacional Noche (8:50 PM)"),
         ("primitiva_esp", "La Primitiva (España)", 21, 0, "primitiva", "esp", "Euromillones (Europa)"),
         ("euromillones", "Euromillones (Europa)", 21, 0, "euromillones", "esp", "La Primitiva (España)")
@@ -46,14 +46,12 @@ def calcular_enjambre_ia():
         cierre_minutos = h_cierre * 60 + m_cierre
         minutos_actuales = minutos_actuales_esp if region == "esp" else minutos_actuales_rd
         
-        # Validación estricta de días de juego para España
         juega_hoy = True
         if tipo == "primitiva":
             juega_hoy = dia_nombre in ["Lunes", "Jueves", "Sábado"]
         elif tipo == "euromillones":
             juega_hoy = dia_nombre in ["Martes", "Viernes"]
 
-        # Activa solo si es su día de juego y la hora es menor o igual al cierre (21:00)
         activa = juega_hoy and (minutos_actuales <= cierre_minutos)
 
         if tipo == "quiniela":
