@@ -43,11 +43,8 @@ def calcular_enjambre_ia():
         cierre_minutos = h_cierre * 60 + m_cierre
         minutos_actuales = minutos_actuales_esp if region == "esp" else minutos_actuales_rd
         
+        # Marcamos si está activa o cerrada, pero NUNCA la borramos para que siempre haya contenido
         activa = (minutos_actuales <= cierre_minutos)
-        
-        # Permitimos ver las salas incluso si cerraron hace unas horas para que la app nunca se quede en blanco
-        if minutos_actuales > (cierre_minutos + 360): # 6 horas de margen tras el cierre
-            continue
 
         if tipo == "quiniela":
             decenas_disponibles = [
