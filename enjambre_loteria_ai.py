@@ -15,13 +15,18 @@ def calcular_enjambre_ia():
     rng = random.Random(seed_base + (77 if es_lunes_domingo else 33))
 
     salas_config = [
-        ("real", "Lotería Real", 12, 55, "quiniela"),
-        ("gana_mas", "Gana Más", 14, 30, "quiniela"),
-        ("nacional_noche", "Nacional Noche", 20, 50, "quiniela"),
-        ("leidsa", "Leidsa", 20, 55, "quiniela"),
-        ("loteka", "Loteka", 19, 55, "quiniela"),
-        ("primera_dia", "La Primera Día", 12, 0, "quiniela"),
-        ("primera_noche", "La Primera Noche", 20, 0, "quiniela"),
+        ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0, "quiniela"),
+        ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela"),
+        ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela"),
+        ("real", "Lotería Real (12:55 PM)", 12, 55, "quiniela"),
+        ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0, "quiniela"),
+        ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela"),
+        ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0, "quiniela"),
+        ("loteka", "Loteka (7:55 PM)", 19, 55, "quiniela"),
+        ("primera_noche", "La Primera Noche (8:00 PM)", 20, 0, "quiniela"),
+        ("nacional_noche", "Nacional Noche (8:50 PM)", 20, 50, "quiniela"),
+        ("leidsa", "Leidsa (8:55 PM)", 20, 55, "quiniela"),
+        ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 0, "quiniela"),
         ("kino_leidsa", "Kino Leidsa TV", 20, 55, "kino"),
         ("primitiva_esp", "La Primitiva (España)", 21, 30, "primitiva"),
         ("euromillones", "Euromillones (Europa)", 21, 30, "euromillones")
