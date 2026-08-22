@@ -56,11 +56,7 @@ def index(request: Request):
                 document.getElementById('contenedor_tabs').innerHTML = html;
             }}
 
-            function cambiarTab(clave) {{ 
-                tabActual = clave; 
-                construirTabs(); 
-                actualizarVista(); 
-            }}
+            function cambiarTab(clave) {{ tabActual = clave; construirTabs(); actualizarVista(); }}
 
             function actualizarVista() {{
                 let info = db[tabActual];
@@ -69,29 +65,19 @@ def index(request: Request):
                 
                 if (info.tipo_juego === 'quiniela' && info.rankings) {{
                     html += "<h3>⭐ TOP 5 NÚMEROS:</h3><table><tr><th>#</th><th>Número</th><th>Fuerza</th></tr>";
-                    info.rankings.top5_nums.forEach((n, i) => {{ 
-                        html += `<tr><td>#${{i+1}}</td><td style="color:#38bdf8; font-weight:bold; font-size:15px;">${{n.num}}</td><td style="color:#4ade80;">${{n.fuerza}}%</td></tr>`; 
-                    }});
-                    html += "</table>";
-
-                    html += "<h3>💥 TOP 5 PALÉS MAESTROS:</h3>";
-                    info.rankings.top5_pales.forEach((p, i) => {{ 
-                        html += `<p style="margin:6px 0; font-size:13px; display:flex; justify-content:space-between; align-items:center;"><span>#${{i+1}}: <b style="color:#facc15; font-size:14px;">${{p.pale}}</b></span> <span style="color:#4ade80; font-weight:bold;">${{p.fuerza}}%</span></p>`; 
-                    }});
-
-                    html += "<h3>🏆 TRIPLETA RECOMENDADA:</h3>";
-                    html += `<p style="font-size:15px; color:#f472b6; font-weight:bold;">[${{info.rankings.top5_tripletas[0]}}]</p>`;
-
-                    html += "<h3>📊 TOP 20 GENERAL (COBERTURA):</h3>";
-                    html += "<div style='max-height:180px; overflow-y:auto; border:1px solid #1e293b; border-radius:6px;'><table>";
-                    info.rankings.top20.forEach((n, i) => {{ 
-                        html += `<tr><td>#${{i+1}}</td><td>${{n.num}}</td><td>${{n.fuerza}}%</td></tr>`; 
-                    }});
+                    info.rankings.top5_nums.forEach((n, i) => {{ html += `<tr><td>#${{i+1}}</td><td style="color:#38bdf8; font-weight:bold; font-size:15px;">${{n.num}}</td><td style="color:#4ade80;">${{n.fuerza}}%</td></tr>`; }});
+                    html += "</table><h3>💥 TOP 5 PALÉS MAESTROS:</h3>";
+                    info.rankings.top5_pales.forEach((p, i) => {{ html += `<p style="margin:6px 0; font-size:13px; display:flex; justify-content:space-between;"><span>#${{i+1}}: <b style="color:#facc15; font-size:14px;">${{p.pale}}</b></span> <span style="color:#4ade80; font-weight:bold;">${{p.fuerza}}%</span></p>`; }});
+                    html += "<h3>🏆 TRIPLETA RECOMENDADA:</h3><p style='font-size:15px; color:#f472b6; font-weight:bold;'>[${{info.rankings.top5_tripletas[0]}}]</p>";
+                    html += "<h3>📊 TOP 20 GENERAL (COBERTURA):</h3><div style='max-height:180px; overflow-y:auto; border:1px solid #1e293b; border-radius:6px;'><table>";
+                    info.rankings.top20.forEach((n, i) => {{ html += `<tr><td>#${{i+1}}</td><td>${{n.num}}</td><td>${{n.fuerza}}%</td></tr>`; }});
                     html += "</table></div>";
                 }} 
                 else if (info.tipo_juego === 'kino') {{
-                    html += "<h3>👑 MATRIZ KINO:</h3><div style='text-align:center; margin:15px 0;'>";
-                    info.kino_data.duenos.forEach(d => {{ html += `<span class="ball">${{d}}</span>`; }});
+                    html += "<h3>👑 JUGADA A (MATRIZ KINO):</h3><div style='text-align:center; margin:10px 0;'>";
+                    info.kino_data.jugada_a.forEach(d => {{ html += `<span class="ball">${{d}}</span>`; }});
+                    html += "</div><h3>👑 JUGADA B (MATRIZ KINO):</h3><div style='text-align:center; margin:10px 0;'>";
+                    info.kino_data.jugada_b.forEach(d => {{ html += `<span class="ball">${{d}}</span>`; }});
                     html += "</div>";
                 }}
                 else if (info.tipo_juego === 'primitiva') {{
@@ -107,12 +93,9 @@ def index(request: Request):
                     info.euro_data.numeros.forEach(n => {{ html += `<span class="ball">${{n}}</span>`; }});
                     html += "</div>";
                 }}
-                
                 document.getElementById('contenido_sala').innerHTML = html;
             }}
-
-            construirTabs(); 
-            actualizarVista();
+            construirTabs(); actualizarVista();
         </script>
     </body>
     </html>
