@@ -39,12 +39,7 @@ def calcular_enjambre_ia():
 
     for clave, nombre, tipo, respaldo in salas_config:
         if tipo == "quiniela":
-            decenas_disponibles = [
-                ("Decena [00-09]"), ("Decena [10-19]"), ("Decena [20-29]"), 
-                ("Decena [30-39]"), ("Decena [40-49]"), ("Decena [50-59]"),
-                ("Decena [60-69]"), ("Decena [70-79]"), ("Decena [80-89]"), ("Decena [90-99]")
-            ]
-            decena_foco = rng.choice(decenas_disponibles)
+            decena_foco = rng.choice(["Decena [00-09]", "Decena [10-19]", "Decena [20-29]", "Decena [30-39]", "Decena [40-49]", "Decena [50-59]", "Decena [60-69]", "Decena [70-79]", "Decena [80-89]", "Decena [90-99]"])
             pool_numeros = [f"{n:02d}" for n in range(100)]
             rng.shuffle(pool_numeros)
             
