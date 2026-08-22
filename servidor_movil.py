@@ -17,8 +17,6 @@ def calcular_enjambre_ia():
     dia_nombre = DIAS_SEMANA[hora_rd.weekday()]
     es_lunes_domingo = dia_nombre in ["Lunes", "Domingo"]
     
-    rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + hora_rd.hour)
-
     salas_config = [
         ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0, "quiniela", "rd", "La Primera Día (12:00 PM)"),
         ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela", "rd", "LoteDom (12:00 PM)"),
@@ -42,7 +40,7 @@ def calcular_enjambre_ia():
 
     resultado_final = {}
 
-    for clave, nombre, h_cierre, m_cierre, tipo, region, respaldo in salas_config:
+    for idx_sala, (clave, nombre, h_cierre, m_cierre, tipo, region, respaldo) in enumerate(salas_config):
         cierre_minutos = h_cierre * 60 + m_cierre
         minutos_actuales = minutos_actuales_esp if region == "esp" else minutos_actuales_rd
         
@@ -53,6 +51,9 @@ def calcular_enjambre_ia():
             juega_hoy = dia_nombre in ["Martes", "Viernes"]
 
         activa = juega_hoy and (minutos_actuales <= cierre_minutos)
+
+        # Semilla completamente única y exclusiva para cada sala
+        rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + hora_rd.hour + (idx_sala * 13))
 
         if tipo == "quiniela":
             pool_numeros = [f"{n:02d}" for n in range(100)]
@@ -87,7 +88,6 @@ def calcular_enjambre_ia():
             terminales_extraidos = set([n['num'][1] for n in sueltos_ord[:10]])
             digitos_extraidos = set([n['num'][0] for n in sueltos_ord[:10]])
 
-            # Listado Top 20 con sugerencia de lotería por renglón
             top20_pales = []
             for i in range(20):
                 p_str = f"{sueltos_ord[i]['num']} - {sueltos_ord[i+1]['num']}"
@@ -104,8 +104,8 @@ def calcular_enjambre_ia():
 
             dictamen_html = f"""
             <div class="tactical-box">
-                <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN DE SALA (MOTOR IA CUÁNTICO)</div>
-                <div class="tactical-row"><span>Flujo:</span><b style="color:#facc15;">ANCLAJE TRIPLE 3-DECENAS (CALIBRADO)</b></div>
+                <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN EXCLUSIVO: {nombre.upper()}</div>
+                <div class="tactical-row"><span>Flujo:</span><b style="color:#facc15;">ANCLAJE TRIPLE 3-DECENAS (EXCLUSIVO)</b></div>
                 <div class="tactical-row"><span>Decenas Clave (IA):</span><span style="color:#fff;">{decenas_clave_str}</span></div>
                 <div class="tactical-row"><span>Terminales (IA):</span><span style="color:#fff;">Term. {", ".join(list(terminales_extraidos)[:3])}</span></div>
                 <div class="tactical-row"><span>Dígitos Fuertes (IA):</span><span style="color:#fff;">{", ".join(list(digitos_extraidos)[:3])}</span></div>
@@ -113,7 +113,7 @@ def calcular_enjambre_ia():
             </div>
 
             <div class="tactical-box" style="border-color: #facc15;">
-                <div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">🔥 JUGADA MAESTRA CON SALA OBJETIVO</div>
+                <div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">🔥 JUGADA MAESTRA EXCLUSIVA</div>
                 <div class="tactical-row"><span>Sala Objetivo Principal:</span><b style="color:#38bdf8;">{nombre}</b></div>
                 <div class="tactical-row"><span>Respaldo Sugerido:</span><span style="color:#4ade80;">{respaldo}</span></div>
                 <div class="tactical-row"><span>3 Números Base:</span><div>{tres_nums_html}</div></div>
@@ -121,12 +121,12 @@ def calcular_enjambre_ia():
                 <div class="tactical-row"><span>Tripleta + Salas:</span><b style="color:#f472b6;">{tripleta_caliente}</b></div>
             </div>
 
-            <h3>⭐ TOP 20 NÚMEROS (CON SUGERENCIA DE SALA):</h3>
+            <h3>⭐ TOP 20 NÚMEROS ({nombre.upper()}):</h3>
             <div style="max-height: 250px; overflow-y: auto;">
                 <table><tr><th>#</th><th>Número</th><th>Fuerza</th><th>Sala Sugerida</th></tr>{top20_nums}</table>
             </div>
             
-            <h3>⭐ TOP 20 PALÉS (CON SUGERENCIA DE SALA):</h3>
+            <h3>⭐ TOP 20 PALÉS ({nombre.upper()}):</h3>
             <div style="max-height: 250px; overflow-y: auto;">
                 <table><tr><th>#</th><th>Palé</th><th>Fuerza</th><th>Sala Sugerida</th></tr>{"".join(top20_pales)}</table>
             </div>
