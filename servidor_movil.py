@@ -43,14 +43,13 @@ def index(request: Request):
         </style>
     </head>
     <body>
-        <!-- Pantalla de Inicio Limpia con Simulación de Análisis de la IA -->
         <div id="pantalla_carga">
             <div class="spinner"></div>
             <h2 style="color: #facc15; font-size: 18px; margin: 5px;">SHNEYDER IA PRO RD</h2>
-            <p id="texto_cargando" style="color: #94a3b8; font-size: 14px;">Iniciando Enjambre Cuántico... Analizando matrices y frecuencias</p>
+            <p id="texto_cargando" style="color: #94a3b8; font-size: 14px;">Sincronizando Zonas Horarias (RD / España)...</p>
         </div>
 
-        <div style="max-width:800px; margin:auto;" id="panel_principal" style="display:none;">
+        <div style="max-width:800px; margin:auto;" id="panel_principal">
             <h1>SHNEYDER IA PRO RD</h1>
             <div id="contenedor_tabs" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px;"></div>
             <div class="card" id="vista_general">
@@ -61,10 +60,15 @@ def index(request: Request):
 
         <script>
             let db = {datos_json};
-            let tabActual = Object.keys(db)[0];
+            let keys = Object.keys(db);
+            let tabActual = keys.length > 0 ? keys[0] : null;
 
             function construirTabs() {{
                 let html = "";
+                if (keys.length === 0) {{
+                    document.getElementById('contenedor_tabs').innerHTML = "<p style='color:#facc15;'>No hay loterías activas en este horario.</p>";
+                    return;
+                }}
                 for (let clave in db) {{
                     html += `<button class="tab-btn ${{clave === tabActual ? 'active' : ''}}" onclick="cambiarTab('${{clave}}')">${{db[clave].nombre}}</button>`;
                 }}
@@ -74,8 +78,14 @@ def index(request: Request):
             function cambiarTab(clave) {{ tabActual = clave; construirTabs(); actualizarVista(); }}
 
             function actualizarVista() {{
+                if (!tabActual || !db[tabActual]) {{
+                    document.getElementById('titulo_sala').innerText = "SIN SALAS ACTIVAS";
+                    document.getElementById('contenido_sala').innerHTML = "<p>Todas las loterías de hoy han finalizado. Vuelve en el próximo horario de sorteos.</p>";
+                    return;
+                }}
                 let info = db[tabActual];
-                document.getElementById('titulo_sala').innerText = "📊 TRABAJO DE IA: " + info.nombre.toUpperCase();
+                let estadoBadge = info.activa ? "<span style='color:#4ade80; font-size:12px;'>● ABIERTA</span>" : "<span style='color:#f87171; font-size:12px;'>● CERRADA</span>";
+                document.getElementById('titulo_sala').innerHTML = "📊 " + info.nombre.toUpperCase() + " " + estadoBadge;
                 let html = "";
                 
                 if (info.tipo_juego === 'quiniela' && info.rankings) {{
@@ -122,14 +132,12 @@ def index(request: Request):
                 document.getElementById('contenido_sala').innerHTML = html;
             }}
 
-            // Simulación de arranque de la IA y transición suave
             setTimeout(() => {{
                 document.getElementById('pantalla_carga').style.display = 'none';
                 construirTabs(); 
                 actualizarVista();
             }}, 2500);
 
-            // Auto-refresco inteligente cada 60 segundos
             setInterval(() => {{ location.reload(); }}, 60000);
         </script>
     </body>
