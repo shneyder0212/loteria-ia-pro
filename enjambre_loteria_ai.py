@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
-# [TABLA MAESTRA DE JALADERAS POSICIONALES]
 TABLA_JALADERA = {
     "00": ["55", "05", "50"], "01": ["56", "10", "61"], "02": ["57", "20", "72"], "03": ["58", "30", "83"],
     "04": ["59", "40", "94"], "05": ["00", "50", "20"], "06": ["51", "60", "29"], "07": ["52", "70", "25"],
@@ -38,9 +37,7 @@ def obtener_jalamatico(num_str):
 def obtener_fechas_rd():
     ahora_utc = datetime.utcnow()
     hora_rd = ahora_utc - timedelta(hours=4)
-    fecha_str = hora_rd.strftime("%d/%m/%Y")
-    dia_nombre = DIAS_SEMANA[hora_rd.weekday()]
-    return hora_rd, fecha_str, dia_nombre
+    return hora_rd, hora_rd.strftime("%d/%m/%Y"), DIAS_SEMANA[hora_rd.weekday()]
 
 def calcular_enjambre_ia():
     hora_rd, _, dia_nombre = obtener_fechas_rd()
@@ -49,76 +46,70 @@ def calcular_enjambre_ia():
     rng = random.Random(seed_base + (77 if es_lunes_domingo else 33))
 
     salas_config = [
-        ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0),
-        ("primera_dia", "La Primera Día (12:00 PM)", 12, 0),
-        ("lotedom", "LoteDom (12:00 PM)", 12, 0),
-        ("suerte_dia", "La Suerte Día (12:30 PM)", 12, 30),
-        ("real", "Lotería Real (12:55 PM)", 12, 55),
-        ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0),
-        ("gana_mas", "Gana Más (2:30 PM)", 14, 30),
-        ("suerte_tarde", "La Suerte Tarde (6:00 PM)", 18, 0),
-        ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0),
-        ("loteka", "Loteka (7:55 PM)", 19, 55),
-        ("primera_noche", "La Primera Noche (8:00 PM)", 20, 0),
-        ("nacional_noche", "Nacional Noche (8:50 PM)", 20, 50),
-        ("leidsa", "Leidsa (8:55 PM)", 20, 55),
-        ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 0),
-        ("kino_leidsa", "Kino Leidsa TV", 20, 55)
+        ("real", "Lotería Real", 12, 55, "quiniela"),
+        ("gana_mas", "Gana Más", 14, 30, "quiniela"),
+        ("nacional_noche", "Nacional Noche", 20, 50, "quiniela"),
+        ("leidsa", "Leidsa", 20, 55, "quiniela"),
+        ("loteka", "Loteka", 19, 55, "quiniela"),
+        ("primera_dia", "La Primera Día", 12, 0, "quiniela"),
+        ("primera_noche", "La Primera Noche", 20, 0, "quiniela"),
+        ("lotedom", "LoteDom", 12, 0, "quiniela"),
+        ("kino_leidsa", "Kino Leidsa TV", 20, 55, "kino"),
+        ("primitiva_esp", "La Primitiva (España)", 21, 30, "primitiva"),
+        ("euromillones", "Euromillones (Europa)", 21, 30, "euromillones")
     ]
 
     hora_actual_minutos = hora_rd.hour * 60 + hora_rd.minute
     resultado_final = {}
     usados = []
 
-    for clave, nombre, h_cierre, m_cierre in salas_config:
+    for clave, nombre, h_cierre, m_cierre, tipo in salas_config:
         cierre_minutos = h_cierre * 60 + m_cierre
         activa = hora_actual_minutos <= cierre_minutos
 
-        decenas_disponibles = [20, 40, 80] if es_lunes_domingo else [10, 30, 40, 70, 80]
-        decena_base = rng.choice(decenas_disponibles)
-        
-        terminales_elegidos = rng.sample([2, 3, 5, 7, 8], 3)
-        n1_int = decena_base + terminales_elegidos[0]
-        n2_int = decena_base + terminales_elegidos[1]
-        n3_int = decena_base + terminales_elegidos[2]
+        if tipo == "quiniela":
+            decena_base = rng.choice([10, 30, 40, 70, 80])
+            terminales = rng.sample([2, 3, 5, 7, 8], 3)
+            n1 = "{:02d}".format(decena_base + terminales[0])
+            n2 = "{:02d}".format(decena_base + terminales[1])
+            jals = obtener_jalamatico(n1)
+            n3 = jals[1]
+            
+            while n1 in usados:
+                n1 = "{:02d}".format((int(n1) + 3) % 100)
+            usados.append(n1)
 
-        n1 = "{:02d}".format(n1_int)
-        n2 = "{:02d}".format(n2_int)
-        
-        jals = obtener_jalamatico(n1)
-        n3 = jals[1] if len(jals) > 1 else "{:02d}".format(n3_int)
-
-        while n1 in usados:
-            n1 = "{:02d}".format((int(n1) + 3) % 100)
-        usados.append(n1)
-
-        n1_reves = n1[::-1] if n1 != n1[::-1] else "60"
-        p1 = f"{n1} - {n2}"
-        p2 = f"{n1} - {n3}"
-        tripleta_reina = f"{n1} - {n2} - {n3}"
-
-        sueltos_sala = [
-            {"num": n1, "fuerza": 99.6, "tipo": "triple_factor", "lot": nombre},
-            {"num": n2, "fuerza": 98.2, "tipo": "caliente", "lot": nombre},
-            {"num": n3, "fuerza": 97.4, "tipo": "caliente", "lot": nombre},
-            {"num": n1_reves, "fuerza": 95.1, "tipo": "virado", "lot": nombre}
-        ]
-
-        resultado_final[clave] = {
-            "nombre": nombre,
-            "activa": activa,
-            "tipo_juego": "kino" if clave == "kino_leidsa" else "quiniela",
-            "tiro_fijo": {"num": n1, "virado": n1_reves, "fuerza": 99.6, "palé_titan": p1, "lot_fuerte": nombre},
-            "jugada_maestra": {"numeros_3": [n1, n2, n3], "pale_1": p1, "pale_2": p2, "tripleta": tripleta_reina, "lot_fuerte": nombre, "lot_respaldo": "Tabla Jaladera"},
-            "dictamen": {
-                "flujo": "ANCLAJE DÉCENA-TERMINAL", 
-                "decena": f"Decena {decena_base}-{decena_base+9}", 
-                "terminal": f"Terminales {terminales_elegidos}", 
-                "pareja": "OPTIMIZADA", 
-                "digito_fuerte": f"Dígitos {n1}", 
-                "presion": f"🎯 Motor Asignado: {nombre}", 
-                "dia_tendencia": f"{dia_nombre}: Patrón Estricto"
-            },
-            "sueltos": sueltos_sala
-        }
+            resultado_final[clave] = {
+                "nombre": nombre, "activa": activa, "tipo_juego": "quiniela",
+                "tiro_fijo": {"num": n1, "virado": n1[::-1], "fuerza": 99.6, "palé_titan": f"{n1} - {n2}", "lot_fuerte": nombre},
+                "jugada_maestra": {"numeros_3": [n1, n2, n3], "pale_1": f"{n1}-{n2}", "pale_2": f"{n1}-{n3}", "tripleta": f"{n1}-{n2}-{n3}"},
+                "sueltos": [{"num": n1, "fuerza": 99.6, "tipo": "Principal", "lot": nombre}, {"num": n2, "fuerza": 98.2, "tipo": "Terminal", "lot": nombre}, {"num": n3, "fuerza": 97.4, "tipo": "Jaladera", "lot": nombre}]
+            }
+        elif tipo == "kino":
+            kino_duenos = ["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), 10))]
+            def gen_kino(cant): return " - ".join(["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), cant))])
+            resultado_final[clave] = {
+                "nombre": nombre, "activa": activa, "tipo_juego": "kino",
+                "tiro_fijo": {"num": kino_duenos[0], "virado": "--", "fuerza": 98.6, "palé_titan": "Bloque 5 Activo", "lot_fuerte": nombre},
+                "kino_data": {
+                    "duenos": kino_duenos,
+                    "bloques_5": [{"bloque": gen_kino(5), "paridad": "3 Imp / 2 Par", "fuerza": 98.6}],
+                    "bloques_7": [{"bloque": gen_kino(7), "paridad": "4 Imp / 3 Par", "fuerza": 99.1}]
+                }
+            }
+        elif tipo == "primitiva":
+            prim_base = ["{:02d}".format(n) for n in sorted(rng.sample(range(1, 50), 8))]
+            resultado_final[clave] = {
+                "nombre": nombre, "activa": activa, "tipo_juego": "primitiva",
+                "tiro_fijo": {"num": prim_base[0], "virado": "--", "fuerza": 98.9, "palé_titan": f"Reintegro: {rng.randint(0,9)}", "lot_fuerte": nombre},
+                "primitiva_data": {"reintegro": str(rng.randint(0,9)), "complementario": "{:02d}".format(rng.randint(1,49)), "numeros_base": prim_base}
+            }
+        elif tipo == "euromillones":
+            euro_nums = sorted(rng.sample(range(1, 51), 5))
+            e1, e2 = "{:02d}".format(rng.randint(1, 12)), "{:02d}".format(rng.randint(1, 12))
+            resultado_final[clave] = {
+                "nombre": nombre, "activa": activa, "tipo_juego": "euromillones",
+                "tiro_fijo": {"num": euro_nums[0], "virado": "--", "fuerza": 99.4, "palé_titan": f"Estrellas: {e1} - {e2}", "lot_fuerte": nombre},
+                "euro_data": {"estrellas_fijas": [e1, e2], "red_afinidad": [str(n) for n in euro_nums]}
+            }
     return resultado_final
