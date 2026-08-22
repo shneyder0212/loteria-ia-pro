@@ -40,13 +40,11 @@ def calcular_enjambre_ia():
     for clave, nombre, tipo, respaldo in salas_config:
         if tipo == "quiniela":
             decenas_disponibles = [
-                ("[00-09]", "Decena [00-09]"), ("[10-19]", "Decena [10-19]"),
-                ("[20-29]", "Decena [20-29]"), ("[30-39]", "Decena [30-39]"),
-                ("[40-49]", "Decena [40-49]"), ("[50-59]", "Decena [50-59]"),
-                ("[60-69]", "Decena [60-69]"), ("[70-79]", "Decena [70-79]"),
-                ("[80-89]", "Decena [80-89]"), ("[90-99]", "Decena [90-99]")
+                ("Decena [00-09]"), ("Decena [10-19]"), ("Decena [20-29]"), 
+                ("Decena [30-39]"), ("Decena [40-49]"), ("Decena [50-59]"),
+                ("Decena [60-69]"), ("Decena [70-79]"), ("Decena [80-89]"), ("Decena [90-99]")
             ]
-            decenas_elegidas = rng.sample(decenas_disponibles, 3)
+            decena_foco = rng.choice(decenas_disponibles)
             pool_numeros = [f"{n:02d}" for n in range(100)]
             rng.shuffle(pool_numeros)
             
@@ -58,59 +56,73 @@ def calcular_enjambre_ia():
             sueltos_ord = sorted(sueltos, key=lambda x: x['fuerza'], reverse=True)
             n1, n2, n3 = sueltos_ord[0]['num'], sueltos_ord[1]['num'], sueltos_ord[2]['num']
             
-            top5_pales_con_fuerza = []
+            top5_pales = []
             for i in range(5):
                 p_str = f"{sueltos_ord[i]['num']} - {sueltos_ord[i+1]['num']}"
                 fuerza_pale = round((sueltos_ord[i]['fuerza'] + sueltos_ord[i+1]['fuerza']) / 2, 1)
-                top5_pales_con_fuerza.append({"pale": p_str, "fuerza": fuerza_pale})
+                top5_pales.append(f"<tr><td>#{i+1}</td><td style='color:#38bdf8; font-weight:bold;'>{p_str}</td><td style='color:#facc15;'>{fuerza_pale}%</td></tr>")
 
-            tripleta_str = f"{n1} - {n2} - {n3}"
-            num_base_int = int(n1)
-            plus_one = f"{ (num_base_int + 1) % 100:02d }"
-            minus_one = f"{ (num_base_int - 1) % 100:02d }"
+            top5_nums = ""
+            for idx, n_obj in enumerate(sueltos_ord[:5]):
+                top5_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td></tr>"
 
-            dictamen = {
-                "flujo": "ANCLAJE TRIPLE 3-DECENAS",
-                "decenas_clave": f"{decenas_elegidas[0][1]}, {decenas_elegidas[1][1]}, {decenas_elegidas[2][1]}",
-                "terminales": f"Term. {rng.randint(1,9)}, {rng.randint(0,9)}",
-                "pareja": rng.choice(["MÁXIMA", "MEDIA", "ALTA"]),
-                "digito_fuerte": f"Dígitos {rng.randint(1,5)}, {rng.randint(6,9)}",
-                "inercia": f"{dia_nombre}: Vigente",
-                "foco_principal": decenas_elegidas[0][1],
-                "sala_objetivo": nombre,
-                "respaldo": respaldo,
-                "tres_numeros": [n1, n2, n3],
-                "dos_pales": [f"[{n1} - {n2}]", f"[{n2} - {n3}]"],
-                "tripleta": tripleta_str,
-                "cobertura": f"Lateral +1 / -1: [[+1: {plus_one}] / [-1: {minus_one}]]",
-                "pale_reves": f"Palé Revés: [{n2[1]}{n2[0]} - {n1}]"
-            }
+            tres_nums_html = "".join([f'<span class="ball">{n}</span>' for n in [n1, n2, n3]])
+            pales_str = f"[{n1} - {n2}] / [{n2} - {n3}]"
+            tripleta_str = f"[{n1} - {n2} - {n3}]"
 
-            resultado_final[clave] = {
-                "nombre": nombre, "activa": True, "tipo_juego": "quiniela",
-                "dictamen": dictamen,
-                "rankings": {"top5_nums": sueltos_ord[:5], "top5_pales": top5_pales_con_fuerza}
-            }
+            dictamen_html = f"""
+            <div class="tactical-box">
+                <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN DE SALA</div>
+                <div class="tactical-row"><span>Flujo:</span><b style="color:#facc15;">ANCLAJE TRIPLE 3-DECENAS</b></div>
+                <div class="tactical-row"><span>Decenas Clave:</span><span style="color:#fff;">{decena_foco}</span></div>
+                <div class="tactical-row"><span>Terminales:</span><span style="color:#fff;">Term. {rng.randint(1,9)}, {rng.randint(0,9)}</span></div>
+                <div class="tactical-row"><span>Pareja:</span><span style="color:#fff;">{rng.choice(["MÁXIMA", "MEDIA", "ALTA"])}</span></div>
+                <div class="tactical-row"><span>Inercia:</span><span style="color:#4ade80;">{dia_nombre}: Vigente</span></div>
+                <div style="background:#1e293b; padding:6px; border-radius:6px; text-align:center; color:#facc15; font-weight:bold; margin-top:6px;">🔥 Foco Principal: {decena_foco}</div>
+            </div>
+
+            <div class="tactical-box" style="border-color: #facc15;">
+                <div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">⚡ JUGADA FORMADA (MEMORIA ACTIVA)</div>
+                <div class="tactical-row"><span>Sala Objetivo:</span><b style="color:#38bdf8;">{nombre}</b></div>
+                <div class="tactical-row"><span>Respaldo:</span><span style="color:#4ade80;">{respaldo}</span></div>
+                <div class="tactical-row"><span>3 Números:</span><div>{tres_nums_html}</div></div>
+                <div class="tactical-row"><span>2 Palés:</span><b style="color:#facc15;">{pales_str}</b></div>
+                <div class="tactical-row"><span>1 Tripleta:</span><b style="color:#f472b6;">{tripleta_str}</b></div>
+            </div>
+
+            <h3>⭐ TOP 5 NÚMEROS:</h3>
+            <table><tr><th>#</th><th>Número</th><th>Fuerza</th></tr>{top5_nums}</table>
+            
+            <h3>⭐ TOP 5 PALÉS:</h3>
+            <table><tr><th>#</th><th>Palé</th><th>Fuerza</th></tr>{"".join(top5_pales)}</table>
+            """
+            resultado_final[clave] = {"nombre": nombre, "contenido": dictamen_html}
+
         elif tipo == "kino":
-            jugada_a = ["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), 10))]
-            jugada_b = ["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), 10))]
-            resultado_final[clave] = {
-                "nombre": nombre, "activa": True, "tipo_juego": "kino",
-                "kino_data": {"jugada_a": jugada_a, "jugada_b": jugada_b}
-            }
+            j_a = ", ".join(["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), 10))])
+            j_b = ", ".join(["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), 10))])
+            kino_html = f"""
+            <h3>👑 JUGADA A (MATRIZ KINO):</h3><p style='color:#facc15; font-weight:bold; text-align:center;'>{j_a}</p>
+            <h3>👑 JUGADA B (MATRIZ KINO):</h3><p style='color:#facc15; font-weight:bold; text-align:center;'>{j_b}</p>
+            """
+            resultado_final[clave] = {"nombre": nombre, "contenido": kino_html}
+
         elif tipo == "primitiva":
-            prim_base = ["{:02d}".format(n) for n in sorted(rng.sample(range(1, 50), 6))]
-            resultado_final[clave] = {
-                "nombre": nombre, "activa": True, "tipo_juego": "primitiva",
-                "primitiva_data": {"reintegro": str(rng.randint(0, 9)), "numeros_base": prim_base}
-            }
+            p_nums = ", ".join(["{:02d}".format(n) for n in sorted(rng.sample(range(1, 50), 6))])
+            prim_html = f"""
+            <p style="color:#facc15; font-weight:bold;">🇪🇸 Reintegro: <span style="font-size:18px; color:#fff;">{rng.randint(0, 9)}</span></p>
+            <h3>🇪🇸 MATRIZ PRIMITIVA:</h3><p style='color:#38bdf8; font-weight:bold; text-align:center;'>{p_nums}</p>
+            """
+            resultado_final[clave] = {"nombre": nombre, "contenido": prim_html}
+
         elif tipo == "euromillones":
-            euro_nums = sorted(rng.sample(range(1, 51), 5))
-            e1, e2 = "{:02d}".format(rng.randint(1, 12)), "{:02d}".format(rng.randint(1, 12))
-            resultado_final[clave] = {
-                "nombre": nombre, "activa": True, "tipo_juego": "euromillones",
-                "euro_data": {"estrellas": [e1, e2], "numeros": euro_nums}
-            }
+            e_nums = ", ".join([str(n) for n in sorted(rng.sample(range(1, 51), 5))])
+            e_estrellas = f"⭐ {rng.randint(1,12)} - ⭐ {rng.randint(1,12)}"
+            euro_html = f"""
+            <h3>🇪🇺 ESTRELLAS:</h3><p style='color:#38bdf8; font-weight:bold; text-align:center;'>{e_estrellas}</p>
+            <h3>🇪🇺 NÚMEROS:</h3><p style='color:#facc15; font-weight:bold; text-align:center;'>{e_nums}</p>
+            """
+            resultado_final[clave] = {"nombre": nombre, "contenido": euro_html}
             
     return resultado_final
 
@@ -120,80 +132,15 @@ def ping_salud():
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request, sala: str = None):
-    datos_loterias = calcular_enjambre_ia()
-    
-    keys = list(datos_loterias.keys())
-    sala_activa = sala if sala in datos_loterias else (keys[0] if keys else "")
-    info = datos_loterias.get(sala_activa, {})
+    datos = calcular_enjambre_ia()
+    keys = list(datos.keys())
+    sala_activa = sala if sala in datos else (keys[0] if keys else "")
+    info_actual = datos.get(sala_activa, {"nombre": "Cargando...", "contenido": "<p>Cargando datos...</p>"})
 
     botones_html = ""
-    for clave, datos in datos_loterias.items():
+    for clave, datos_sala in datos.items():
         clase_activa = "active" if clave == sala_activa else ""
-        botones_html += f'<button class="tab-btn {clase_activa}" onclick="location.href=\'/?sala={clave}\'">{datos["nombre"]}</button>'
-
-    contenido_html = ""
-    nombre_sala = info.get("nombre", "Selecciona una Lotería")
-    tipo_juego = info.get("tipo_juego", "")
-
-    if tipo_juego == "quiniela":
-        d = info.get("dictamen", {})
-        tres_nums_html = "".join([f'<span class="ball" style="width:28px; height:28px; font-size:11px;">{n}</span>' for n in d.get("tres_numeros", [])])
-        
-        top5_html = ""
-        for idx, n_obj in enumerate(info.get("rankings", {}).get("top5_nums", [])):
-            top5_html += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td></tr>"
-
-        contenido_html = f"""
-        <div class="tactical-box">
-            <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN DE SALA</div>
-            <div class="tactical-row"><span>Flujo:</span><b style="color:#facc15;">{d.get('flujo', '')}</b></div>
-            <div class="tactical-row"><span>Decenas Clave:</span><span style="color:#fff;">{d.get('decenas_clave', '')}</span></div>
-            <div class="tactical-row"><span>Terminales:</span><span style="color:#fff;">{d.get('terminales', '')}</span></div>
-            <div class="tactical-row"><span>Pareja:</span><span style="color:#fff;">{d.get('pareja', '')}</span></div>
-            <div class="tactical-row"><span>Dígito Fuerte:</span><span style="color:#fff;">{d.get('digito_fuerte', '')}</span></div>
-            <div class="tactical-row"><span>Inercia:</span><span style="color:#4ade80;">{d.get('inercia', '')}</span></div>
-            <div style="background:#1e293b; padding:6px; border-radius:6px; text-align:center; color:#facc15; font-weight:bold; margin-top:6px;">🔥 Foco Principal: {d.get('foco_principal', '')}</div>
-        </div>
-
-        <div class="tactical-box" style="border-color: #facc15;">
-            <div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">⚡ JUGADA FORMADA (MEMORIA ACTIVA)</div>
-            <div class="tactical-row"><span>Sala Objetivo:</span><b style="color:#38bdf8;">{d.get('sala_objetivo', '')}</b></div>
-            <div class="tactical-row"><span>Respaldo:</span><span style="color:#4ade80;">{d.get('respaldo', '')}</span></div>
-            <div class="tactical-row"><span>3 Números:</span><div>{tres_nums_html}</div></div>
-            <div class="tactical-row"><span>2 Palés:</span><b style="color:#facc15;">{' / '.join(d.get('dos_pales', []))}</b></div>
-            <div class="tactical-row"><span>1 Tripleta:</span><b style="color:#f472b6;">[{d.get('tripleta', '')}]</b></div>
-            <div style="font-size:11px; color:#94a3b8; margin-top:6px;"><b>COBERTURA LATERAL BLINDADA:</b><br>{d.get('cobertura', '')}<br><span style="color:#facc15;">{d.get('pale_reves', '')}</span></div>
-        </div>
-
-        <h3>⭐ TOP 5 NÚMEROS:</h3>
-        <table>
-            <tr><th>#</th><th>Número</th><th>Fuerza</th></tr>
-            {top5_html}
-        </table>
-        """
-    elif tipo_juego == "kino":
-        k_data = info.get("kino_data", {})
-        jugada_a_html = "".join([f"<span class='ball'>{n}</span>" for n in k_data.get("jugada_a", [])])
-        jugada_b_html = "".join([f"<span class='ball'>{n}</span>" for n in k_data.get("jugada_b", [])])
-        contenido_html = f"""
-        <h3>👑 JUGADA A (MATRIZ KINO):</h3><div style='text-align:center; margin:10px 0;'>{jugada_a_html}</div>
-        <h3>👑 JUGADA B (MATRIZ KINO):</h3><div style='text-align:center; margin:10px 0;'>{jugada_b_html}</div>
-        """
-    elif tipo_juego == "primitiva":
-        p_data = info.get("primitiva_data", {})
-        nums_html = "".join([f"<span class='ball'>{n}</span>" for n in p_data.get("numeros_base", [])])
-        contenido_html = f"""
-        <p style="color:#facc15; font-weight:bold;">🇪🇸 Reintegro: <span style="font-size:18px; color:#fff;">{p_data.get('reintegro', '')}</span></p>
-        <h3>🇪🇸 MATRIZ PRIMITIVA:</h3><div style='text-align:center; margin:15px 0;'>{nums_html}</div>
-        """
-    elif tipo_juego == "euromillones":
-        e_data = info.get("euro_data", {})
-        estrellas_html = "".join([f"<span class='ball' style='background:#38bdf8; color:#0f172a;'>⭐{e}</span>" for e in e_data.get("estrellas", [])])
-        nums_html = "".join([f"<span class='ball'>{n}</span>" for n in e_data.get("numeros", [])])
-        contenido_html = f"""
-        <h3>🇪🇺 ESTRELLAS:</h3><div style='text-align:center; margin:10px 0;'>{estrellas_html}</div>
-        <h3>🇪🇺 NÚMEROS:</h3><div style='text-align:center; margin:15px 0;'>{nums_html}</div>
-        """
+        botones_html += f'<button class="tab-btn {clase_activa}" onclick="location.href=\'/?sala={clave}\'">{datos_sala["nombre"]}</button>'
 
     html = f"""
     <!DOCTYPE html>
@@ -210,39 +157,24 @@ def index(request: Request, sala: str = None):
             .tab-btn {{ background:#1f2937; color:#fff; border:none; padding:10px; margin:2px; border-radius:8px; cursor:pointer; font-weight: bold; white-space: nowrap; text-decoration: none; display: inline-block; }}
             .active {{ background:#38bdf8 !important; color:#0f172a !important; }}
             h3 {{ color: #38bdf8; font-size: 14px; margin-top: 15px; border-bottom: 1px solid #233249; padding-bottom: 4px; }}
-            .ball {{ background: #facc15; color: #0f172a; font-weight: 900; border-radius: 50%; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; margin: 3px; font-size: 13px; }}
+            .ball {{ background: #facc15; color: #0f172a; font-weight: 900; border-radius: 50%; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; margin: 3px; font-size: 12px; }}
             .tactical-box {{ background: #0f172a; border: 1px solid #38bdf8; border-radius: 10px; padding: 12px; margin-bottom: 15px; font-size: 13px; }}
             .tactical-row {{ display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px solid #1e293b; padding-bottom: 4px; }}
-            #pantalla_carga {{ position: fixed; top:0; left:0; width:100%; height:100%; background:#080d1a; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:9999; color:#38bdf8; font-family:sans-serif; }}
-            .spinner {{ border: 4px solid #1e293b; border-top: 4px solid #38bdf8; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }}
-            @keyframes spin {{ 0% {{ transform: rotate(0deg); }} 100% {{ transform: rotate(360deg); }} }}
         </style>
     </head>
     <body>
-        <div id="pantalla_carga">
-            <div class="spinner"></div>
-            <h2 style="color: #facc15; font-size: 18px; margin: 5px;">SHNEYDER IA PRO RD</h2>
-            <p style="color: #94a3b8; font-size: 14px;">Iniciando Sistema Táctico...</p>
-        </div>
-
         <div style="max-width:800px; margin:auto;" id="panel_principal">
             <h1>SHNEYDER IA PRO RD</h1>
             <div id="contenedor_tabs" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px;">
                 {botones_html}
             </div>
             <div class="card" id="vista_general">
-                <h2 id="titulo_sala" style="color: #facc15; font-size: 16px;">📊 {nombre_sala.upper()} <span style='color:#4ade80; font-size:12px;'>● ACTIVA</span></h2>
+                <h2 id="titulo_sala" style="color: #facc15; font-size: 16px;">📊 {info_actual['nombre'].upper()} <span style='color:#4ade80; font-size:12px;'>● ACTIVA</span></h2>
                 <div id="contenido_sala">
-                    {contenido_html}
+                    {info_actual['contenido']}
                 </div>
             </div>
         </div>
-
-        <script>
-            setTimeout(() => {{
-                document.getElementById('pantalla_carga').style.display = 'none';
-            }}, 300);
-        </script>
     </body>
     </html>
     """
