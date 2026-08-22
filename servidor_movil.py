@@ -1,11 +1,15 @@
 import json
 from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse
 import uvicorn
 import enjambre_loteria_ai
 import entrenador_cuantico_ia
 
 app = FastAPI(title="Shneyder IA Pro RD - Enjambre Cuántico Definitivo")
+
+@app.get("/ping", response_class=PlainTextResponse)
+def ping_salud():
+    return "OK - Servidor Activo 24/7"
 
 @app.post("/api/guardar_manual")
 def guardar_manual(loteria: str = Form(...), b1: str = Form(...), b2: str = Form(...), b3: str = Form(...)):
@@ -24,7 +28,7 @@ def index(request: Request):
         <meta charset="UTF-8"><title>Shneyder IA Pro</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
-            body {{ background:#080d1a; color:#e2e8f0; font-family:sans-serif; padding:10px; }}
+            body {{ background:#080d1a; color:#e2e8f0; font-family:sans-serif; padding:10px; margin:0; }}
             .card {{ background:#131d31; border-radius:12px; padding:15px; margin-bottom:15px; border:1px solid #233249; }}
             table {{ width:100%; border-collapse:collapse; color:#fff; }}
             th, td {{ padding:8px; border-bottom:1px solid #1e293b; text-align:center; font-size: 13px; }}
@@ -33,10 +37,20 @@ def index(request: Request):
             .active {{ background:#38bdf8; color:#0f172a; }}
             h3 {{ color: #38bdf8; font-size: 14px; margin-top: 15px; border-bottom: 1px solid #233249; padding-bottom: 4px; }}
             .ball {{ background: #facc15; color: #0f172a; font-weight: 900; border-radius: 50%; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; margin: 3px; font-size: 13px; }}
+            #pantalla_carga {{ position: fixed; top:0; left:0; width:100%; height:100%; background:#080d1a; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:9999; color:#38bdf8; font-family:sans-serif; }}
+            .spinner {{ border: 4px solid #1e293b; border-top: 4px solid #38bdf8; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }}
+            @keyframes spin {{ 0% {{ transform: rotate(0deg); }} 100% {{ transform: rotate(360deg); }} }}
         </style>
     </head>
     <body>
-        <div style="max-width:800px; margin:auto;">
+        <!-- Pantalla de Inicio Limpia con Simulación de Análisis de la IA -->
+        <div id="pantalla_carga">
+            <div class="spinner"></div>
+            <h2 style="color: #facc15; font-size: 18px; margin: 5px;">SHNEYDER IA PRO RD</h2>
+            <p id="texto_cargando" style="color: #94a3b8; font-size: 14px;">Iniciando Enjambre Cuántico... Analizando matrices y frecuencias</p>
+        </div>
+
+        <div style="max-width:800px; margin:auto;" id="panel_principal" style="display:none;">
             <h1>SHNEYDER IA PRO RD</h1>
             <div id="contenedor_tabs" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px;"></div>
             <div class="card" id="vista_general">
@@ -44,6 +58,7 @@ def index(request: Request):
                 <div id="contenido_sala"></div>
             </div>
         </div>
+
         <script>
             let db = {datos_json};
             let tabActual = Object.keys(db)[0];
@@ -68,12 +83,18 @@ def index(request: Request):
                     info.rankings.top5_nums.forEach((n, i) => {{ 
                         html += `<tr><td>#${{i+1}}</td><td style="color:#38bdf8; font-weight:bold; font-size:15px;">${{n.num}}</td><td style="color:#4ade80;">${{n.fuerza}}%</td></tr>`; 
                     }});
-                    html += "</table><h3>💥 TOP 5 PALÉS MAESTROS:</h3>";
+                    html += "</table>";
+
+                    html += "<h3>💥 TOP 5 PALÉS MAESTROS:</h3>";
                     info.rankings.top5_pales.forEach((p, i) => {{ 
                         html += `<p style="margin:6px 0; font-size:13px; display:flex; justify-content:space-between; align-items:center;"><span>#${{i+1}}: <b style="color:#facc15; font-size:14px;">${{p.pale}}</b></span> <span style="color:#4ade80; font-weight:bold;">${{p.fuerza}}%</span></p>`; 
                     }});
-                    html += "<h3>🏆 TRIPLETA RECOMENDADA:</h3><p style='font-size:15px; color:#f472b6; font-weight:bold;'>[${{info.rankings.top5_tripletas[0]}}]</p>";
-                    html += "<h3>📊 TOP 20 GENERAL (COBERTURA):</h3><div style='max-height:180px; overflow-y:auto; border:1px solid #1e293b; border-radius:6px;'><table>";
+
+                    html += "<h3>🏆 TRIPLETA RECOMENDADA:</h3>";
+                    html += `<p style="font-size:15px; color:#f472b6; font-weight:bold;">[${{info.rankings.top5_tripletas[0]}}]</p>`;
+
+                    html += "<h3>📊 TOP 20 GENERAL (COBERTURA):</h3>";
+                    html += "<div style='max-height:180px; overflow-y:auto; border:1px solid #1e293b; border-radius:6px;'><table>";
                     info.rankings.top20.forEach((n, i) => {{ 
                         html += `<tr><td>#${{i+1}}</td><td>${{n.num}}</td><td>${{n.fuerza}}%</td></tr>`; 
                     }});
@@ -101,10 +122,15 @@ def index(request: Request):
                 document.getElementById('contenido_sala').innerHTML = html;
             }}
 
+            // Simulación de arranque de la IA y transición suave
+            setTimeout(() => {{
+                document.getElementById('pantalla_carga').style.display = 'none';
+                construirTabs(); 
+                actualizarVista();
+            }}, 2500);
+
             // Auto-refresco inteligente cada 60 segundos
             setInterval(() => {{ location.reload(); }}, 60000);
-
-            construirTabs(); actualizarVista();
         </script>
     </body>
     </html>
