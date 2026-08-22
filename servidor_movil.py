@@ -59,14 +59,14 @@ def index(request: Request):
         </div>
 
         <script>
-            let db = {datos_json};
+            let db = JSON.parse('{datos_json}');
             let keys = Object.keys(db);
             let tabActual = keys.length > 0 ? keys[0] : null;
 
             function construirTabs() {{
                 let html = "";
                 if (keys.length === 0) {{
-                    document.getElementById('contenedor_tabs').innerHTML = "<p style='color:#facc15;'>No se encontraron salas.</p>";
+                    document.getElementById('contenedor_tabs').innerHTML = "<p style='color:#facc15;'>Cargando salas...</p>";
                     return;
                 }}
                 keys.forEach(clave => {{
@@ -152,7 +152,7 @@ def index(request: Request):
                     document.getElementById('pantalla_carga').style.display = 'none';
                     construirTabs(); 
                     actualizarVista();
-                }}, 1500);
+                }}, 1000);
             }};
         </script>
     </body>
