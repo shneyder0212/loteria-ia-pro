@@ -1,3 +1,4 @@
+import json
 import random
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
@@ -20,7 +21,7 @@ def calcular_enjambre_ia():
     salas_config = [
         ("anguila_10am", "Anguila Mañana (10:00 AM)", "quiniela", "La Primera Día (12:00 PM)"),
         ("primera_dia", "La Primera Día (12:00 PM)", "quiniela", "LoteDom (12:00 PM)"),
-        ("lotedom", "LoteDom (12:00 PM)", "quiniela", "Lotería Real (12:55 PM)"),
+        ("lotedom", "La Primera Día (12:00 PM)", "quiniela", "Lotería Real (12:55 PM)"),
         ("real", "Lotería Real (12:55 PM)", "quiniela", "Anguila Mediodía (1:00 PM)"),
         ("anguila_1pm", "Anguila Mediodía (1:00 PM)", "quiniela", "Gana Más (2:30 PM)"),
         ("gana_mas", "Gana Más (2:30 PM)", "quiniela", "Anguila Tarde (6:00 PM)"),
@@ -121,6 +122,7 @@ def ping_salud():
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     datos_loterias = calcular_enjambre_ia()
+    datos_json = json.dumps(datos_loterias)
 
     botones_html = ""
     primero = True
@@ -172,7 +174,7 @@ def index(request: Request):
         </div>
 
         <script>
-            let db = {datos_loterias};
+            let db = JSON.parse('{datos_json}');
 
             function mostrarSala(clave, elemento) {{
                 let botones = document.querySelectorAll('.tab-btn');
@@ -253,7 +255,7 @@ def index(request: Request):
                         let keys = Object.keys(db);
                         if(keys.length > 0) mostrarSala(keys[0], primerBoton);
                     }}
-                }}, 500);
+                }}, 400);
             }};
         </script>
     </body>
