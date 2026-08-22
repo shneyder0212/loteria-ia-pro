@@ -22,7 +22,7 @@ def calcular_enjambre_ia():
     salas_config = [
         ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0, "quiniela", "rd", "La Primera Día (12:00 PM)"),
         ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela", "rd", "LoteDom (12:00 PM)"),
-        ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela", "Lotería Real (12:55 PM)"),
+        ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela", "rd", "Lotería Real (12:55 PM)"),
         ("real", "Lotería Real (12:55 PM)", 12, 55, "quiniela", "rd", "Anguila Mediodía (1:00 PM)"),
         ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0, "quiniela", "rd", "Gana Más (2:30 PM)"),
         ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela", "rd", "Anguila Tarde (6:00 PM)"),
