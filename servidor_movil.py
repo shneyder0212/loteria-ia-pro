@@ -10,34 +10,48 @@ DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", 
 
 def calcular_enjambre_ia():
     ahora_utc = datetime.utcnow()
+    # Hora en RD (UTC-4) y hora en España (UTC+2)
     hora_rd = ahora_utc - timedelta(hours=4)
+    hora_esp = ahora_utc + timedelta(hours=2)
+    
     seed_base = int(hora_rd.strftime("%Y%m%d"))
     dia_nombre = DIAS_SEMANA[hora_rd.weekday()]
     es_lunes_domingo = dia_nombre in ["Lunes", "Domingo"]
     
     rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + hora_rd.hour)
 
+    # Definimos cada sala con su hora límite de cierre (Hora, Minuto, Región)
+    # Región 'rd' usa hora dominicana, región 'esp' usa hora española
     salas_config = [
-        ("anguila_10am", "Anguila Mañana (10:00 AM)", "quiniela", "La Primera Día (12:00 PM)"),
-        ("primera_dia", "La Primera Día (12:00 PM)", "quiniela", "LoteDom (12:00 PM)"),
-        ("lotedom", "LoteDom (12:00 PM)", "quiniela", "Lotería Real (12:55 PM)"),
-        ("real", "Lotería Real (12:55 PM)", "quiniela", "Anguila Mediodía (1:00 PM)"),
-        ("anguila_1pm", "Anguila Mediodía (1:00 PM)", "quiniela", "Gana Más (2:30 PM)"),
-        ("gana_mas", "Gana Más (2:30 PM)", "quiniela", "Anguila Tarde (6:00 PM)"),
-        ("anguila_6pm", "Anguila Tarde (6:00 PM)", "quiniela", "Loteka (7:55 PM)"),
-        ("loteka", "Loteka (7:55 PM)", "quiniela", "La Primera Noche (8:00 PM)"),
-        ("primera_noche", "La Primera Noche (8:00 PM)", "quiniela", "Nacional Noche (8:50 PM)"),
-        ("nacional_noche", "Nacional Noche (8:50 PM)", "quiniela", "Leidsa (8:55 PM)"),
-        ("leidsa", "Leidsa (8:55 PM)", "quiniela", "Anguila Noche (9:00 PM)"),
-        ("anguila_9pm", "Anguila Noche (9:00 PM)", "quiniela", "Kino Leidsa TV"),
-        ("kino_leidsa", "Kino Leidsa TV", "kino", "Nacional Noche (8:50 PM)"),
-        ("primitiva_esp", "La Primitiva (España)", "primitiva", "Euromillones (Europa)"),
-        ("euromillones", "Euromillones (Europa)", "euromillones", "La Primitiva (España)")
+        ("anguila_10am", "Anguila Mañana (10:00 AM)", 10, 0, "quiniela", "rd", "La Primera Día (12:00 PM)"),
+        ("primera_dia", "La Primera Día (12:00 PM)", 12, 0, "quiniela", "LoteDom (12:00 PM)"),
+        ("lotedom", "LoteDom (12:00 PM)", 12, 0, "quiniela", "Lotería Real (12:55 PM)"),
+        ("real", "Lotería Real (12:55 PM)", 12, 55, "quiniela", "Anguila Mediodía (1:00 PM)"),
+        ("anguila_1pm", "Anguila Mediodía (1:00 PM)", 13, 0, "quiniela", "Gana Más (2:30 PM)"),
+        ("gana_mas", "Gana Más (2:30 PM)", 14, 30, "quiniela", "Anguila Tarde (6:00 PM)"),
+        ("anguila_6pm", "Anguila Tarde (6:00 PM)", 18, 0, "quiniela", "Loteka (7:55 PM)"),
+        ("loteka", "Loteka (7:55 PM)", 19, 55, "quiniela", "La Primera Noche (8:00 PM)"),
+        ("primera_noche", "La Primera Noche (8:00 PM)", 20, 0, "quiniela", "Nacional Noche (8:50 PM)"),
+        ("nacional_noche", "Nacional Noche (8:50 PM)", 20, 50, "quiniela", "Leidsa (8:55 PM)"),
+        ("leidsa", "Leidsa (8:55 PM)", 20, 55, "quiniela", "Anguila Noche (9:00 PM)"),
+        ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 0, "quiniela", "Kino Leidsa TV"),
+        ("kino_leidsa", "Kino Leidsa TV", 20, 55, "kino", "Nacional Noche (8:50 PM)"),
+        ("primitiva_esp", "La Primitiva (España)", 21, 30, "primitiva", "Euromillones (Europa)"),
+        ("euromillones", "Euromillones (Europa)", 21, 30, "euromillones", "La Primitiva (España)")
     ]
+
+    minutos_actuales_rd = hora_rd.hour * 60 + hora_rd.minute
+    minutos_actuales_esp = hora_esp.hour * 60 + hora_esp.minute
 
     resultado_final = {}
 
-    for clave, nombre, tipo, respaldo in salas_config:
+    for clave, nombre, h_cierre, m_cierre, tipo, region, respaldo in salas_config:
+        cierre_minutos = h_cierre * 60 + m_cierre
+        minutos_actuales = minutos_actuales_esp if region == "esp" else minutos_actuales_rd
+        
+        # Validación real de estado según la hora actual
+        activa = minutos_actuales <= cierre_minutos
+
         if tipo == "quiniela":
             decena_foco = rng.choice(["Decena [00-09]", "Decena [10-19]", "Decena [20-29]", "Decena [30-39]", "Decena [40-49]", "Decena [50-59]", "Decena [60-69]", "Decena [70-79]", "Decena [80-89]", "Decena [90-99]"])
             pool_numeros = [f"{n:02d}" for n in range(100)]
@@ -91,7 +105,7 @@ def calcular_enjambre_ia():
             <h3>⭐ TOP 5 PALÉS:</h3>
             <table><tr><th>#</th><th>Palé</th><th>Fuerza</th></tr>{"".join(top5_pales)}</table>
             """
-            resultado_final[clave] = {"nombre": nombre, "contenido": dictamen_html}
+            resultado_final[clave] = {"nombre": nombre, "activa": activa, "contenido": dictamen_html}
 
         elif tipo == "kino":
             j_a = ", ".join(["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), 10))])
@@ -100,7 +114,7 @@ def calcular_enjambre_ia():
             <h3>👑 JUGADA A (MATRIZ KINO):</h3><p style='color:#facc15; font-weight:bold; text-align:center;'>{j_a}</p>
             <h3>👑 JUGADA B (MATRIZ KINO):</h3><p style='color:#facc15; font-weight:bold; text-align:center;'>{j_b}</p>
             """
-            resultado_final[clave] = {"nombre": nombre, "contenido": kino_html}
+            resultado_final[clave] = {"nombre": nombre, "activa": activa, "contenido": kino_html}
 
         elif tipo == "primitiva":
             p_nums = ", ".join(["{:02d}".format(n) for n in sorted(rng.sample(range(1, 50), 6))])
@@ -108,7 +122,7 @@ def calcular_enjambre_ia():
             <p style="color:#facc15; font-weight:bold;">🇪🇸 Reintegro: <span style="font-size:18px; color:#fff;">{rng.randint(0, 9)}</span></p>
             <h3>🇪🇸 MATRIZ PRIMITIVA:</h3><p style='color:#38bdf8; font-weight:bold; text-align:center;'>{p_nums}</p>
             """
-            resultado_final[clave] = {"nombre": nombre, "contenido": prim_html}
+            resultado_final[clave] = {"nombre": nombre, "activa": activa, "contenido": prim_html}
 
         elif tipo == "euromillones":
             e_nums = ", ".join([str(n) for n in sorted(rng.sample(range(1, 51), 5))])
@@ -117,7 +131,7 @@ def calcular_enjambre_ia():
             <h3>🇪🇺 ESTRELLAS:</h3><p style='color:#38bdf8; font-weight:bold; text-align:center;'>{e_estrellas}</p>
             <h3>🇪🇺 NÚMEROS:</h3><p style='color:#facc15; font-weight:bold; text-align:center;'>{e_nums}</p>
             """
-            resultado_final[clave] = {"nombre": nombre, "contenido": euro_html}
+            resultado_final[clave] = {"nombre": nombre, "activa": activa, "contenido": euro_html}
             
     return resultado_final
 
@@ -130,12 +144,16 @@ def index(request: Request, sala: str = None):
     datos = calcular_enjambre_ia()
     keys = list(datos.keys())
     sala_activa = sala if sala in datos else (keys[0] if keys else "")
-    info_actual = datos.get(sala_activa, {"nombre": "Cargando...", "contenido": "<p>Cargando datos...</p>"})
+    info_actual = datos.get(sala_activa, {"nombre": "Cargando...", "activa": True, "contenido": "<p>Cargando datos...</p>"})
+
+    estado_badge = "<span style='color:#4ade80; font-size:12px;'>● ABIERTA</span>" if info_actual.get("activa", True) else "<span style='color:#f87171; font-size:12px;'>● CERRADA</span>"
 
     botones_html = ""
     for clave, datos_sala in datos.items():
         clase_activa = "active" if clave == sala_activa else ""
-        botones_html += f'<button class="tab-btn {clase_activa}" onclick="location.href=\'/?sala={clave}\'">{datos_sala["nombre"]}</button>'
+        # Distinguimos visualmente con un punto verde o rojo en el botón según el horario
+        indicador = "🟢" if datos_sala.get("activa", True) else "🔴"
+        botones_html += f'<button class="tab-btn {clase_activa}" onclick="location.href=\'/?sala={clave}\'">{indicador} {datos_sala["nombre"]}</button>'
 
     html = f"""
     <!DOCTYPE html>
@@ -164,7 +182,7 @@ def index(request: Request, sala: str = None):
                 {botones_html}
             </div>
             <div class="card" id="vista_general">
-                <h2 id="titulo_sala" style="color: #facc15; font-size: 16px;">📊 {info_actual['nombre'].upper()} <span style='color:#4ade80; font-size:12px;'>● ACTIVA</span></h2>
+                <h2 id="titulo_sala" style="color: #facc15; font-size: 16px;">📊 {info_actual['nombre'].upper()} {estado_badge}</h2>
                 <div id="contenido_sala">
                     {info_actual['contenido']}
                 </div>
