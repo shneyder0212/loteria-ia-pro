@@ -1,9 +1,8 @@
 import json
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse, PlainTextResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, PlainTextResponse
 import uvicorn
 import enjambre_loteria_ai
-import entrenador_cuantico_ia
 
 app = FastAPI(title="Shneyder IA Pro RD - Enjambre Cuántico Definitivo")
 
@@ -11,15 +10,13 @@ app = FastAPI(title="Shneyder IA Pro RD - Enjambre Cuántico Definitivo")
 def ping_salud():
     return "OK - Servidor Activo 24/7"
 
-@app.post("/api/guardar_manual")
-def guardar_manual(loteria: str = Form(...), b1: str = Form(...), b2: str = Form(...), b3: str = Form(...)):
-    entrenador_cuantico_ia.registrar_y_aprender(loteria, loteria.replace("_", " ").title(), b1, b2, b3)
-    return RedirectResponse(url="/", status_code=303)
-
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
-    datos_loterias = enjambre_loteria_ai.calcular_enjambre_ia()
-    datos_json = json.dumps(datos_loterias)
+    try:
+        datos_loterias = enjambre_loteria_ai.calcular_enjambre_ia()
+        datos_json = json.dumps(datos_loterias)
+    except Exception as e:
+        datos_json = "{}"
 
     html = f"""
     <!DOCTYPE html>
