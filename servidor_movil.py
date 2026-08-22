@@ -18,7 +18,11 @@ def guardar_manual(loteria: str = Form(...), b1: str = Form(...), b2: str = Form
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
-    datos_loterias = enjambre_loteria_ai.calcular_enjambre_ia()
+    try:
+        datos_loterias = enjambre_loteria_ai.calcular_enjambre_ia()
+    except Exception as e:
+        datos_loterias = {}
+    
     datos_json = json.dumps(datos_loterias)
 
     html = f"""
@@ -93,7 +97,6 @@ def index(request: Request):
                 if (info.tipo_juego === 'quiniela' && info.dictamen) {{
                     let d = info.dictamen;
                     
-                    // Panel Táctico: Dictamen de Sala
                     html += `<div class="tactical-box">`;
                     html += `<div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN DE SALA</div>`;
                     html += `<div class="tactical-row"><span>Flujo:</span><b style="color:#facc15;">${{d.flujo}}</b></div>`;
@@ -105,7 +108,6 @@ def index(request: Request):
                     html += `<div style="background:#1e293b; padding:6px; border-radius:6px; text-align:center; color:#facc15; font-weight:bold; margin-top:6px;">🔥 Foco Principal: ${{d.foco_principal}}</div>`;
                     html += `</div>`;
 
-                    // Panel Táctico: Jugada Formada (Memoria Activa)
                     html += `<div class="tactical-box" style="border-color: #facc15;">`;
                     html += `<div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">⚡ JUGADA FORMADA (MEMORIA ACTIVA)</div>`;
                     html += `<div class="tactical-row"><span>Sala Objetivo:</span><b style="color:#38bdf8;">${{d.sala_objetivo}}</b></div>`;
@@ -118,7 +120,6 @@ def index(request: Request):
                     html += `<div style="font-size:11px; color:#94a3b8; margin-top:6px;"><b>COBERTURA LATERAL BLINDADA:</b><br>${{d.cobertura}}<br><span style="color:#facc15;">${{d.pale_reves}}</span></div>`;
                     html += `</div>`;
 
-                    // Rankings tradicionales debajo
                     html += "<h3>⭐ TOP 5 NÚMEROS:</h3><table><tr><th>#</th><th>Número</th><th>Fuerza</th></tr>";
                     info.rankings.top5_nums.forEach((n, i) => {{ 
                         html += `<tr><td>#${{i+1}}</td><td style="color:#38bdf8; font-weight:bold; font-size:15px;">${{n.num}}</td><td style="color:#4ade80;">${{n.fuerza}}%</td></tr>`; 
