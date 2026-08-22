@@ -65,7 +65,7 @@ def index(request: Request):
                 document.getElementById('titulo_sala').innerText = "📊 TRABAJO DE IA: " + info.nombre.toUpperCase();
                 let html = "";
                 
-                if (info.rankings) {{
+                if (info.tipo_juego === 'quiniela' && info.rankings) {{
                     // TOP 5 NÚMEROS
                     html += "<h3>⭐ TOP 5 NÚMEROS DE ALTA PRECISIÓN:</h3><table><tr><th>#</th><th>Número</th><th>Fuerza</th></tr>";
                     info.rankings.top5_nums.forEach((n, i) => {{ 
@@ -90,7 +90,10 @@ def index(request: Request):
                         html += `<tr><td>#${{i+1}}</td><td>${{n.num}}</td><td>${{n.fuerza}}%</td></tr>`; 
                     }});
                     html += "</table></div>";
+                }} else {{
+                    html += "<p style='color:#facc15;'>🔥 Módulo de Análisis Cuántico Activo para Kino Leidsa TV. Generando matrices numéricas...</p>";
                 }}
+                
                 document.getElementById('contenido_sala').innerHTML = html;
             }}
 
