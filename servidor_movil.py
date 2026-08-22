@@ -55,27 +55,40 @@ def calcular_enjambre_ia():
         activa = juega_hoy and (minutos_actuales <= cierre_minutos)
 
         if tipo == "quiniela":
-            decena_foco = rng.choice(["Decena [00-09]", "Decena [10-19]", "Decena [20-29]", "Decena [30-39]", "Decena [40-49]", "Decena [50-59]", "Decena [60-69]", "Decena [70-79]", "Decena [80-89]", "Decena [90-99]"])
             pool_numeros = [f"{n:02d}" for n in range(100)]
             rng.shuffle(pool_numeros)
             
             sueltos = []
-            for i in range(25):
-                fuerza_val = round(99.9 - (i * 0.4), 1)
+            for i in range(30):
+                fuerza_val = round(99.9 - (i * 0.3), 1)
                 sueltos.append({"num": pool_numeros[i], "fuerza": fuerza_val})
             
             sueltos_ord = sorted(sueltos, key=lambda x: x['fuerza'], reverse=True)
             n1, n2, n3 = sueltos_ord[0]['num'], sueltos_ord[1]['num'], sueltos_ord[2]['num']
             
-            top5_pales = []
-            for i in range(5):
+            # Extracción automática de las tres decenas clave basadas en los números del motor de IA
+            decenas_extraidas = set()
+            for obj in sueltos_ord[:10]:
+                decena_num = (int(obj['num']) // 10) * 10
+                decenas_extraidas.add(f"[{decena_num:02d}-{decena_num+9:02d}]")
+            lista_decenas = list(decenas_extraidas)[:3]
+            while len(lista_decenas) < 3:
+                lista_decenas.append("[00-09]")
+            decenas_clave_str = ", ".join(lista_decenas)
+
+            # Extracción de terminales y dígitos fuertes reales
+            terminales_extraidos = set([n['num'][1] for n in sueltos_ord[:10]])
+            digitos_extraidos = set([n['num'][0] for n in sueltos_ord[:10]])
+
+            top20_pales = []
+            for i in range(20):
                 p_str = f"{sueltos_ord[i]['num']} - {sueltos_ord[i+1]['num']}"
                 fuerza_pale = round((sueltos_ord[i]['fuerza'] + sueltos_ord[i+1]['fuerza']) / 2, 1)
-                top5_pales.append(f"<tr><td>#{i+1}</td><td style='color:#38bdf8; font-weight:bold;'>{p_str}</td><td style='color:#facc15;'>{fuerza_pale}%</td></tr>")
+                top20_pales.append(f"<tr><td>#{i+1}</td><td style='color:#38bdf8; font-weight:bold;'>{p_str}</td><td style='color:#facc15;'>{fuerza_pale}%</td></tr>")
 
-            top5_nums = ""
-            for idx, n_obj in enumerate(sueltos_ord[:5]):
-                top5_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td></tr>"
+            top20_nums = ""
+            for idx, n_obj in enumerate(sueltos_ord[:20]):
+                top20_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td></tr>"
 
             tres_nums_html = "".join([f'<span class="ball">{n}</span>' for n in [n1, n2, n3]])
             pales_str = f"[{n1} - {n2}] / [{n2} - {n3}]"
@@ -83,13 +96,12 @@ def calcular_enjambre_ia():
 
             dictamen_html = f"""
             <div class="tactical-box">
-                <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN DE SALA</div>
+                <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN DE SALA (MOTOR IA)</div>
                 <div class="tactical-row"><span>Flujo:</span><b style="color:#facc15;">ANCLAJE TRIPLE 3-DECENAS</b></div>
-                <div class="tactical-row"><span>Decenas Clave:</span><span style="color:#fff;">{decena_foco}</span></div>
-                <div class="tactical-row"><span>Terminales:</span><span style="color:#fff;">Term. {rng.randint(1,9)}, {rng.randint(0,9)}</span></div>
-                <div class="tactical-row"><span>Pareja:</span><span style="color:#fff;">{rng.choice(["MÁXIMA", "MEDIA", "ALTA"])}</span></div>
+                <div class="tactical-row"><span>Decenas Clave (IA):</span><span style="color:#fff;">{decenas_clave_str}</span></div>
+                <div class="tactical-row"><span>Terminales (IA):</span><span style="color:#fff;">Term. {", ".join(list(terminales_extraidos)[:3])}</span></div>
+                <div class="tactical-row"><span>Dígitos Fuertes (IA):</span><span style="color:#fff;">{", ".join(list(digitos_extraidos)[:3])}</span></div>
                 <div class="tactical-row"><span>Inercia:</span><span style="color:#4ade80;">{dia_nombre}: Vigente</span></div>
-                <div style="background:#1e293b; padding:6px; border-radius:6px; text-align:center; color:#facc15; font-weight:bold; margin-top:6px;">🔥 Foco Principal: {decena_foco}</div>
             </div>
 
             <div class="tactical-box" style="border-color: #facc15;">
@@ -101,11 +113,15 @@ def calcular_enjambre_ia():
                 <div class="tactical-row"><span>1 Tripleta:</span><b style="color:#f472b6;">{tripleta_str}</b></div>
             </div>
 
-            <h3>⭐ TOP 5 NÚMEROS:</h3>
-            <table><tr><th>#</th><th>Número</th><th>Fuerza</th></tr>{top5_nums}</table>
+            <h3>⭐ TOP 20 NÚMEROS:</h3>
+            <div style="max-height: 250px; overflow-y: auto;">
+                <table><tr><th>#</th><th>Número</th><th>Fuerza</th></tr>{top20_nums}</table>
+            </div>
             
-            <h3>⭐ TOP 5 PALÉS:</h3>
-            <table><tr><th>#</th><th>Palé</th><th>Fuerza</th></tr>{"".join(top5_pales)}</table>
+            <h3>⭐ TOP 20 PALÉS:</h3>
+            <div style="max-height: 250px; overflow-y: auto;">
+                <table><tr><th>#</th><th>Palé</th><th>Fuerza</th></tr>{"".join(top20_pales)}</table>
+            </div>
             """
             resultado_final[clave] = {"nombre": nombre, "activa": activa, "contenido": dictamen_html}
 
@@ -166,8 +182,8 @@ def index(request: Request, sala: str = None):
             body {{ background:#080d1a; color:#e2e8f0; font-family:sans-serif; padding:10px; margin:0; }}
             .card {{ background:#131d31; border-radius:12px; padding:15px; margin-bottom:15px; border:1px solid #233249; }}
             table {{ width:100%; border-collapse:collapse; color:#fff; }}
-            th, td {{ padding:8px; border-bottom:1px solid #1e293b; text-align:center; font-size: 13px; }}
-            th {{ background: #1e293b; color: #94a3b8; }}
+            th, td {{ padding:6px; border-bottom:1px solid #1e293b; text-align:center; font-size: 13px; }}
+            th {{ background: #1e293b; color: #94a3b8; position: sticky; top: 0; }}
             .tab-btn {{ background:#1f2937; color:#fff; border:none; padding:10px; margin:2px; border-radius:8px; cursor:pointer; font-weight: bold; white-space: nowrap; text-decoration: none; display: inline-block; }}
             .active {{ background:#38bdf8 !important; color:#0f172a !important; }}
             h3 {{ color: #38bdf8; font-size: 14px; margin-top: 15px; border-bottom: 1px solid #233249; padding-bottom: 4px; }}
