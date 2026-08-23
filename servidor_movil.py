@@ -326,7 +326,6 @@ def index(request: Request, sala: str = None):
     datos = calcular_enjambre_ia()
     keys = list(datos.keys())
     
-    # Manejar pestaña especial de auditoría
     modo_auditoria = (sala == "auditoria")
     
     sala_activa = sala if (sala in datos or modo_auditoria) else (keys[0] if keys else "")
@@ -340,13 +339,10 @@ def index(request: Request, sala: str = None):
         indicador = "🟢" if datos_sala.get("activa", True) else "🔴"
         botones_html += f'<button class="tab-btn {clase_activa}" onclick="location.href=\'/?sala={clave}\'">{indicador} {datos_sala["nombre"]}</button>'
     
-    # Botón extra para la pestaña de auditoría
     clase_aud_active = "active" if modo_auditoria else ""
     botones_html += f'<button class="tab-btn {clase_aud_active}" style="background:#0284c7;" onclick="location.href=\'/?sala=auditoria\'">📊 Auditoría de Aciertos</button>'
 
-    # Contenido de la pantalla principal o de la auditoría
     if modo_auditoria:
-        # Consultar registros guardados en la BD de auditoría
         try:
             conn = sqlite3.connect("auditoria_aciertos.db", check_same_thread=False)
             cursor = conn.cursor()
@@ -364,7 +360,6 @@ def index(request: Request, sala: str = None):
         if not filas_tabla:
             filas_tabla = "<tr><td colspan='4' style='color:#94a3b8;'>No hay registros de auditoría todavía. ¡Agrega el primero abajo!</td></tr>"
 
-        # Opciones de salas para el formulario
         options_salas = "".join([f"<option value='{k}'>{v['nombre']}</option>" for k, v in datos.items()])
 
         contenido_html = f"""
@@ -445,20 +440,16 @@ def index(request: Request, sala: str = None):
 @app.post("/guardar_auditoria")
 def guardar_auditoria(sala_aud: str = Form(...), num_real: str = Form(...)):
     try:
-        # Calcular los números que la IA predijo para esa sala en este momento para verificar acierto
         datos_enjambre = calcular_enjambre_ia()
         sala_info = datos_enjambre.get(sala_aud)
         nombre_sala_legible = sala_info['nombre'] if sala_info else sala_aud
 
-        # Verificación simple: ¿El número real está en los primeros puestos analizados?
         estado = "REGISTRADO"
         if sala_aud in datos_enjambre:
-            # Generamos la misma corrida para comprobar si el número coincide
             ahora_utc = datetime.utcnow()
             hora_rd = ahora_utc - timedelta(hours=4)
             seed_base = int(hora_rd.strftime("%Y%m%d"))
             
-            # Buscamos la posición del índice de la sala
             salas_claves = list(datos_enjambre.keys())
             idx = salas_claves.index(sala_aud) if sala_aud in salas_claves else 0
             
@@ -466,11 +457,10 @@ def guardar_auditoria(sala_aud: str = Form(...), num_real: str = Form(...)):
             top_numeros = [n['num'] for n in sueltos_ord[:20]]
             
             if num_real.strip().zfill(2) in top_numeros:
-                estado = "ACIERTO (TOP 20)"
+                estado = "ACIERTO"
             else:
                 estado = "FUERA DE RANGO"
 
-        # Guardar en la base de datos de auditoría
         fecha_str = (datetime.utcnow() - timedelta(hours=4)).strftime("%Y-%m-%d %H:%M")
         conn = sqlite3.connect("auditoria_aciertos.db", check_same_thread=False)
         cursor = conn.cursor()
