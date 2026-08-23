@@ -1,3 +1,13 @@
+import sys
+import subprocess
+
+# Auto-instalación de emergencia para Render (evita cualquier fallo de dependencias)
+for paquete in ["fastapi", "uvicorn", "jinja2"]:
+    try:
+        __import__(paquete)
+    except ImportError:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", paquete])
+
 import random
 from datetime import datetime, timedelta
 import sqlite3
@@ -225,7 +235,7 @@ def calcular_enjambre_ia():
             top20_nums = ""
             for idx, n_obj in enumerate(sueltos_ord[:20]):
                 loterias_asociadas = sala_sugerida_1 if idx < 10 else sala_sugerida_2
-                top20_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td><td style='font-size:11px; color:#94a3b8;'>{loterias_asociadas}</td></tr>")
+                top20_nums += f"<tr><td>#{idx+1}</td><td style='color:#38bdf8; font-weight:bold; font-size:15px;'>{n_obj['num']}</td><td style='color:#4ade80;'>{n_obj['fuerza']}%</td><td style='font-size:11px; color:#94a3b8;'>{loterias_asociadas}</td></tr>"
 
             tres_nums_html = "".join([f'<span class="ball">{n}</span>' for n in [n1, n2, n3]])
 
@@ -402,7 +412,6 @@ def index(request: Request, sala: str = None):
         <meta charset="UTF-8">
         <title>Shneyder IA Pro - Enjambre de Consenso</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- Ícono personalizado: Billete de 10 Euros -->
         <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/10_euro_note_2014_back.jpg/320px-10_euro_note_2014_back.jpg">
         <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/10_euro_note_2014_back.jpg/320px-10_euro_note_2014_back.jpg">
         <style>
