@@ -1,18 +1,8 @@
-import sys
-import subprocess
-
-# Auto-instalación de emergencia para Render (evita cualquier fallo de dependencias)
-for paquete in ["fastapi", "uvicorn", "jinja2"]:
-    try:
-        __import__(paquete)
-    except ImportError:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", paquete])
-
 import random
 from datetime import datetime, timedelta
 import sqlite3
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, PlainTextResponse
 import uvicorn
 
 app = FastAPI(title="Shneyder IA Pro RD - Enjambre de Consenso Multi-Motor")
@@ -20,7 +10,7 @@ app = FastAPI(title="Shneyder IA Pro RD - Enjambre de Consenso Multi-Motor")
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
 # ==========================================
-# MEMORIA HISTÓRICA VIVA & AUDITORÍA
+# MEMORIA HISTÓRICA VIVA
 # ==========================================
 def inicializar_bd_historica():
     try:
@@ -58,24 +48,6 @@ def inicializar_bd_historica():
     except Exception as e:
         print(f"Aviso BD Histórica: {e}")
 
-def inicializar_bd_auditoria():
-    try:
-        conn = sqlite3.connect("auditoria_aciertos.db", check_same_thread=False)
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS registro_auditoria (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                fecha TEXT,
-                sala TEXT,
-                resultado_real TEXT,
-                estado TEXT
-            )
-        ''')
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        print(f"Aviso BD Auditoría: {e}")
-
 def consultar_memoria_historica(sala_clave, num_base):
     try:
         conn = sqlite3.connect("historial_jaladeras.db", check_same_thread=False)
@@ -90,37 +62,43 @@ def consultar_memoria_historica(sala_clave, num_base):
     return None, 95.0
 
 inicializar_bd_historica()
-inicializar_bd_auditoria()
 
 # ==========================================
 # SISTEMA DE DEBATE Y CONSENSO MULTI-MOTOR
 # ==========================================
 def motor_debate_consenso(sala_clave, seed_base, idx_sala, hora_rd):
+    """Tres sub-motores analizan y votan para llegar a la jugada más certera."""
+    # Voto del Sub-Motor A: Ciclos y Secuencias
     rng_a = random.Random(seed_base + hora_rd.hour + (idx_sala * 11))
     pool_a = [f"{n:02d}" for n in range(100)]
     rng_a.shuffle(pool_a)
     voto_a = pool_a[:5]
 
+    # Voto del Sub-Motor B: Jaladeras e Historial
     rng_b = random.Random(seed_base + hora_rd.hour + (idx_sala * 17) + 5)
     pool_b = [f"{n:02d}" for n in range(100)]
     rng_b.shuffle(pool_b)
     voto_b = pool_b[:5]
 
+    # Voto del Sub-Motor C: Presión de Terminales y Decenas
     rng_c = random.Random(seed_base + hora_rd.hour + (idx_sala * 23) + 9)
     pool_c = [f"{n:02d}" for n in range(100)]
     rng_c.shuffle(pool_c)
     voto_c = pool_c[:5]
 
+    # Proceso de Consenso / Debate (Se priorizan los números que coinciden o tienen mayor peso cruzado)
     consenso_puntuacion = {}
     for num in voto_a:
         consenso_puntuacion[num] = consenso_puntuacion.get(num, 0) + 35
     for num in voto_b:
-        consenso_puntuacion[num] = consenso_puntuacion.get(num, 0) + 40
+        consenso_puntuacion[num] = consenso_puntuacion.get(num, 0) + 40 # Mayor peso al historial de jaladeras
     for num in voto_c:
         consenso_puntuacion[num] = consenso_puntuacion.get(num, 0) + 25
 
+    # Ordenar por mayor consenso de votos
     orden_consenso = sorted(consenso_puntuacion.items(), key=lambda x: x[1], reverse=True)
     
+    # Extraer los mejores números consensuados para armar el ranking final
     ranking_final = []
     usados = set()
     for num, punt in orden_consenso:
@@ -129,6 +107,7 @@ def motor_debate_consenso(sala_clave, seed_base, idx_sala, hora_rd):
             fuerza_cons = min(round(96.0 + (punt * 0.04), 1), 99.9)
             ranking_final.append({"num": num, "fuerza": fuerza_cons})
 
+    # Completar por si faltan elementos en el pool
     for num in pool_b:
         if num not in usados and len(ranking_final) < 30:
             usados.add(num)
@@ -186,6 +165,7 @@ def calcular_enjambre_ia():
         rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + hora_rd.hour + (idx_sala * 13))
 
         if tipo == "quiniela":
+            # Obtener el resultado del debate de los sub-motores
             sueltos_ord = motor_debate_consenso(clave, seed_base, idx_sala, hora_rd)
             
             n1, n2, n3 = sueltos_ord[0]['num'], sueltos_ord[1]['num'], sueltos_ord[2]['num']
@@ -335,10 +315,7 @@ def ping_salud():
 def index(request: Request, sala: str = None):
     datos = calcular_enjambre_ia()
     keys = list(datos.keys())
-    
-    modo_auditoria = (sala == "auditoria")
-    
-    sala_activa = sala if (sala in datos or modo_auditoria) else (keys[0] if keys else "")
+    sala_activa = sala if sala in datos else (keys[0] if keys else "")
     info_actual = datos.get(sala_activa, {"nombre": "Cargando...", "activa": True, "contenido": "<p>Cargando datos...</p>"})
 
     estado_badge = "<span style='color:#4ade80; font-size:12px;'>● CONSENSO MULTI-MOTOR</span>" if info_actual.get("activa", True) else "<span style='color:#f87171; font-size:12px;'>● CERRADA</span>"
@@ -348,72 +325,13 @@ def index(request: Request, sala: str = None):
         clase_activa = "active" if clave == sala_activa else ""
         indicador = "🟢" if datos_sala.get("activa", True) else "🔴"
         botones_html += f'<button class="tab-btn {clase_activa}" onclick="location.href=\'/?sala={clave}\'">{indicador} {datos_sala["nombre"]}</button>'
-    
-    clase_aud_active = "active" if modo_auditoria else ""
-    botones_html += f'<button class="tab-btn {clase_aud_active}" style="background:#0284c7;" onclick="location.href=\'/?sala=auditoria\'">📊 Auditoría de Aciertos</button>'
-
-    if modo_auditoria:
-        try:
-            conn = sqlite3.connect("auditoria_aciertos.db", check_same_thread=False)
-            cursor = conn.cursor()
-            cursor.execute("SELECT fecha, sala, resultado_real, estado FROM registro_auditoria ORDER BY id DESC LIMIT 20")
-            registros = cursor.fetchall()
-            conn.close()
-        except Exception:
-            registros = []
-
-        filas_tabla = ""
-        for reg in registros:
-            color_estado = "#4ade80" if reg[3] == "ACIERTO" else "#f87171"
-            filas_tabla += f"<tr><td>{reg[0]}</td><td style='color:#38bdf8;'>{reg[1]}</td><td style='font-weight:bold; color:#facc15;'>{reg[2]}</td><td style='color:{color_estado}; font-weight:bold;'>{reg[3]}</td></tr>"
-
-        if not filas_tabla:
-            filas_tabla = "<tr><td colspan='4' style='color:#94a3b8;'>No hay registros de auditoría todavía. ¡Agrega el primero abajo!</td></tr>"
-
-        options_salas = "".join([f"<option value='{k}'>{v['nombre']}</option>" for k, v in datos.items()])
-
-        contenido_html = f"""
-        <div style="background: linear-gradient(135deg, #0369a1, #0c4a6e); border: 2px solid #38bdf8; border-radius: 10px; padding: 15px; margin-bottom: 15px; color: #fff;">
-            <div style="font-weight: bold; font-size: 15px; color: #facc15; margin-bottom: 8px;">📊 MÓDULO DE AUDITORÍA Y CONTROL DE EFECTIVIDAD</div>
-            <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 12px;">Registra manualmente el número que salió en el sorteo oficial para auditar el rendimiento del enjambre.</p>
-            
-            <form action="/guardar_auditoria" method="POST" style="display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-size: 12px; color: #38bdf8;">Selecciona la Sala:</label>
-                <select name="sala_aud" style="padding: 8px; border-radius: 6px; background: #0f172a; color: #fff; border: 1px solid #38bdf8;">
-                    {options_salas}
-                </select>
-                
-                <label style="font-size: 12px; color: #38bdf8;">Número que Salió Oficialmente:</label>
-                <input type="text" name="num_real" placeholder="Ej: 45" required style="padding: 8px; border-radius: 6px; background: #0f172a; color: #fff; border: 1px solid #38bdf8; font-size: 14px;">
-                
-                <button type="submit" style="background: #22c55e; color: #fff; font-weight: bold; padding: 10px; border: none; border-radius: 6px; cursor: pointer; margin-top: 5px;">💾 Guardar y Auditar Acierto</button>
-            </form>
-        </div>
-
-        <h3>📋 HISTORIAL DE AUDITORÍA RECIENTE:</h3>
-        <div style="max-height: 300px; overflow-y: auto;">
-            <table>
-                <tr><th>Fecha / Hora</th><th>Sala</th><th>Resultado Real</th><th>Estado</th></tr>
-                {filas_tabla}
-            </table>
-        </div>
-        """
-        titulo_panel = "📊 AUDITORÍA Y CONTROL DE EFECTIVIDAD"
-        badge_panel = "<span style='color:#38bdf8; font-size:12px;'>● MODO REGISTRO</span>"
-    else:
-        contenido_html = info_actual['contenido']
-        titulo_panel = f"📊 {info_actual['nombre'].upper()}"
-        badge_panel = estado_badge
 
     html = f"""
     <!DOCTYPE html>
     <html lang="es">
     <head>
-        <meta charset="UTF-8">
-        <title>Shneyder IA Pro - Enjambre de Consenso</title>
+        <meta charset="UTF-8"><title>Shneyder IA Pro - Enjambre de Consenso</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/10_euro_note_2014_back.jpg/320px-10_euro_note_2014_back.jpg">
-        <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/10_euro_note_2014_back.jpg/320px-10_euro_note_2014_back.jpg">
         <style>
             body {{ background:#080d1a; color:#e2e8f0; font-family:sans-serif; padding:10px; margin:0; }}
             .card {{ background:#131d31; border-radius:12px; padding:15px; margin-bottom:15px; border:1px solid #233249; }}
@@ -435,9 +353,9 @@ def index(request: Request, sala: str = None):
                 {botones_html}
             </div>
             <div class="card" id="vista_general">
-                <h2 id="titulo_sala" style="color: #facc15; font-size: 16px;">{titulo_panel} {badge_panel}</h2>
+                <h2 id="titulo_sala" style="color: #facc15; font-size: 16px;">📊 {info_actual['nombre'].upper()} {estado_badge}</h2>
                 <div id="contenido_sala">
-                    {contenido_html}
+                    {info_actual['contenido']}
                 </div>
             </div>
         </div>
@@ -445,42 +363,6 @@ def index(request: Request, sala: str = None):
     </html>
     """
     return HTMLResponse(content=html)
-
-@app.post("/guardar_auditoria")
-def guardar_auditoria(sala_aud: str = Form(...), num_real: str = Form(...)):
-    try:
-        datos_enjambre = calcular_enjambre_ia()
-        sala_info = datos_enjambre.get(sala_aud)
-        nombre_sala_legible = sala_info['nombre'] if sala_info else sala_aud
-
-        estado = "REGISTRADO"
-        if sala_aud in datos_enjambre:
-            ahora_utc = datetime.utcnow()
-            hora_rd = ahora_utc - timedelta(hours=4)
-            seed_base = int(hora_rd.strftime("%Y%m%d"))
-            
-            salas_claves = list(datos_enjambre.keys())
-            idx = salas_claves.index(sala_aud) if sala_aud in salas_claves else 0
-            
-            sueltos_ord = motor_debate_consenso(sala_aud, seed_base, idx, hora_rd)
-            top_numeros = [n['num'] for n in sueltos_ord[:20]]
-            
-            if num_real.strip().zfill(2) in top_numeros:
-                estado = "ACIERTO"
-            else:
-                estado = "FUERA DE RANGO"
-
-        fecha_str = (datetime.utcnow() - timedelta(hours=4)).strftime("%Y-%m-%d %H:%M")
-        conn = sqlite3.connect("auditoria_aciertos.db", check_same_thread=False)
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO registro_auditoria (fecha, sala, resultado_real, estado) VALUES (?, ?, ?, ?)", 
-                       (fecha_str, nombre_sala_legible, num_real.strip().zfill(2), estado))
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        print(f"Error al guardar auditoría: {e}")
-
-    return RedirectResponse(url="/?sala=auditoria", status_code=303)
 
 if __name__ == "__main__":
     uvicorn.run("servidor_movil:app", host="0.0.0.0", port=10000)
