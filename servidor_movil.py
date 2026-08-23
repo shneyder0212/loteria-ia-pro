@@ -67,38 +67,31 @@ inicializar_bd_historica()
 # SISTEMA DE DEBATE Y CONSENSO MULTI-MOTOR
 # ==========================================
 def motor_debate_consenso(sala_clave, seed_base, idx_sala, hora_rd):
-    """Tres sub-motores analizan y votan para llegar a la jugada más certera."""
-    # Voto del Sub-Motor A: Ciclos y Secuencias
     rng_a = random.Random(seed_base + hora_rd.hour + (idx_sala * 11))
     pool_a = [f"{n:02d}" for n in range(100)]
     rng_a.shuffle(pool_a)
     voto_a = pool_a[:5]
 
-    # Voto del Sub-Motor B: Jaladeras e Historial
     rng_b = random.Random(seed_base + hora_rd.hour + (idx_sala * 17) + 5)
     pool_b = [f"{n:02d}" for n in range(100)]
     rng_b.shuffle(pool_b)
     voto_b = pool_b[:5]
 
-    # Voto del Sub-Motor C: Presión de Terminales y Decenas
     rng_c = random.Random(seed_base + hora_rd.hour + (idx_sala * 23) + 9)
     pool_c = [f"{n:02d}" for n in range(100)]
     rng_c.shuffle(pool_c)
     voto_c = pool_c[:5]
 
-    # Proceso de Consenso / Debate (Se priorizan los números que coinciden o tienen mayor peso cruzado)
     consenso_puntuacion = {}
     for num in voto_a:
         consenso_puntuacion[num] = consenso_puntuacion.get(num, 0) + 35
     for num in voto_b:
-        consenso_puntuacion[num] = consenso_puntuacion.get(num, 0) + 40 # Mayor peso al historial de jaladeras
+        consenso_puntuacion[num] = consenso_puntuacion.get(num, 0) + 40
     for num in voto_c:
         consenso_puntuacion[num] = consenso_puntuacion.get(num, 0) + 25
 
-    # Ordenar por mayor consenso de votos
     orden_consenso = sorted(consenso_puntuacion.items(), key=lambda x: x[1], reverse=True)
     
-    # Extraer los mejores números consensuados para armar el ranking final
     ranking_final = []
     usados = set()
     for num, punt in orden_consenso:
@@ -107,7 +100,6 @@ def motor_debate_consenso(sala_clave, seed_base, idx_sala, hora_rd):
             fuerza_cons = min(round(96.0 + (punt * 0.04), 1), 99.9)
             ranking_final.append({"num": num, "fuerza": fuerza_cons})
 
-    # Completar por si faltan elementos en el pool
     for num in pool_b:
         if num not in usados and len(ranking_final) < 30:
             usados.add(num)
@@ -165,7 +157,6 @@ def calcular_enjambre_ia():
         rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + hora_rd.hour + (idx_sala * 13))
 
         if tipo == "quiniela":
-            # Obtener el resultado del debate de los sub-motores
             sueltos_ord = motor_debate_consenso(clave, seed_base, idx_sala, hora_rd)
             
             n1, n2, n3 = sueltos_ord[0]['num'], sueltos_ord[1]['num'], sueltos_ord[2]['num']
@@ -330,8 +321,12 @@ def index(request: Request, sala: str = None):
     <!DOCTYPE html>
     <html lang="es">
     <head>
-        <meta charset="UTF-8"><title>Shneyder IA Pro - Enjambre de Consenso</title>
+        <meta charset="UTF-8">
+        <title>Shneyder IA Pro - Enjambre de Consenso</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Ícono personalizado: Billete de 10 Euros -->
+        <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/10_euro_note_2014_back.jpg/320px-10_euro_note_2014_back.jpg">
+        <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/10_euro_note_2014_back.jpg/320px-10_euro_note_2014_back.jpg">
         <style>
             body {{ background:#080d1a; color:#e2e8f0; font-family:sans-serif; padding:10px; margin:0; }}
             .card {{ background:#131d31; border-radius:12px; padding:15px; margin-bottom:15px; border:1px solid #233249; }}
