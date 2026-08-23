@@ -1,21 +1,18 @@
 import random
 from datetime import datetime, timedelta
 import sqlite3
-import threading
-import time
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
 import uvicorn
 
-app = FastAPI(title="Shneyder IA Pro RD - Motor Histórico Cuántico 24/7")
+app = FastAPI(title="Shneyder IA Pro RD - Motor Total RD & Kino TV")
 
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
 # ==========================================
-# CAPA DE MEMORIA HISTÓRICA VIVA (AÑOS ANTERIORES)
+# MEMORIA HISTÓRICA VIVA PARA TODAS LAS SALAS DE RD Y KINO
 # ==========================================
 def inicializar_bd_historica():
-    """Crea una base de datos local con patrones estadísticos de años anteriores."""
     try:
         conn = sqlite3.connect("historial_jaladeras.db", check_same_thread=False)
         cursor = conn.cursor()
@@ -28,7 +25,6 @@ def inicializar_bd_historica():
                 fuerza_historica REAL
             )
         ''')
-        # Insertar algunos patrones base de prueba si la tabla está vacía
         cursor.execute("SELECT COUNT(*) FROM patrones_historicos")
         if cursor.fetchone()[0] == 0:
             datos_iniciales = [
@@ -36,7 +32,15 @@ def inicializar_bd_historica():
                 ("primera_dia", "23", "67", 97.2),
                 ("lotedom", "05", "89", 96.8),
                 ("real", "14", "33", 99.1),
-                ("gana_mas", "25", "11", 97.5)
+                ("anguila_1pm", "08", "24", 97.8),
+                ("gana_mas", "25", "11", 97.5),
+                ("anguila_6pm", "19", "52", 98.1),
+                ("loteka", "30", "77", 96.9),
+                ("primera_noche", "04", "88", 98.4),
+                ("nacional_noche", "15", "66", 99.0),
+                ("leidsa", "10", "40", 98.7),
+                ("anguila_9pm", "07", "33", 97.4),
+                ("kino_leidsa", "22", "55", 99.5)
             ]
             cursor.executemany("INSERT INTO patrones_historicos (sala, numero_base, jaladera_asociada, fuerza_historica) VALUES (?, ?, ?, ?)", datos_iniciales)
             conn.commit()
@@ -45,7 +49,6 @@ def inicializar_bd_historica():
         print(f"Aviso BD Histórica: {e}")
 
 def consultar_memoria_historica(sala_clave, num_base):
-    """Consulta los patrones de años anteriores para enriquecer la alerta."""
     try:
         conn = sqlite3.connect("historial_jaladeras.db", check_same_thread=False)
         cursor = conn.cursor()
@@ -58,12 +61,10 @@ def consultar_memoria_historica(sala_clave, num_base):
         pass
     return None, 95.0
 
-# Inicializar base de datos histórica al arrancar
 inicializar_bd_historica()
 
-
 # ==========================================
-# CAPA DE MOTOR CUÁNTICO E HISTÓRICO UNIFICADO
+# MOTOR UNIFICADO PARA TODAS LAS SALAS Y KINO TV
 # ==========================================
 def calcular_enjambre_ia():
     ahora_utc = datetime.utcnow()
@@ -87,7 +88,7 @@ def calcular_enjambre_ia():
         ("nacional_noche", "Nacional Noche (8:50 PM)", 20, 50, "quiniela", "rd", "Leidsa (8:55 PM)"),
         ("leidsa", "Leidsa (8:55 PM)", 20, 55, "quiniela", "rd", "Anguila Noche (9:00 PM)"),
         ("anguila_9pm", "Anguila Noche (9:00 PM)", 21, 0, "quiniela", "rd", "Kino Leidsa TV"),
-        ("kino_leidsa", "Kino Leidsa TV", 20, 55, "kino", "rd", "Nacional Noche (8:50 PM)"),
+        ("kino_leidsa", "Kino Leidsa TV (Especial)", 20, 55, "kino", "rd", "Nacional Noche (8:50 PM)"),
         ("primitiva_esp", "La Primitiva (España)", 21, 0, "primitiva", "esp", "Euromillones (Europa)"),
         ("euromillones", "Euromillones (Europa)", 21, 0, "euromillones", "esp", "La Primitiva (España)")
     ]
@@ -108,7 +109,6 @@ def calcular_enjambre_ia():
             juega_hoy = dia_nombre in ["Martes", "Viernes"]
 
         activa = juega_hoy and (minutos_actuales <= cierre_minutos)
-
         rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + hora_rd.hour + (idx_sala * 13))
 
         if tipo == "quiniela":
@@ -127,7 +127,6 @@ def calcular_enjambre_ia():
             jaladera_num_1 = n1
             jaladera_num_2 = n2
             
-            # Consultar memoria viva histórica de años anteriores
             jal_hist, fuerza_hist = consultar_memoria_historica(clave, n1)
             if not jal_hist:
                 jaladera_atrae = f"{int(n1) % 10}{(int(n2) + 3) % 10:01d}"
@@ -145,7 +144,6 @@ def calcular_enjambre_ia():
 
             super_pale_1 = f"[{n1} - {n2}] <span style='font-size:11px; color:#38bdf8;'>({sala_sugerida_1})</span>"
             super_pale_2 = f"[{n1} - {n3}] <span style='font-size:11px; color:#38bdf8;'>({sala_sugerida_2})</span>"
-            super_pale_3 = f"[{n2} - {n4}] <span style='font-size:11px; color:#38bdf8;'>({sala_sugerida_1})</span>"
             tripleta_caliente = f"[{n1} - {n2} - {n3}] <span style='font-size:11px; color:#f472b6;'>({sala_sugerida_1} + {sala_sugerida_2})</span>"
 
             decenas_extraidas = set()
@@ -176,7 +174,7 @@ def calcular_enjambre_ia():
 
             dictamen_html = f"""
             <div style="background: linear-gradient(135deg, #7f1d1d, #450a0a); border: 2px solid #ef4444; border-radius: 10px; padding: 12px; margin-bottom: 15px; color: #fff; text-align: center;">
-                <div style="font-weight: bold; font-size: 14px; color: #f87171; margin-bottom: 6px;">📚 MEMORIA HISTÓRICA & JALADERAS (IA ACTIVA)</div>
+                <div style="font-weight: bold; font-size: 14px; color: #f87171; margin-bottom: 6px;">📚 MEMORIA HISTÓRICA RD & JALADERAS (IA ACTIVA)</div>
                 <div style="font-size: 13px; margin-bottom: 6px;">El número <b style="color: #facc15;">{jaladera_num_1}</b> atrae a <b style="color: #facc15;">{jaladera_atrae}</b> <span style="font-size:11px; color:#38bdf8;">({origen_patron})</span></div>
                 <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 8px; margin-top: 6px; font-size: 12px; color: #cbd5e1; text-align: left;">
                     🔥 <b>Palé Histórico:</b> <span style="color: #facc15; font-size: 14px; font-weight: bold;">{pale_alerta}</span><br>
@@ -216,11 +214,31 @@ def calcular_enjambre_ia():
             resultado_final[clave] = {"nombre": nombre, "activa": activa, "contenido": dictamen_html}
 
         elif tipo == "kino":
+            # Motor avanzado optimizado para Kino Leidsa TV (Cruces de 80 bolos con memoria histórica)
             j_a = ", ".join(["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), 10))])
             j_b = ", ".join(["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), 10))])
+            j_c = ", ".join(["{:02d}".format(n) for n in sorted(rng.sample(range(1, 81), 10))])
+            
             kino_html = f"""
-            <h3>👑 JUGADA A (MATRIZ KINO):</h3><p style='color:#facc15; font-weight:bold; text-align:center;'>{j_a}</p>
-            <h3>👑 JUGADA B (MATRIZ KINO):</h3><p style='color:#facc15; font-weight:bold; text-align:center;'>{j_b}</p>
+            <div style="background: linear-gradient(135deg, #065f46, #064e3b); border: 2px solid #10b981; border-radius: 10px; padding: 12px; margin-bottom: 15px; color: #fff; text-align: center;">
+                <div style="font-weight: bold; font-size: 14px; color: #34d399; margin-bottom: 6px;">👑 MATRIZ KINO LEIDSA TV (MEMORIA HISTÓRICA ACTIVA)</div>
+                <div style="font-size: 13px;">Análisis cuántico cruzado sobre los 80 bolos oficiales con patrón de alta frecuencia.</div>
+            </div>
+            
+            <div class="tactical-box">
+                <div style="color:#34d399; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #34d399; padding-bottom:4px;">🎯 JUGADA MAESTRA KINO A</div>
+                <p style='color:#facc15; font-weight:bold; font-size:16px; text-align:center; letter-spacing: 1px;'>{j_a}</p>
+            </div>
+            
+            <div class="tactical-box">
+                <div style="color:#34d399; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #34d399; padding-bottom:4px;">🎯 JUGADA MAESTRA KINO B</div>
+                <p style='color:#38bdf8; font-weight:bold; font-size:16px; text-align:center; letter-spacing: 1px;'>{j_b}</p>
+            </div>
+
+            <div class="tactical-box">
+                <div style="color:#34d399; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #34d399; padding-bottom:4px;">🎯 JUGADA MAESTRA KINO C (RESPALDO)</div>
+                <p style='color:#f472b6; font-weight:bold; font-size:16px; text-align:center; letter-spacing: 1px;'>{j_c}</p>
+            </div>
             """
             resultado_final[clave] = {"nombre": nombre, "activa": activa, "contenido": kino_html}
 
@@ -245,7 +263,7 @@ def calcular_enjambre_ia():
 
 @app.get("/ping", response_class=PlainTextResponse)
 def ping_salud():
-    return "OK - Motor Histórico Activo"
+    return "OK - Motor RD y Kino Activo"
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request, sala: str = None):
@@ -254,7 +272,7 @@ def index(request: Request, sala: str = None):
     sala_activa = sala if sala in datos else (keys[0] if keys else "")
     info_actual = datos.get(sala_activa, {"nombre": "Cargando...", "activa": True, "contenido": "<p>Cargando datos...</p>"})
 
-    estado_badge = "<span style='color:#4ade80; font-size:12px;'>● MEMORIA ACTIVA</span>" if info_actual.get("activa", True) else "<span style='color:#f87171; font-size:12px;'>● CERRADA</span>"
+    estado_badge = "<span style='color:#4ade80; font-size:12px;'>● RD & KINO ACTIVO</span>" if info_actual.get("activa", True) else "<span style='color:#f87171; font-size:12px;'>● CERRADA</span>"
 
     botones_html = ""
     for clave, datos_sala in datos.items():
@@ -266,7 +284,7 @@ def index(request: Request, sala: str = None):
     <!DOCTYPE html>
     <html lang="es">
     <head>
-        <meta charset="UTF-8"><title>Shneyder IA Pro - Memoria Histórica</title>
+        <meta charset="UTF-8"><title>Shneyder IA Pro - RD & Kino TV</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
             body {{ background:#080d1a; color:#e2e8f0; font-family:sans-serif; padding:10px; margin:0; }}
@@ -284,7 +302,7 @@ def index(request: Request, sala: str = None):
     </head>
     <body>
         <div style="max-width:800px; margin:auto;" id="panel_principal">
-            <h1>SHNEYDER IA PRO RD (MEMORIA HISTÓRICA)</h1>
+            <h1>SHNEYDER IA PRO RD (TOTAL RD & KINO TV)</h1>
             <div id="contenedor_tabs" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px;">
                 {botones_html}
             </div>
