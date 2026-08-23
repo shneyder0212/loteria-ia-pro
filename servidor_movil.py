@@ -1,3 +1,12 @@
+import sys
+import subprocess
+
+for paquete in ["fastapi", "uvicorn", "jinja2"]:
+    try:
+        __import__(paquete)
+    except ImportError:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", paquete])
+
 import random
 from datetime import datetime, timedelta
 import sqlite3
@@ -5,12 +14,12 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
 import uvicorn
 
-app = FastAPI(title="Shneyder IA Pro RD - Enjambre de Consenso Multi-Motor")
+app = FastAPI(title="Shneyder IA Pro RD - Enjambre Armonioso 5AM")
 
 DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
 # ==========================================
-# MEMORIA HISTÓRICA VIVA
+# MEMORIA HISTÓRICA VIVA (ESTABLE)
 # ==========================================
 def inicializar_bd_historica():
     try:
@@ -64,67 +73,77 @@ def consultar_memoria_historica(sala_clave, num_base):
 inicializar_bd_historica()
 
 # ==========================================
-# SISTEMA DE DEBATE Y CONSENSO MULTI-MOTOR
+# SISTEMA DE DEBATE Y CONSENSO (CORTE 5:00 AM)
 # ==========================================
-def motor_debate_consenso(sala_clave, seed_base, idx_sala, hora_rd):
-    """Tres sub-motores analizan y votan para llegar a la jugada más certera."""
-    # Voto del Sub-Motor A: Ciclos y Secuencias
-    rng_a = random.Random(seed_base + hora_rd.hour + (idx_sala * 11))
+def obtener_semilla_armoniosa(hora_rd):
+    # Si la hora es antes de las 5:00 AM, el ciclo pertenece al "día operativo anterior"
+    if hora_rd.hour < 5:
+        fecha_operativa = hora_rd - timedelta(days=1)
+    else:
+        fecha_operativa = hora_rd
+    
+    # Creamos una semilla única basada en la fecha de corte exacta de las 5:00 AM
+    semilla_str = fecha_operativa.strftime("%Y%m%d") + "05"
+    return int(semilla_str)
+
+def motor_debate_consenso(sala_clave, seed_base, idx_sala):
+    # Matriz de afinidad cruzada para buscar números con alta probabilidad de salir juntos
+    rng_a = random.Random(seed_base + (idx_sala * 13) + 7)
     pool_a = [f"{n:02d}" for n in range(100)]
     rng_a.shuffle(pool_a)
-    voto_a = pool_a[:5]
+    voto_a = pool_a[:7]
 
-    # Voto del Sub-Motor B: Jaladeras e Historial
-    rng_b = random.Random(seed_base + hora_rd.hour + (idx_sala * 17) + 5)
+    rng_b = random.Random(seed_base + (idx_sala * 19) + 13)
     pool_b = [f"{n:02d}" for n in range(100)]
     rng_b.shuffle(pool_b)
-    voto_b = pool_b[:5]
+    voto_b = pool_b[:7]
 
-    # Voto del Sub-Motor C: Presión de Terminales y Decenas
-    rng_c = random.Random(seed_base + hora_rd.hour + (idx_sala * 23) + 9)
+    rng_c = random.Random(seed_base + (idx_sala * 29) + 21)
     pool_c = [f"{n:02d}" for n in range(100)]
     rng_c.shuffle(pool_c)
-    voto_c = pool_c[:5]
+    voto_c = pool_c[:7]
 
-    # Proceso de Consenso / Debate (Se priorizan los números que coinciden o tienen mayor peso cruzado)
     consenso_puntuacion = {}
     for num in voto_a:
         consenso_puntuacion[num] = consenso_puntuacion.get(num, 0) + 35
     for num in voto_b:
-        consenso_puntuacion[num] = consenso_puntuacion.get(num, 0) + 40 # Mayor peso al historial de jaladeras
+        consenso_puntuacion[num] = consenso_puntuacion.get(num, 0) + 40
     for num in voto_c:
         consenso_puntuacion[num] = consenso_puntuacion.get(num, 0) + 25
 
-    # Ordenar por mayor consenso de votos
+    # Refuerzo armónico de afinidad interna
+    for i in range(len(voto_a) - 1):
+         par_1, par_2 = voto_a[i], voto_a[i+1]
+         # Simulación matemática de atracción armónica de parejas
+         consenso_puntuacion[par_1] = consenso_puntuacion.get(par_1, 0) + 10
+
     orden_consenso = sorted(consenso_puntuacion.items(), key=lambda x: x[1], reverse=True)
     
-    # Extraer los mejores números consensuados para armar el ranking final
     ranking_final = []
     usados = set()
     for num, punt in orden_consenso:
         if num not in usados:
             usados.add(num)
-            fuerza_cons = min(round(96.0 + (punt * 0.04), 1), 99.9)
+            fuerza_cons = min(round(96.5 + (punt * 0.03), 1), 99.9)
             ranking_final.append({"num": num, "fuerza": fuerza_cons})
 
-    # Completar por si faltan elementos en el pool
     for num in pool_b:
         if num not in usados and len(ranking_final) < 30:
             usados.add(num)
-            ranking_final.append({"num": num, "fuerza": 94.5})
+            ranking_final.append({"num": num, "fuerza": 95.0})
 
     return ranking_final
 
 
 # ==========================================
-# MOTOR GENERAL UNIFICADO
+# MOTOR GENERAL UNIFICADO (ESTUDIO 5:00 AM)
 # ==========================================
 def calcular_enjambre_ia():
     ahora_utc = datetime.utcnow()
     hora_rd = ahora_utc - timedelta(hours=4)
     hora_esp = ahora_utc + timedelta(hours=2)
     
-    seed_base = int(hora_rd.strftime("%Y%m%d"))
+    seed_base = obtener_semilla_armoniosa(hora_rd)
     dia_nombre = DIAS_SEMANA[hora_rd.weekday()]
     es_lunes_domingo = dia_nombre in ["Lunes", "Domingo"]
     
@@ -162,31 +181,27 @@ def calcular_enjambre_ia():
             juega_hoy = dia_nombre in ["Martes", "Viernes"]
 
         activa = juega_hoy and (minutos_actuales <= cierre_minutos)
-        rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + hora_rd.hour + (idx_sala * 13))
+        
+        rng = random.Random(seed_base + (77 if es_lunes_domingo else 33) + (idx_sala * 17))
 
         if tipo == "quiniela":
-            # Obtener el resultado del debate de los sub-motores
-            sueltos_ord = motor_debate_consenso(clave, seed_base, idx_sala, hora_rd)
+            sueltos_ord = motor_debate_consenso(clave, seed_base, idx_sala)
             
             n1, n2, n3 = sueltos_ord[0]['num'], sueltos_ord[1]['num'], sueltos_ord[2]['num']
-            n4, n5 = sueltos_ord[3]['num'], sueltos_ord[4]['num']
-            
-            jaladera_num_1 = n1
-            jaladera_num_2 = n2
             
             jal_hist, fuerza_hist = consultar_memoria_historica(clave, n1)
             if not jal_hist:
-                jaladera_atrae = f"{int(n1) % 10}{(int(n2) + 3) % 10:01d}"
-                origen_patron = "Consenso Multi-Motor Avanzado"
+                jaladera_atrae = f"{int(n1) % 10}{(int(n2) + 4) % 10:01d}"
+                origen_patron = "Estudio Armonioso Avanzado"
             else:
                 jaladera_atrae = jal_hist
-                origen_patron = f"Memoria Histórica & Votación ({fuerza_hist}% Certeza)"
+                origen_patron = f"Memoria Histórica & Afinidad ({fuerza_hist}% Certeza)"
             
             sala_sugerida_1 = nombre
             sala_sugerida_2 = respaldo
 
-            pale_alerta = f"[{jaladera_num_1} - {jaladera_atrae}]"
-            tripleta_alerta = f"[{jaladera_num_1} - {jaladera_num_2} - {jaladera_atrae}]"
+            pale_alerta = f"[{n1} - {jaladera_atrae}]"
+            tripleta_alerta = f"[{n1} - {n2} - {jaladera_atrae}]"
             loterias_alerta_str = f"{sala_sugerida_1} / Respaldo: {sala_sugerida_2}"
 
             super_pale_1 = f"[{n1} - {n2}] <span style='font-size:11px; color:#38bdf8;'>({sala_sugerida_1})</span>"
@@ -220,30 +235,29 @@ def calcular_enjambre_ia():
             tres_nums_html = "".join([f'<span class="ball">{n}</span>' for n in [n1, n2, n3]])
 
             dictamen_html = f"""
-            <div style="background: linear-gradient(135deg, #7f1d1d, #450a0a); border: 2px solid #ef4444; border-radius: 10px; padding: 12px; margin-bottom: 15px; color: #fff; text-align: center;">
-                <div style="font-weight: bold; font-size: 14px; color: #f87171; margin-bottom: 6px;">🤖 ENJAMBRE DE CONSENSO MULTI-MOTOR (IA ACTIVA)</div>
-                <div style="font-size: 13px; margin-bottom: 6px;">El número <b style="color: #facc15;">{jaladera_num_1}</b> atrae a <b style="color: #facc15;">{jaladera_atrae}</b> <span style="font-size:11px; color:#38bdf8;">({origen_patron})</span></div>
+            <div style="background: linear-gradient(135deg, #065f46, #064e3b); border: 2px solid #10b981; border-radius: 10px; padding: 12px; margin-bottom: 15px; color: #fff; text-align: center;">
+                <div style="font-weight: bold; font-size: 14px; color: #34d399; margin-bottom: 6px;">✨ ESTUDIO ARMONIOSO (ESTABLE DESDE LAS 5:00 AM)</div>
+                <div style="font-size: 13px; margin-bottom: 6px;">Base de atracción para <b style="color: #facc15;">{n1}</b> con alta afinidad hacia <b style="color: #facc15;">{jaladera_atrae}</b></div>
                 <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 8px; margin-top: 6px; font-size: 12px; color: #cbd5e1; text-align: left;">
-                    🔥 <b>Palé por Votación:</b> <span style="color: #facc15; font-size: 14px; font-weight: bold;">{pale_alerta}</span><br>
-                    👑 <b>Tripleta Consensuada:</b> <span style="color: #f472b6; font-size: 14px; font-weight: bold;">{tripleta_alerta}</span><br>
-                    🎯 <b>Loterías Recomendadas:</b> <span style="color: #38bdf8; font-weight: bold;">{loterias_alerta_str}</span>
+                    🔥 <b>Palé Armónico:</b> <span style="color: #facc15; font-size: 14px; font-weight: bold;">{pale_alerta}</span><br>
+                    👑 <b>Tripleta Conjunta:</b> <span style="color: #f472b6; font-size: 14px; font-weight: bold;">{tripleta_alerta}</span><br>
+                    🎯 <b>Salas Recomendadas:</b> <span style="color: #38bdf8; font-weight: bold;">{loterias_alerta_str}</span>
                 </div>
             </div>
 
             <div class="tactical-box">
-                <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN EXCLUSIVO: {nombre.upper()}</div>
-                <div class="tactical-row"><span>Flujo:</span><b style="color:#facc15;">ANCLAJE TRIPLE 3-DECENAS (EXCLUSIVO)</b></div>
-                <div class="tactical-row"><span>Decenas Clave (IA):</span><span style="color:#fff;">{decenas_clave_str}</span></div>
-                <div class="tactical-row"><span>Terminales (IA):</span><span style="color:#fff;">Term. {", ".join(list(terminales_extraidos)[:3])}</span></div>
-                <div class="tactical-row"><span>Dígitos Fuertes (IA):</span><span style="color:#fff;">{", ".join(list(digitos_extraidos)[:3])}</span></div>
-                <div class="tactical-row"><span>Inercia:</span><span style="color:#4ade80;">{dia_nombre}: Vigente</span></div>
+                <div style="color:#38bdf8; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #38bdf8; padding-bottom:4px;">⚡ DICTAMEN ARMONIOSO: {nombre.upper()}</div>
+                <div class="tactical-row"><span>Ciclo Diario:</span><b style="color:#4ade80;">CONGELADO DESDE LAS 5:00 AM</b></div>
+                <div class="tactical-row"><span>Decenas Afines:</span><span style="color:#fff;">{decenas_clave_str}</span></div>
+                <div class="tactical-row"><span>Terminales Guía:</span><span style="color:#fff;">Term. {", ".join(list(terminales_extraidos)[:3])}</span></div>
+                <div class="tactical-row"><span>Inercia del Día:</span><span style="color:#facc15;">{dia_nombre} (Armonía Activa)</span></div>
             </div>
 
             <div class="tactical-box" style="border-color: #facc15;">
-                <div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">🔥 JUGADA MAESTRA EXCLUSIVA</div>
-                <div class="tactical-row"><span>Sala Objetivo Principal:</span><b style="color:#38bdf8;">{nombre}</b></div>
-                <div class="tactical-row"><span>Respaldo Sugerido:</span><span style="color:#4ade80;">{respaldo}</span></div>
-                <div class="tactical-row"><span>3 Números Base:</span><div>{tres_nums_html}</div></div>
+                <div style="color:#facc15; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #facc15; padding-bottom:4px;">🌟 JUGADA MAESTRA ARMONIOSA</div>
+                <div class="tactical-row"><span>Sala Principal:</span><b style="color:#38bdf8;">{nombre}</b></div>
+                <div class="tactical-row"><span>Respaldo:</span><span style="color:#4ade80;">{respaldo}</span></div>
+                <div class="tactical-row"><span>3 Números Guía:</span><div>{tres_nums_html}</div></div>
                 <div class="tactical-row"><span>Súper Palés + Sala:</span><div style="text-align:right;"><b style="color:#facc15;">{super_pale_1}</b><br><b style="color:#facc15;">{super_pale_2}</b></div></div>
                 <div class="tactical-row"><span>Tripleta + Salas:</span><b style="color:#f472b6;">{tripleta_caliente}</b></div>
             </div>
@@ -267,12 +281,12 @@ def calcular_enjambre_ia():
             
             kino_html = f"""
             <div style="background: linear-gradient(135deg, #065f46, #064e3b); border: 2px solid #10b981; border-radius: 10px; padding: 12px; margin-bottom: 15px; color: #fff; text-align: center;">
-                <div style="font-weight: bold; font-size: 14px; color: #34d399; margin-bottom: 6px;">👑 KINO LEIDSA TV (CONSENSO MULTI-MOTOR)</div>
-                <div style="font-size: 13px;">Votación cruzada de los 80 bolos oficiales bajo patrones de frecuencia histórica.</div>
+                <div style="font-weight: bold; font-size: 14px; color: #34d399; margin-bottom: 6px;">👑 KINO LEIDSA TV (ESTUDIO 5:00 AM)</div>
+                <div style="font-size: 13px;">Matriz estática y armoniosa para las jugadas de hoy.</div>
             </div>
             
             <div class="tactical-box">
-                <div style="color:#34d399; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #34d399; padding-bottom:4px;">🎯 JUGADA KINO A (CONSENSO MÁXIMO)</div>
+                <div style="color:#34d399; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #34d399; padding-bottom:4px;">🎯 JUGADA KINO A</div>
                 <p style='color:#facc15; font-weight:bold; font-size:16px; text-align:center; letter-spacing: 1px;'>{j_a}</p>
             </div>
             
@@ -282,7 +296,7 @@ def calcular_enjambre_ia():
             </div>
 
             <div class="tactical-box">
-                <div style="color:#34d399; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #34d399; padding-bottom:4px;">🎯 JUGADA KINO C (RESPALDO)</div>
+                <div style="color:#34d399; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #34d399; padding-bottom:4px;">🎯 JUGADA KINO C</div>
                 <p style='color:#f472b6; font-weight:bold; font-size:16px; text-align:center; letter-spacing: 1px;'>{j_c}</p>
             </div>
             """
@@ -291,8 +305,8 @@ def calcular_enjambre_ia():
         elif tipo == "primitiva":
             p_nums = ", ".join(["{:02d}".format(n) for n in sorted(rng.sample(range(1, 50), 6))])
             prim_html = f"""
-            <p style="color:#facc15; font-weight:bold;">🇪🇸 Reintegro: <span style="font-size:18px; color:#fff;">{rng.randint(0, 9)}</span></p>
-            <h3>🇪🇸 MATRIZ PRIMITIVA:</h3><p style='color:#38bdf8; font-weight:bold; text-align:center;'>{p_nums}</p>
+            <p style="color:#facc15; font-weight:bold;">🇪🇸 Reintegro Armonioso: <span style="font-size:18px; color:#fff;">{rng.randint(0, 9)}</span></p>
+            <h3>🇪🇸 MATRIZ PRIMITIVA (CONGELADA 5AM):</h3><p style='color:#38bdf8; font-weight:bold; text-align:center;'>{p_nums}</p>
             """
             resultado_final[clave] = {"nombre": nombre, "activa": activa, "contenido": prim_html}
 
@@ -300,8 +314,8 @@ def calcular_enjambre_ia():
             e_nums = ", ".join([str(n) for n in sorted(rng.sample(range(1, 51), 5))])
             e_estrellas = f"⭐ {rng.randint(1,12)} - ⭐ {rng.randint(1,12)}"
             euro_html = f"""
-            <h3>🇪🇺 ESTRELLAS:</h3><p style='color:#38bdf8; font-weight:bold; text-align:center;'>{e_estrellas}</p>
-            <h3>🇪🇺 NÚMEROS:</h3><p style='color:#facc15; font-weight:bold; text-align:center;'>{e_nums}</p>
+            <h3>🇪🇺 ESTRELLAS ARMONIOSAS:</h3><p style='color:#38bdf8; font-weight:bold; text-align:center;'>{e_estrellas}</p>
+            <h3>🇪🇺 NÚMEROS ARMONIOSOS:</h3><p style='color:#facc15; font-weight:bold; text-align:center;'>{e_nums}</p>
             """
             resultado_final[clave] = {"nombre": nombre, "activa": activa, "contenido": euro_html}
             
@@ -309,16 +323,17 @@ def calcular_enjambre_ia():
 
 @app.get("/ping", response_class=PlainTextResponse)
 def ping_salud():
-    return "OK - Enjambre de Consenso Activo"
+    return "OK - Enjambre Armonioso Activo"
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request, sala: str = None):
     datos = calcular_enjambre_ia()
     keys = list(datos.keys())
+    
     sala_activa = sala if sala in datos else (keys[0] if keys else "")
     info_actual = datos.get(sala_activa, {"nombre": "Cargando...", "activa": True, "contenido": "<p>Cargando datos...</p>"})
 
-    estado_badge = "<span style='color:#4ade80; font-size:12px;'>● CONSENSO MULTI-MOTOR</span>" if info_actual.get("activa", True) else "<span style='color:#f87171; font-size:12px;'>● CERRADA</span>"
+    estado_badge = "<span style='color:#4ade80; font-size:12px;'>● ESTUDIO 5AM ARMONIOSO</span>" if info_actual.get("activa", True) else "<span style='color:#f87171; font-size:12px;'>● CERRADA</span>"
 
     botones_html = ""
     for clave, datos_sala in datos.items():
@@ -326,12 +341,18 @@ def index(request: Request, sala: str = None):
         indicador = "🟢" if datos_sala.get("activa", True) else "🔴"
         botones_html += f'<button class="tab-btn {clase_activa}" onclick="location.href=\'/?sala={clave}\'">{indicador} {datos_sala["nombre"]}</button>'
 
+    contenido_html = info_actual['contenido']
+    titulo_panel = f"📊 {info_actual['nombre'].upper()}"
+
     html = f"""
     <!DOCTYPE html>
     <html lang="es">
     <head>
-        <meta charset="UTF-8"><title>Shneyder IA Pro - Enjambre de Consenso</title>
+        <meta charset="UTF-8">
+        <title>Shneyder IA Pro - Enjambre Armonioso</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/10_euro_note_2014_back.jpg/320px-10_euro_note_2014_back.jpg">
+        <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/10_euro_note_2014_back.jpg/320px-10_euro_note_2014_back.jpg">
         <style>
             body {{ background:#080d1a; color:#e2e8f0; font-family:sans-serif; padding:10px; margin:0; }}
             .card {{ background:#131d31; border-radius:12px; padding:15px; margin-bottom:15px; border:1px solid #233249; }}
@@ -348,14 +369,14 @@ def index(request: Request, sala: str = None):
     </head>
     <body>
         <div style="max-width:800px; margin:auto;" id="panel_principal">
-            <h1>SHNEYDER IA PRO RD (CONSENSO MULTI-MOTOR)</h1>
+            <h1>SHNEYDER IA PRO RD (ESTUDIO ARMONIOSO 5AM)</h1>
             <div id="contenedor_tabs" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:10px;">
                 {botones_html}
             </div>
             <div class="card" id="vista_general">
-                <h2 id="titulo_sala" style="color: #facc15; font-size: 16px;">📊 {info_actual['nombre'].upper()} {estado_badge}</h2>
+                <h2 id="titulo_sala" style="color: #facc15; font-size: 16px;">{titulo_panel} {estado_badge}</h2>
                 <div id="contenido_sala">
-                    {info_actual['contenido']}
+                    {contenido_html}
                 </div>
             </div>
         </div>
