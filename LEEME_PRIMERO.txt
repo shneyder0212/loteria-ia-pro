@@ -1,0 +1,51 @@
+SHNEYDER IA PRO — DESDE EL PRIMER DATO
+
+CAMBIO PRINCIPAL
+Antes: dos fuentes debían coincidir para que el resultado entrara en memoria.
+Eso podía dejar la app en 0 y sin números.
+
+Ahora:
+- Una fuente + fecha explícitamente correcta => OBSERVADO.
+- OBSERVADO sirve para el ESTUDIO PROVISIONAL.
+- Dos fuentes coincidentes => VERIFICADO.
+- VERIFICADO alimenta la memoria fuerte, alertas y backtesting serio.
+
+Así la app empieza a trabajar desde el primer dato real disponible, sin rellenar con random.
+
+ARRANQUE
+Al iniciar el servidor se lanza en segundo plano:
+1. Sincronización del día actual.
+2. Pequeña carga histórica.
+3. El scheduler sigue compilando información durante el día.
+
+ENDPOINTS IMPORTANTES
+/api/arrancar
+  Fuerza una sincronización + carga histórica segura ahora.
+
+/api/progreso
+  Enseña por lotería cuántos datos tiene y su Top 5 actual.
+
+/api/estado
+  Estado general.
+
+/api/historico/estado
+  Estado de la carga histórica.
+
+MODOS
+1-4 datos utilizables: MEMORIA MÍNIMA
+5-24: PROVISIONAL
+25+ con pocos verificados: PROVISIONAL AMPLIO
+25+ y suficientes verificados: COMPLETO
+80+: MADURO
+
+KINO
+También puede empezar con el primer sorteo observado.
+La alerta fuerte de Kino sigue exigiendo backtesting verificado.
+
+IMPORTANTE
+Esto hace la app mucho menos propensa a quedarse muda, pero ninguna integración web
+puede prometerse "para siempre": las páginas externas pueden cambiar estructura, bloquear
+tráfico o dejar de publicar. Cuando una fuente falle, la app conserva la memoria ya recopilada,
+sigue usando las otras fuentes y muestra el estado en los endpoints.
+
+Ningún número mostrado garantiza premio.
