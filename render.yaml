@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: shneyder-ia-pro
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn servidor_movil:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /ping
+    envVars:
+      - key: DB_PATH
+        value: /var/data/loteria_master_ai.db
+      - key: SCRAPER_CACHE_DIR
+        value: /var/data/http_cache
+      - key: SCRAPER_MIN_INTERVAL_SECONDS
+        value: "5.0"
+      - key: SCRAPER_CACHE_TTL_SECONDS
+        value: "21600"
+      - key: SCRAPER_MAX_RETRIES
+        value: "3"
+    disk:
+      name: memoria-viva
+      mountPath: /var/data
+      sizeGB: 1
+
+  - type: cron
+    name: shneyder-ia-ping
+    runtime: python
+    schedule: "*/5 * * * *"
+    buildCommand: pip install requests
+    startCommand: python keep_alive.py
+    envVars:
+      - key: APP_URL
+        sync: false

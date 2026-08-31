@@ -1,0 +1,29 @@
+SHNEYDER IA PRO — ESTABLE REAL
+
+Esta versión está hecha para NO quedarse en cero al primer arranque.
+
+1. El servidor FastAPI arranca sin esperar ninguna web externa.
+2. Importa localmente una pequeña memoria histórica OBSERVADA incluida.
+3. Esa memoria proviene de resultados históricos públicos de 18-21 julio 2026.
+4. Con esos datos ya puede mostrar rankings PROVISIONALES desde el primer arranque.
+5. Después inicia en segundo plano la sincronización/carga histórica.
+6. Datos de una sola fuente con fecha correcta = OBSERVADOS.
+7. Dos fuentes coincidentes = VERIFICADOS.
+8. Alertas fuertes siguen requiriendo evidencia/backtesting; el bootstrap NO las fuerza.
+
+COMPROBACIONES
+/api/version
+Debe mostrar ESTABLE_REAL_v1.
+
+/api/progreso
+Debe mostrar Top 5 en las loterías RD incluidas en el bootstrap.
+
+/api/bootstrap
+Reimporta el bootstrap sin duplicar por la clave única.
+
+/api/arrancar
+Fuerza sincronización + carga histórica.
+
+IMPORTANTE
+La memoria bootstrap sirve para que la app trabaje desde el primer día; no es una garantía de premio.
+Los rankings son estadísticos/provisionales hasta que aumente la memoria real y verificada.

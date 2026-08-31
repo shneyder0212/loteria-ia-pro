@@ -1,0 +1,801 @@
+{
+  "source_note": "Resultados históricos observados en loteriadominicana.com.do. Se usan solo para arrancar el estudio provisional; las alertas fuertes siguen requiriendo datos verificados.",
+  "records": [
+    {
+      "pais": "rd",
+      "clave": "gana_mas",
+      "nombre": "Gana Más",
+      "tipo": "quiniela",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "24",
+        "36",
+        "44"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "nacional_noche",
+      "nombre": "Lotería Nacional Noche",
+      "tipo": "quiniela",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "51",
+        "97",
+        "95"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "leidsa",
+      "nombre": "Leidsa",
+      "tipo": "quiniela",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "91",
+        "50",
+        "52"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "kino_leidsa",
+      "nombre": "Super Kino TV Leidsa",
+      "tipo": "kino",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "03",
+        "06",
+        "12",
+        "14",
+        "20",
+        "26",
+        "36",
+        "37",
+        "40",
+        "43",
+        "44",
+        "45",
+        "46",
+        "50",
+        "54",
+        "56",
+        "61",
+        "65",
+        "74",
+        "79"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "real",
+      "nombre": "Lotería Real",
+      "tipo": "quiniela",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "17",
+        "52",
+        "04"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "loteka",
+      "nombre": "Loteka",
+      "tipo": "quiniela",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "19",
+        "54",
+        "54"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "primera_dia",
+      "nombre": "La Primera Día",
+      "tipo": "quiniela",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "25",
+        "30",
+        "45"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "primera_noche",
+      "nombre": "La Primera Noche",
+      "tipo": "quiniela",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "74",
+        "65",
+        "82"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "lotedom",
+      "nombre": "LoteDom",
+      "tipo": "quiniela",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "52",
+        "50",
+        "52"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_10am",
+      "nombre": "Anguila Mañana",
+      "tipo": "quiniela",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "93",
+        "12",
+        "47"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_1pm",
+      "nombre": "Anguila Mediodía",
+      "tipo": "quiniela",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "57",
+        "15",
+        "41"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_6pm",
+      "nombre": "Anguila Tarde",
+      "tipo": "quiniela",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "93",
+        "10",
+        "30"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_9pm",
+      "nombre": "Anguila Noche",
+      "tipo": "quiniela",
+      "fecha": "2026-07-18",
+      "numeros": [
+        "17",
+        "51",
+        "29"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU0OQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "gana_mas",
+      "nombre": "Gana Más",
+      "tipo": "quiniela",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "24",
+        "45",
+        "87"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "nacional_noche",
+      "nombre": "Lotería Nacional Noche",
+      "tipo": "quiniela",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "78",
+        "55",
+        "10"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "leidsa",
+      "nombre": "Leidsa",
+      "tipo": "quiniela",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "37",
+        "21",
+        "41"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "kino_leidsa",
+      "nombre": "Super Kino TV Leidsa",
+      "tipo": "kino",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "03",
+        "06",
+        "16",
+        "24",
+        "26",
+        "30",
+        "46",
+        "48",
+        "51",
+        "52",
+        "62",
+        "67",
+        "68",
+        "71",
+        "72",
+        "73",
+        "74",
+        "76",
+        "78",
+        "79"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "real",
+      "nombre": "Lotería Real",
+      "tipo": "quiniela",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "35",
+        "48",
+        "12"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "loteka",
+      "nombre": "Loteka",
+      "tipo": "quiniela",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "24",
+        "48",
+        "87"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "primera_dia",
+      "nombre": "La Primera Día",
+      "tipo": "quiniela",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "69",
+        "87",
+        "20"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "primera_noche",
+      "nombre": "La Primera Noche",
+      "tipo": "quiniela",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "12",
+        "28",
+        "30"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "lotedom",
+      "nombre": "LoteDom",
+      "tipo": "quiniela",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "29",
+        "20",
+        "57"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_10am",
+      "nombre": "Anguila Mañana",
+      "tipo": "quiniela",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "37",
+        "04",
+        "42"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_1pm",
+      "nombre": "Anguila Mediodía",
+      "tipo": "quiniela",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "47",
+        "10",
+        "21"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_6pm",
+      "nombre": "Anguila Tarde",
+      "tipo": "quiniela",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "56",
+        "44",
+        "82"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_9pm",
+      "nombre": "Anguila Noche",
+      "tipo": "quiniela",
+      "fecha": "2026-07-19",
+      "numeros": [
+        "46",
+        "24",
+        "71"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzU1Mw%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "gana_mas",
+      "nombre": "Gana Más",
+      "tipo": "quiniela",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "90",
+        "22",
+        "15"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "nacional_noche",
+      "nombre": "Lotería Nacional Noche",
+      "tipo": "quiniela",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "35",
+        "26",
+        "84"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "leidsa",
+      "nombre": "Leidsa",
+      "tipo": "quiniela",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "44",
+        "72",
+        "33"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "kino_leidsa",
+      "nombre": "Super Kino TV Leidsa",
+      "tipo": "kino",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "01",
+        "06",
+        "07",
+        "13",
+        "14",
+        "17",
+        "19",
+        "24",
+        "29",
+        "30",
+        "36",
+        "52",
+        "59",
+        "62",
+        "63",
+        "66",
+        "67",
+        "74",
+        "76",
+        "77"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "real",
+      "nombre": "Lotería Real",
+      "tipo": "quiniela",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "49",
+        "55",
+        "57"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "loteka",
+      "nombre": "Loteka",
+      "tipo": "quiniela",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "73",
+        "14",
+        "51"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "primera_dia",
+      "nombre": "La Primera Día",
+      "tipo": "quiniela",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "46",
+        "88",
+        "56"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "primera_noche",
+      "nombre": "La Primera Noche",
+      "tipo": "quiniela",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "86",
+        "95",
+        "40"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "lotedom",
+      "nombre": "LoteDom",
+      "tipo": "quiniela",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "13",
+        "99",
+        "56"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_10am",
+      "nombre": "Anguila Mañana",
+      "tipo": "quiniela",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "50",
+        "37",
+        "66"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_1pm",
+      "nombre": "Anguila Mediodía",
+      "tipo": "quiniela",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "44",
+        "21",
+        "59"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_6pm",
+      "nombre": "Anguila Tarde",
+      "tipo": "quiniela",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "42",
+        "71",
+        "13"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_9pm",
+      "nombre": "Anguila Noche",
+      "tipo": "quiniela",
+      "fecha": "2026-07-20",
+      "numeros": [
+        "60",
+        "26",
+        "84"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzRGQQ%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "gana_mas",
+      "nombre": "Gana Más",
+      "tipo": "quiniela",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "48",
+        "35",
+        "30"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "nacional_noche",
+      "nombre": "Lotería Nacional Noche",
+      "tipo": "quiniela",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "59",
+        "36",
+        "82"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "leidsa",
+      "nombre": "Leidsa",
+      "tipo": "quiniela",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "84",
+        "86",
+        "07"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "kino_leidsa",
+      "nombre": "Super Kino TV Leidsa",
+      "tipo": "kino",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "02",
+        "07",
+        "08",
+        "10",
+        "19",
+        "22",
+        "29",
+        "32",
+        "33",
+        "37",
+        "38",
+        "40",
+        "43",
+        "45",
+        "49",
+        "55",
+        "56",
+        "65",
+        "69",
+        "70"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "real",
+      "nombre": "Lotería Real",
+      "tipo": "quiniela",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "35",
+        "40",
+        "21"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "loteka",
+      "nombre": "Loteka",
+      "tipo": "quiniela",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "17",
+        "07",
+        "71"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "primera_dia",
+      "nombre": "La Primera Día",
+      "tipo": "quiniela",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "57",
+        "07",
+        "64"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "primera_noche",
+      "nombre": "La Primera Noche",
+      "tipo": "quiniela",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "64",
+        "32",
+        "63"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "lotedom",
+      "nombre": "LoteDom",
+      "tipo": "quiniela",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "95",
+        "88",
+        "87"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_10am",
+      "nombre": "Anguila Mañana",
+      "tipo": "quiniela",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "52",
+        "40",
+        "61"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_1pm",
+      "nombre": "Anguila Mediodía",
+      "tipo": "quiniela",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "45",
+        "57",
+        "75"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_6pm",
+      "nombre": "Anguila Tarde",
+      "tipo": "quiniela",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "76",
+        "48",
+        "20"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    },
+    {
+      "pais": "rd",
+      "clave": "anguila_9pm",
+      "nombre": "Anguila Noche",
+      "tipo": "quiniela",
+      "fecha": "2026-07-21",
+      "numeros": [
+        "69",
+        "37",
+        "31"
+      ],
+      "fuente": "bootstrap_loteriadominicana",
+      "fuente_url": "https://www.loteriadominicana.com.do/?d=M0IyNzUwNA%3D%3D"
+    }
+  ]
+}
