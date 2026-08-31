@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: shneyder-ia-pro
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn servidor_movil:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /ping
+    envVars:
+      - key: DB_PATH
+        value: /var/data/loteria_master_ai.db
+    disk:
+      name: memoria-viva
+      mountPath: /var/data
+      sizeGB: 1
+
+  - type: cron
+    name: shneyder-ia-ping
+    runtime: python
+    plan: starter
+    schedule: "*/5 * * * *"
+    buildCommand: pip install requests
+    startCommand: python keep_alive.py
+    envVars:
+      - key: APP_URL
+        sync: false
